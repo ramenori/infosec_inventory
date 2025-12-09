@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false  # Change from true to false
+      fail-fast: true
       matrix:
-        php: [8.2, 8.3, 8.4]  # Add multiple versions
+        php: [8.2,8.3,8.4]
 
     name: PHP ${{ matrix.php }}
 
@@ -31,7 +31,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, gd
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
           coverage: none
 
       - name: Install Composer dependencies
@@ -42,15 +42,6 @@ jobs:
 
       - name: Generate app key
         run: php artisan key:generate
-
-      - name: Create SQLite database
-        run: |
-          touch database/database.sqlite
-          echo "DB_CONNECTION=sqlite" >> .env
-          echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
-
-      - name: Run database migrations
-        run: php artisan migrate:fresh --force
 
       - name: Execute tests
         run: php artisan test
