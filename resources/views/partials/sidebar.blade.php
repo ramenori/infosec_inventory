@@ -48,7 +48,7 @@
         
         <li class="nav-item">
           <a href="{{ route('admin.deployment') }}" class="nav-link rounded-3 px-3 py-2 mb-1">
-            <i class="nav-icon bi bi-rocket me-3"></i>
+            <i class="nav-icon bi bi-truck me-3"></i>
             <p class="mb-0">Deployment</p>
           </a>
         </li>
