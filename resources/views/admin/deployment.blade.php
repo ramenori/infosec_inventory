@@ -2,430 +2,629 @@
 
 @section('content')
 <div class="container-fluid px-4">
-  <h1 class="h3 my-3">DEPLOYMENT</h1>
+  {{-- Header with Stats --}}
+  <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
+    <div>
+      <h1 class="h2 mb-1 fw-bold text-gradient">Deployment</h1>
+      <p class="text-muted mb-0">Deploy inventory items to employees or departments</p>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="stat-card bg-primary text-white">
+        <small class="d-block">Available Items</small>
+        <h4 class="mb-0 fw-bold">{{ $categories->sum('available_count') }}</h4>
+      </div>
+      <div class="stat-card bg-success text-white">
+        <small class="d-block">In Cart</small>
+        <h4 class="mb-0 fw-bold">{{ $cartItems->sum('quantity') }}</h4>
+      </div>
+    </div>
+  </div>
 
   {{-- Breadcrumb --}}
   <nav aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}"><i class="bi bi-house"></i></a></li>
-      <li class="breadcrumb-item active" aria-current="page">Deployment</li>
+    <ol class="breadcrumb bg-light p-3 rounded">
+      <li class="breadcrumb-item">
+        <a href="{{ route('admin.dashboard') }}" class="text-decoration-none">
+          <i class="bi bi-house-door-fill"></i> Dashboard
+        </a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <i class="bi bi-truck"></i> Deployment
+      </li>
     </ol>
   </nav>
 
-  {{-- Success/Error Messages --}}
+  {{-- Notifications --}}
   @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-      {{ session('success') }}
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <div class="flex-grow-1">{{ session('success') }}</div>
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   @endif
 
   @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      {{ session('error') }}
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+      <i class="bi bi-exclamation-circle-fill me-2"></i>
+      <div class="flex-grow-1">{{ session('error') }}</div>
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   @endif
 
-  {{-- Main Deployment Layout --}}
-  <div class="row">
-    {{-- Left Panel: Category & Component Selection --}}
-    <div class="col-md-8">
-      <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">Select Items to Deploy</h5>
-        </div>
-        <div class="card-body">
-          
-          {{-- Step 1: Select Category --}}
-          <div class="mb-4">
-            <div class="d-flex align-items-center mb-2">
-              <span class="badge bg-primary me-2">Step 1</span>
-              <h6 class="mb-0">Select a Category</h6>
-            </div>
-            
+  {{-- Main Content --}}
+  <div class="row g-4">
+    {{-- Left Column: Item Selection --}}
+    <div class="col-lg-8">
+      {{-- Category Selection Card --}}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-gradient-primary text-white py-3">
+          <div class="d-flex align-items-center">
+            <div class="step-badge me-3">1</div>
+            <h5 class="mb-0">Select Category</h5>
             @if(session('selected_category'))
-              <div class="alert alert-info py-2 d-flex justify-content-between align-items-center">
-                <div>
-                  <strong>Selected Category:</strong> {{ session('selected_category_name') }}
-                  <span class="badge bg-primary ms-2">{{ session('selected_category_available') }} available items</span>
-                </div>
-                <a href="{{ route('admin.deployment.clearCategory') }}" class="btn btn-sm btn-outline-danger">
-                  <i class="bi bi-x-circle"></i> Change Category
-                </a>
+              <div class="ms-auto">
+                <span class="badge bg-white text-primary">
+                  {{ session('selected_category_name') }}
+                  <a href="{{ route('admin.deployment.clearCategory') }}" class="text-danger ms-1">
+                    <i class="bi bi-x-circle"></i>
+                  </a>
+                </span>
               </div>
             @endif
-            
-            <div class="row g-3">
-              @forelse($categories as $category)
-                <div class="col-md-4">
-                  <div class="card h-100 border 
-                    @if(session('selected_category') == $category->id) border-primary border-2 @endif
-                    hover-shadow">
-                    <div class="card-body text-center">
-                      <h5 class="card-title">{{ $category->name }}</h5>
-                      <div class="d-flex justify-content-center gap-3 mb-2">
-                        <small class="text-muted">
-                          <i class="bi bi-box"></i> Total: {{ $category->items_count }}
-                        </small>
-                        <small class="text-success">
-                          <i class="bi bi-check-circle"></i> Available: {{ $category->available_count }}
-                        </small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            @forelse($categories as $category)
+              <div class="col-md-4 col-sm-6">
+                <div class="category-card card h-100 border-0 hover-lift 
+                  @if(session('selected_category') == $category->id) selected shadow @else shadow-sm @endif"
+                  data-category-id="{{ $category->id }}"
+                  data-available="{{ $category->available_count }}">
+                  <div class="card-body text-center p-4">
+                    <div class="category-icon mb-3">
+                      @php
+                        $icons = [
+                          'Computers' => 'bi-laptop',
+                          'Electronics' => 'bi-cpu',
+                          'Furniture' => 'bi-chair',
+                          'Office Supplies' => 'bi-briefcase',
+                          'Network' => 'bi-wifi',
+                          'Other' => 'bi-box'
+                        ];
+                        $icon = $icons[$category->name] ?? 'bi-grid';
+                      @endphp
+                      <i class="bi {{ $icon }} fs-1 
+                        @if($category->available_count > 0) text-primary @else text-muted @endif"></i>
+                    </div>
+                    <h6 class="card-title fw-semibold">{{ $category->name }}</h6>
+                    <div class="category-stats d-flex justify-content-center gap-4 mb-3">
+                      <div>
+                        <small class="text-muted d-block">Total</small>
+                        <span class="fw-bold">{{ $category->items_count }}</span>
                       </div>
-                      
-                      @if($category->available_count > 0)
-                        <form action="{{ route('admin.deployment.selectCategory') }}" method="POST" class="mt-2">
-                          @csrf
-                          <input type="hidden" name="category_id" value="{{ $category->id }}">
-                          <input type="hidden" name="category_name" value="{{ $category->name }}">
-                          <input type="hidden" name="available_count" value="{{ $category->available_count }}">
-                          <button type="submit" 
-                            class="btn btn-sm 
-                            @if(session('selected_category') == $category->id) btn-primary @else btn-outline-primary @endif
-                            w-100">
-                            @if(session('selected_category') == $category->id)
-                              <i class="bi bi-check-lg"></i> Selected
-                            @else
-                              <i class="bi bi-plus-circle"></i> Select Category
-                            @endif
-                          </button>
-                        </form>
-                      @else
-                        <button class="btn btn-sm btn-outline-secondary w-100" disabled>
-                          <i class="bi bi-slash-circle"></i> No Available Items
+                      <div>
+                        <small class="text-muted d-block">Available</small>
+                        <span class="fw-bold text-success">{{ $category->available_count }}</span>
+                      </div>
+                    </div>
+                    
+                    @if($category->available_count > 0)
+                      <form action="{{ route('admin.deployment.selectCategory') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="category_id" value="{{ $category->id }}">
+                        <input type="hidden" name="category_name" value="{{ $category->name }}">
+                        <input type="hidden" name="available_count" value="{{ $category->available_count }}">
+                        <button type="submit" 
+                          class="btn btn-sm 
+                          @if(session('selected_category') == $category->id) btn-primary @else btn-outline-primary @endif
+                          w-100">
+                          @if(session('selected_category') == $category->id)
+                            <i class="bi bi-check-lg me-1"></i> Selected
+                          @else
+                            <i class="bi bi-plus-circle me-1"></i> Select
+                          @endif
                         </button>
-                      @endif
+                      </form>
+                    @else
+                      <button class="btn btn-sm btn-outline-secondary w-100" disabled>
+                        <i class="bi bi-slash-circle me-1"></i> Unavailable
+                      </button>
+                    @endif
+                  </div>
+                </div>
+              </div>
+            @empty
+              <div class="col-12">
+                <div class="text-center py-5">
+                  <i class="bi bi-folder-x fs-1 text-muted"></i>
+                  <p class="text-muted mt-2">No categories found</p>
+                </div>
+              </div>
+            @endforelse
+          </div>
+        </div>
+      </div>
+
+      {{-- Component Selection Card --}}
+      @if(session('selected_category'))
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-gradient-success text-white py-3">
+            <div class="d-flex align-items-center">
+              <div class="step-badge me-3">2</div>
+              <h5 class="mb-0">Select Items from {{ session('selected_category_name') }}</h5>
+              <div class="ms-auto">
+                <span class="badge bg-white text-success">
+                  {{ $categoryItems->total() }} items found
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            {{-- Search Bar --}}
+            <div class="row g-3 mb-4">
+              <div class="col-md-8">
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0">
+                    <i class="bi bi-search"></i>
+                  </span>
+                  <input type="search" 
+                         class="form-control border-start-0" 
+                         placeholder="Search by name, serial, or brand..."
+                         name="component_search"
+                         value="{{ request('component_search') }}"
+                         form="searchForm">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <form id="searchForm" method="GET" action="{{ route('admin.deployment') }}" class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i> Search
+                  </button>
+                  @if(request('component_search'))
+                    <a href="{{ route('admin.deployment') }}" class="btn btn-outline-secondary">
+                      <i class="bi bi-x-circle"></i>
+                    </a>
+                  @endif
+                </form>
+              </div>
+            </div>
+
+            {{-- Components Table --}}
+            @if($categoryItems->count() > 0)
+              <div class="table-responsive border rounded">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th width="50">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="selectAllComponents">
+                        </div>
+                      </th>
+                      <th>Item</th>
+                      <th>Brand</th>
+                      <th>Serial</th>
+                      <th class="text-center">Stock</th>
+                      <th class="text-center">Status</th>
+                      <th class="text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <form id="bulkAddForm" action="{{ route('admin.deployment.bulkAddToCart') }}" method="POST">
+                      @csrf
+                      <input type="hidden" name="category_id" value="{{ session('selected_category') }}">
+                      
+                      @foreach($categoryItems as $item)
+                        <tr class="@if($item->stock_qty == 0 || $item->status !== 'Available') table-secondary @endif">
+                          <td>
+                            @if($item->stock_qty > 0 && $item->status === 'Available')
+                              <div class="form-check">
+                                <input class="form-check-input component-checkbox" 
+                                       type="checkbox" 
+                                       name="component_ids[]" 
+                                       value="{{ $item->id }}"
+                                       data-max-qty="{{ $item->stock_qty }}">
+                              </div>
+                            @endif
+                          </td>
+                          <td>
+                            <div>
+                              <strong class="d-block">{{ $item->component }}</strong>
+                              <small class="text-muted">{{ $item->description ?? 'No description' }}</small>
+                            </div>
+                          </td>
+                          <td>{{ $item->brand ?? 'N/A' }}</td>
+                          <td>
+                            <code class="text-muted">{{ $item->serial_num ?? 'N/A' }}</code>
+                          </td>
+                          <td class="text-center">
+                            <span class="badge 
+                              @if($item->stock_qty >= 10) bg-success
+                              @elseif($item->stock_qty >= 5) bg-warning text-dark
+                              @else bg-danger @endif
+                              px-3 py-2">
+                              {{ $item->stock_qty }}
+                            </span>
+                          </td>
+                          <td class="text-center">
+                            <span class="status-badge 
+                              @if($item->status === 'Available') bg-success
+                              @elseif($item->status === 'Low Stock') bg-warning text-dark
+                              @else bg-secondary @endif">
+                              {{ $item->status }}
+                            </span>
+                          </td>
+                          <td class="text-center">
+                            @if($item->stock_qty > 0 && $item->status === 'Available')
+                              <div class="d-flex align-items-center justify-content-center">
+                                <div class="quantity-control me-2">
+                                  <button type="button" class="btn btn-sm btn-outline-secondary decrement" 
+                                          data-target="qty-{{ $item->id }}">
+                                    <i class="bi bi-dash"></i>
+                                  </button>
+                                  <input type="number" 
+                                         id="qty-{{ $item->id }}"
+                                         class="form-control form-control-sm text-center quantity-input" 
+                                         style="width: 60px;"
+                                         value="1" 
+                                         min="1" 
+                                         max="{{ $item->stock_qty }}"
+                                         data-item-id="{{ $item->id }}">
+                                  <button type="button" class="btn btn-sm btn-outline-secondary increment" 
+                                          data-target="qty-{{ $item->id }}">
+                                    <i class="bi bi-plus"></i>
+                                  </button>
+                                </div>
+                                <button type="button" 
+                                        class="btn btn-sm btn-success add-single-component"
+                                        data-item-id="{{ $item->id }}"
+                                        data-component="{{ $item->component }}">
+                                  <i class="bi bi-cart-plus"></i>
+                                </button>
+                              </div>
+                            @else
+                              <span class="badge bg-secondary">Unavailable</span>
+                            @endif
+                          </td>
+                        </tr>
+                      @endforeach
+                    </form>
+                  </tbody>
+                </table>
+              </div>
+
+              {{-- Bulk Actions --}}
+              <div class="d-flex justify-content-between align-items-center mt-4 p-3 bg-light rounded">
+                <div>
+                  <span id="selectedCount" class="badge bg-primary px-3 py-2">0 items selected</span>
+                  <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="resetQuantities()">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                  </button>
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="submit" form="bulkAddForm" class="btn btn-success">
+                    <i class="bi bi-cart-plus me-1"></i> Add Selected to Cart
+                  </button>
+                </div>
+              </div>
+
+              {{-- Pagination --}}
+              @if($categoryItems->hasPages())
+                <div class="d-flex justify-content-center mt-4">
+                  <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm">
+                      {{ $categoryItems->links() }}
+                    </ul>
+                  </nav>
+                </div>
+              @endif
+            @else
+              <div class="text-center py-5">
+                <i class="bi bi-inboxes fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No items found in this category</p>
+                @if(request('component_search'))
+                  <a href="{{ route('admin.deployment') }}" class="btn btn-sm btn-outline-primary mt-2">
+                    Clear Search
+                  </a>
+                @endif
+              </div>
+            @endif
+          </div>
+        </div>
+      @endif
+    </div>
+
+    {{-- Right Column: Deployment Cart --}}
+    <div class="col-lg-4">
+      <div class="sticky-top" style="top: 20px;">
+        {{-- Cart Card --}}
+        <div class="card border-0 shadow-lg">
+          <div class="card-header bg-gradient-info text-white py-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-cart-check fs-4 me-2"></i>
+              <h5 class="mb-0">Deployment Cart</h5>
+              @if($cartItems->count() > 0)
+                <span class="badge bg-white text-info ms-auto">
+                  {{ $cartItems->sum('quantity') }} items
+                </span>
+              @endif
+            </div>
+          </div>
+          
+          <div class="card-body">
+            @if($cartItems->count() > 0)
+              {{-- Cart Items --}}
+              <div class="cart-items mb-4" style="max-height: 300px; overflow-y: auto;">
+                @foreach($cartItems as $cartItem)
+                  <div class="cart-item card border mb-3">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1 me-3">
+                          <h6 class="mb-1 fw-semibold">{{ $cartItem->inventory->component }}</h6>
+                          <div class="d-flex flex-wrap gap-2 mb-2">
+                            <small class="text-muted">
+                              <i class="bi bi-tag"></i> {{ $cartItem->inventory->category }}
+                            </small>
+                            @if($cartItem->inventory->serial_num)
+                              <small class="text-muted">
+                                <i class="bi bi-upc-scan"></i> {{ $cartItem->inventory->serial_num }}
+                              </small>
+                            @endif
+                            <small class="text-muted">
+                              <i class="bi bi-box"></i> Max: {{ $cartItem->inventory->stock_qty + $cartItem->quantity }}
+                            </small>
+                          </div>
+                        </div>
+                        <div class="text-end">
+                          <form action="{{ route('admin.deployment.updateCart', $cartItem->id) }}" method="POST" 
+                                class="quantity-form">
+                            @csrf
+                            @method('PUT')
+                            <div class="input-group input-group-sm mb-2" style="width: 100px;">
+                              <input type="number" 
+                                     name="quantity" 
+                                     class="form-control" 
+                                     value="{{ $cartItem->quantity }}" 
+                                     min="1" 
+                                     max="{{ $cartItem->inventory->stock_qty + $cartItem->quantity }}"
+                                     onchange="this.form.submit()">
+                              <span class="input-group-text bg-light">qty</span>
+                            </div>
+                          </form>
+                          <form action="{{ route('admin.deployment.removeFromCart', $cartItem->id) }}" method="POST" 
+                                class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+
+              {{-- Cart Summary --}}
+              <div class="cart-summary border-top pt-3">
+                <h6 class="fw-semibold mb-3">Summary</h6>
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <div class="stat-box bg-light p-2 rounded text-center">
+                      <small class="text-muted d-block">Total Items</small>
+                      <strong class="fs-5">{{ $cartItems->sum('quantity') }}</strong>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="stat-box bg-light p-2 rounded text-center">
+                      <small class="text-muted d-block">Unique Items</small>
+                      <strong class="fs-5">{{ $cartItems->count() }}</strong>
                     </div>
                   </div>
                 </div>
-              @empty
-                <div class="col-12">
-                  <div class="alert alert-warning text-center">
-                    <i class="bi bi-exclamation-triangle me-2"></i> No categories found
+
+                {{-- Clear Cart --}}
+                <form action="{{ route('admin.deployment.clearCart') }}" method="POST" class="mb-3">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" class="btn btn-outline-danger w-100" 
+                          onclick="return confirm('Clear all items from cart?')">
+                    <i class="bi bi-trash me-1"></i> Clear Cart
+                  </button>
+                </form>
+
+                {{-- Deployment Form --}}
+                <form action="{{ route('admin.deployment.deploy') }}" method="POST">
+                  @csrf
+                  <h6 class="fw-semibold mb-3">Deployment Details</h6>
+                  
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold">
+                      <i class="bi bi-person-badge me-1"></i> Deployed To *
+                    </label>
+                    <input type="text" class="form-control" name="deployed_to" 
+                           placeholder="Enter employee name or department" required>
                   </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold">
+                      <i class="bi bi-calendar-date me-1"></i> Deployment Date *
+                    </label>
+                    <input type="date" class="form-control" name="deployment_date" 
+                           value="{{ date('Y-m-d') }}" required>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold">
+                      <i class="bi bi-chat-left-text me-1"></i> Remarks (Optional)
+                    </label>
+                    <textarea class="form-control" name="remarks" rows="2" 
+                              placeholder="Add any additional notes..."></textarea>
+                  </div>
+                  
+                  <button type="submit" class="btn btn-success w-100 py-2 fw-semibold"
+                          onclick="return confirm('Deploy {{ $cartItems->sum('quantity') }} item(s)?')">
+                    <i class="bi bi-rocket-takeoff me-2"></i> Deploy Items
+                  </button>
+                </form>
+              </div>
+            @else
+              {{-- Empty Cart --}}
+              <div class="text-center py-5">
+                <div class="empty-cart-icon mb-3">
+                  <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h5 class="text-muted">Your cart is empty</h5>
+                <p class="text-muted small">Select items from categories to add to cart</p>
+                @if(!session('selected_category'))
+                  <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Select a category first to view available items
+                  </div>
+                @endif
+              </div>
+            @endif
+          </div>
+        </div>
+
+        {{-- Recent Deployments --}}
+        <div class="card border-0 shadow-sm mt-4">
+          <div class="card-header bg-light py-3">
+            <h6 class="mb-0 fw-semibold">
+              <i class="bi bi-clock-history me-2"></i> Recent Deployments
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              @forelse($recentDeployments as $deployment)
+                <a href="#" class="list-group-item list-group-item-action border-0 py-2">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong class="d-block">#{{ str_pad($deployment->id, 6, '0', STR_PAD_LEFT) }}</strong>
+                      <small class="text-muted">{{ $deployment->deployed_to }}</small>
+                    </div>
+                    <div class="text-end">
+                      <span class="badge bg-success">{{ $deployment->items_count }} items</span>
+                      <small class="d-block text-muted">{{ $deployment->deployment_date->format('M d, Y') }}</small>
+                    </div>
+                  </div>
+                </a>
+              @empty
+                <div class="text-center py-3">
+                  <small class="text-muted">No recent deployments</small>
                 </div>
               @endforelse
             </div>
           </div>
-
-          {{-- Step 2: Select Components (Only shown if category is selected) --}}
-          @if(session('selected_category'))
-            <div class="mb-4">
-              <div class="d-flex align-items-center mb-2">
-                <span class="badge bg-success me-2">Step 2</span>
-                <h6 class="mb-0">Select Components from {{ session('selected_category_name') }}</h6>
-              </div>
-              
-              {{-- Search and Filter for Components --}}
-              <div class="mb-3">
-                <form method="GET" action="{{ route('admin.deployment') }}" class="row g-2">
-                  <div class="col-md-8">
-                    <input
-                      class="form-control"
-                      type="search"
-                      name="component_search"
-                      placeholder="Search components by name, serial, or brand..."
-                      aria-label="Search"
-                      value="{{ request('component_search') }}"
-                    />
-                  </div>
-                  <div class="col-md-4">
-                    <button class="btn btn-outline-secondary w-100" type="submit">
-                      <i class="bi bi-search me-1"></i> Search
-                    </button>
-                  </div>
-                </form>
-              </div>
-              
-              {{-- Components Table --}}
-              @if($categoryItems->count() > 0)
-                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                  <table class="table table-bordered table-hover align-middle">
-                    <thead class="table-light sticky-top">
-                      <tr>
-                        <th width="50">
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="selectAllComponents">
-                          </div>
-                        </th>
-                        <th>COMPONENT</th>
-                        <th>SERIAL NUM</th>
-                        <th>BRAND</th>
-                        <th>STOCK QTY</th>
-                        <th>STATUS</th>
-                        <th>ACTION</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <form id="bulkAddForm" action="{{ route('admin.deployment.bulkAddToCart') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="category_id" value="{{ session('selected_category') }}">
-                        
-                        @foreach($categoryItems as $item)
-                          <tr>
-                            <td>
-                              @if($item->stock_qty > 0 && $item->status === 'Available')
-                                <div class="form-check">
-                                  <input class="form-check-input component-checkbox" 
-                                         type="checkbox" 
-                                         name="component_ids[]" 
-                                         value="{{ $item->id }}"
-                                         data-max-qty="{{ $item->stock_qty }}">
-                                </div>
-                              @endif
-                            </td>
-                            <td>{{ $item->component }}</td>
-                            <td>{{ $item->serial_num ?? 'N/A' }}</td>
-                            <td>{{ $item->brand ?? 'N/A' }}</td>
-                            <td>
-                              <span class="badge 
-                                @if($item->stock_qty >= 10) bg-success
-                                @elseif($item->stock_qty >= 5) bg-warning
-                                @else bg-danger @endif">
-                                {{ $item->stock_qty }}
-                              </span>
-                            </td>
-                            <td>
-                              <span class="badge 
-                                @if($item->status === 'Available') bg-success
-                                @elseif($item->status === 'Low Stock') bg-warning
-                                @else bg-secondary @endif">
-                                {{ $item->status }}
-                              </span>
-                            </td>
-                            <td>
-                              @if($item->stock_qty > 0 && $item->status === 'Available')
-                                <div class="input-group input-group-sm" style="width: 150px;">
-                                  <input type="number" 
-                                         class="form-control quantity-input" 
-                                         name="quantities[{{ $item->id }}]" 
-                                         value="1" 
-                                         min="1" 
-                                         max="{{ $item->stock_qty }}"
-                                         data-item-id="{{ $item->id }}"
-                                         style="width: 60px;">
-                                  <button type="button" 
-                                          class="btn btn-success add-single-component"
-                                          data-item-id="{{ $item->id }}"
-                                          data-component="{{ $item->component }}">
-                                    <i class="bi bi-plus"></i> Add
-                                  </button>
-                                </div>
-                              @else
-                                <span class="badge bg-secondary">Unavailable</span>
-                              @endif
-                            </td>
-                          </tr>
-                        @endforeach
-                      </form>
-                    </tbody>
-                  </table>
-                </div>
-                
-                {{-- Bulk Actions --}}
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                  <div>
-                    <span id="selectedCount" class="badge bg-info">0 items selected</span>
-                  </div>
-                  <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-outline-secondary" onclick="resetQuantities()">
-                      <i class="bi bi-arrow-clockwise"></i> Reset Quantities
-                    </button>
-                    <button type="submit" form="bulkAddForm" class="btn btn-success">
-                      <i class="bi bi-cart-plus"></i> Add Selected to Cart
-                    </button>
-                  </div>
-                </div>
-                
-                {{-- Pagination --}}
-                @if($categoryItems->hasPages())
-                  <div class="d-flex justify-content-center mt-3">
-                    {{ $categoryItems->links() }}
-                  </div>
-                @endif
-              @else
-                <div class="alert alert-info text-center">
-                  <i class="bi bi-info-circle me-2"></i> No available components found in this category.
-                </div>
-              @endif
-            </div>
-          @endif
         </div>
-      </div>
-    </div>
-
-    {{-- Right Panel: Deployment Cart --}}
-    <div class="col-md-4">
-      <div class="card shadow-sm mb-4">
-        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Deployment Cart</h5>
-          @if($cartItems->count() > 0)
-            <span class="badge bg-light text-dark">{{ $cartItems->sum('quantity') }} items</span>
-          @endif
-        </div>
-        <div class="card-body">
-          {{-- Cart Items List --}}
-          <div style="max-height: 300px; overflow-y: auto;" class="mb-3">
-            @if($cartItems->count() > 0)
-              <ul class="list-group">
-                @foreach($cartItems as $cartItem)
-                  <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div class="flex-grow-1 me-2">
-                        <h6 class="mb-1">{{ $cartItem->inventory->component }}</h6>
-                        <small class="text-muted">
-                          <i class="bi bi-tag"></i> {{ $cartItem->inventory->category }}
-                          @if($cartItem->inventory->serial_num)
-                            | <i class="bi bi-upc"></i> {{ $cartItem->inventory->serial_num }}
-                          @endif
-                        </small>
-                      </div>
-                      <div class="d-flex flex-column align-items-end">
-                        <form action="{{ route('admin.deployment.updateCart', $cartItem->id) }}" method="POST" class="d-flex align-items-center mb-1">
-                          @csrf
-                          @method('PUT')
-                          <input type="number" 
-                                 name="quantity" 
-                                 class="form-control form-control-sm" 
-                                 style="width: 70px;" 
-                                 value="{{ $cartItem->quantity }}" 
-                                 min="1" 
-                                 max="{{ $cartItem->inventory->stock_qty + $cartItem->quantity }}"
-                                 onchange="this.form.submit()">
-                        </form>
-                        <small class="text-muted">{{ $cartItem->quantity }} × item(s)</small>
-                      </div>
-                    </div>
-                    <div class="d-flex justify-content-end mt-2">
-                      <form action="{{ route('admin.deployment.removeFromCart', $cartItem->id) }}" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                          <i class="bi bi-trash"></i> Remove
-                        </button>
-                      </form>
-                    </div>
-                  </li>
-                @endforeach
-              </ul>
-            @else
-              <div class="text-center text-muted py-4">
-                <i class="bi bi-cart-x display-6"></i>
-                <p class="mt-2">No items in cart</p>
-                @if(!session('selected_category'))
-                  <small class="text-info">Select a category first to add items</small>
-                @endif
-              </div>
-            @endif
-          </div>
-
-          @if($cartItems->count() > 0)
-            {{-- Cart Summary --}}
-            <div class="border-top pt-3">
-              <div class="d-flex justify-content-between mb-2">
-                <span>Total Items:</span>
-                <strong>{{ $cartItems->sum('quantity') }}</strong>
-              </div>
-              <div class="d-flex justify-content-between mb-2">
-                <span>Unique Items:</span>
-                <strong>{{ $cartItems->count() }}</strong>
-              </div>
-              <div class="d-flex justify-content-between mb-3">
-                <span>Categories:</span>
-                <strong>{{ $cartItems->pluck('inventory.category')->unique()->count() }}</strong>
-              </div>
-              
-              {{-- Clear Cart Button --}}
-              <form action="{{ route('admin.deployment.clearCart') }}" method="POST" class="mb-3">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Clear all items from cart?')">
-                  <i class="bi bi-trash"></i> Clear Cart
-                </button>
-              </form>
-              
-              {{-- Deployment Details Form --}}
-              <form action="{{ route('admin.deployment.deploy') }}" method="POST">
-                @csrf
-                <div class="mb-3">
-                  <label class="form-label">Deployed To *</label>
-                  <input type="text" class="form-control" name="deployed_to" 
-                         placeholder="Employee name or Department" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Deployment Date *</label>
-                  <input type="date" class="form-control" name="deployment_date" 
-                         value="{{ date('Y-m-d') }}" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Remarks (optional)</label>
-                  <textarea class="form-control" name="remarks" rows="2" 
-                            placeholder="Additional notes..."></textarea>
-                </div>
-
-                {{-- Deploy Button --}}
-                <button type="submit" class="btn btn-success w-100 mt-2" 
-                        onclick="return confirm('Deploy {{ $cartItems->sum('quantity') }} item(s)?')">
-                  <i class="bi bi-rocket"></i> Deploy Items
-                </button>
-              </form>
-            </div>
-          @endif
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {{-- Recent Deployments --}}
-  <div class="card shadow-sm">
-    <div class="card-header bg-secondary text-white">
-      <h5 class="mb-0">Recent Deployments</h5>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-bordered align-middle">
-          <thead class="table-light">
-            <tr>
-              <th>Deployment ID</th>
-              <th>Items</th>
-              <th>Deployed To</th>
-              <th>Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            @forelse($recentDeployments as $deployment)
-              <tr>
-                <td>#{{ str_pad($deployment->id, 6, '0', STR_PAD_LEFT) }}</td>
-                <td>{{ $deployment->items_count }} items</td>
-                <td>{{ $deployment->deployed_to }}</td>
-                <td>{{ $deployment->deployment_date->format('Y-m-d') }}</td>
-                <td><span class="badge bg-success">Completed</span></td>
-              </tr>
-            @empty
-              <tr>
-                <td colspan="5" class="text-center text-muted">No recent deployments</td>
-              </tr>
-            @endforelse
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
 </div>
 
-{{-- JavaScript for Enhanced Functionality --}}
+{{-- Custom CSS --}}
+<style>
+.category-card {
+  transition: all 0.3s ease;
+  border-radius: 10px;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+.category-card:hover {
+  transform: translateY(-5px);
+}
+.category-card.selected {
+  border: 2px solid #0d6efd !important;
+}
+.step-badge {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+.stat-card {
+  padding: 10px 20px;
+  border-radius: 8px;
+  min-width: 120px;
+  text-align: center;
+}
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+.bg-gradient-success {
+  background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+}
+.bg-gradient-info {
+  background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+}
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.quantity-control {
+  display: flex;
+  align-items: center;
+}
+.quantity-control .btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.quantity-control .form-control {
+  width: 60px;
+  margin: 0 4px;
+}
+.cart-item {
+  transition: all 0.2s ease;
+}
+.cart-item:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.empty-cart-icon {
+  opacity: 0.5;
+}
+.sticky-top {
+  position: sticky;
+  z-index: 1020;
+}
+.stat-box {
+  transition: all 0.3s ease;
+}
+.stat-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+</style>
+
+{{-- JavaScript --}}
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Select All Components Checkbox
-  const selectAllCheckbox = document.getElementById('selectAllComponents');
-  const componentCheckboxes = document.querySelectorAll('.component-checkbox');
+  // Select All Checkbox
+  const selectAll = document.getElementById('selectAllComponents');
+  const checkboxes = document.querySelectorAll('.component-checkbox');
   
-  if (selectAllCheckbox) {
-    selectAllCheckbox.addEventListener('change', function() {
-      componentCheckboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
+  if (selectAll) {
+    selectAll.addEventListener('change', function() {
+      checkboxes.forEach(checkbox => {
+        if (!checkbox.disabled) {
+          checkbox.checked = this.checked;
+        }
       });
       updateSelectedCount();
     });
@@ -437,20 +636,42 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('selectedCount').textContent = `${selected} items selected`;
   }
   
-  // Add event listeners to checkboxes
-  componentCheckboxes.forEach(checkbox => {
+  checkboxes.forEach(checkbox => {
     checkbox.addEventListener('change', updateSelectedCount);
   });
   
-  // Add single component button
-  document.querySelectorAll('.add-single-component').forEach(button => {
-    button.addEventListener('click', function() {
+  // Quantity controls
+  document.querySelectorAll('.increment').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const target = document.getElementById(this.dataset.target);
+      if (target && target.value < target.max) {
+        target.value = parseInt(target.value) + 1;
+      }
+    });
+  });
+  
+  document.querySelectorAll('.decrement').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const target = document.getElementById(this.dataset.target);
+      if (target && target.value > target.min) {
+        target.value = parseInt(target.value) - 1;
+      }
+    });
+  });
+  
+  // Add single item to cart
+  document.querySelectorAll('.add-single-component').forEach(btn => {
+    btn.addEventListener('click', function() {
       const itemId = this.dataset.itemId;
       const componentName = this.dataset.component;
-      const quantityInput = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
-      const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+      const qtyInput = document.getElementById(`qty-${itemId}`);
+      const quantity = qtyInput ? parseInt(qtyInput.value) : 1;
       
-      // Submit form via AJAX
+      // Add loading state
+      const originalHTML = this.innerHTML;
+      this.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+      this.disabled = true;
+      
       fetch('{{ route("admin.deployment.addToCart") }}', {
         method: 'POST',
         headers: {
@@ -465,51 +686,63 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // Show success message
-          showToast('success', `${quantity} × ${componentName} added to cart`);
-          // Reload page after a short delay
+          showNotification('success', `Added ${quantity} × ${componentName} to cart`);
           setTimeout(() => location.reload(), 1000);
         } else {
-          showToast('error', data.message || 'Failed to add item');
+          showNotification('error', data.message || 'Failed to add item');
+          this.innerHTML = originalHTML;
+          this.disabled = false;
         }
       })
       .catch(error => {
-        showToast('error', 'An error occurred');
+        showNotification('error', 'Network error occurred');
+        this.innerHTML = originalHTML;
+        this.disabled = false;
       });
     });
   });
   
-  // Reset quantities to 1
+  // Reset quantities
   function resetQuantities() {
     document.querySelectorAll('.quantity-input').forEach(input => {
       input.value = 1;
     });
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    if (selectAll) selectAll.checked = false;
+    updateSelectedCount();
   }
   
-  // Toast notification function
-  function showToast(type, message) {
-    const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
-    
-    toast.innerHTML = `
-      <div class="d-flex">
-        <div class="toast-body">${message}</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+  // Notification function
+  function showNotification(type, message) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.style.minWidth = '300px';
+    alert.innerHTML = `
+      <div class="d-flex align-items-center">
+        <i class="bi ${type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'} me-2"></i>
+        <div>${message}</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
       </div>
     `;
+    document.body.appendChild(alert);
     
-    document.body.appendChild(toast);
-    const bsToast = new bootstrap.Toast(toast);
-    bsToast.show();
-    
-    // Remove after hide
-    toast.addEventListener('hidden.bs.toast', function () {
-      document.body.removeChild(toast);
-    });
+    setTimeout(() => {
+      if (alert.parentNode) {
+        alert.remove();
+      }
+    }, 5000);
   }
+  
+  // Initialize tooltips
+  const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  tooltips.forEach(tooltip => {
+    new bootstrap.Tooltip(tooltip);
+  });
 });
 </script>
 @endpush
