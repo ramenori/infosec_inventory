@@ -282,7 +282,7 @@
                        title="Edit Item">
                       <i class="bi bi-pencil"></i>
                     </a>
-                    <a href="{{ route('admin.inventory.show', $item->id) }}"
+                    <a href="{{ route('admin.inventory', $item->id) }}"
                        class="btn btn-sm btn-outline-info"
                        data-bs-toggle="tooltip"
                        title="View Details">

@@ -174,67 +174,18 @@
           <h5 class="mb-0 fw-bold">Recent Activity</h5>
         </div>
         <div class="card-body p-0">
-          <div class="list-group list-group-flush">
-            <a href="#" class="list-group-item list-group-item-action border-0 py-3">
-              <div class="d-flex align-items-center">
-                <div class="bg-primary bg-opacity-10 rounded-3 p-2 me-3">
-                  <i class="bi bi-plus-circle text-primary"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <h6 class="mb-1">New item added</h6>
-                  <small class="text-muted">Laptop Dell XPS 15 added to inventory</small>
-                </div>
-                <small class="text-muted">2 min ago</small>
-              </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action border-0 py-3">
-              <div class="d-flex align-items-center">
-                <div class="bg-warning bg-opacity-10 rounded-3 p-2 me-3">
-                  <i class="bi bi-exclamation-triangle text-warning"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <h6 class="mb-1">Low stock alert</h6>
-                  <small class="text-muted">Mouse Logitech MX Master 3 low stock</small>
-                </div>
-                <small class="text-muted">1 hour ago</small>
-              </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action border-0 py-3">
-              <div class="d-flex align-items-center">
-                <div class="bg-success bg-opacity-10 rounded-3 p-2 me-3">
-                  <i class="bi bi-check-circle text-success"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <h6 class="mb-1">Deployment completed</h6>
-                  <small class="text-muted">15 monitors deployed to Marketing Dept</small>
-                </div>
-                <small class="text-muted">3 hours ago</small>
-              </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action border-0 py-3">
-              <div class="d-flex align-items-center">
-                <div class="bg-info bg-opacity-10 rounded-3 p-2 me-3">
-                  <i class="bi bi-person-plus text-info"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <h6 class="mb-1">New supplier added</h6>
-                  <small class="text-muted">Tech Solutions Inc. added as supplier</small>
-                </div>
-                <small class="text-muted">Yesterday</small>
-              </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action border-0 py-3">
-              <div class="d-flex align-items-center">
-                <div class="bg-danger bg-opacity-10 rounded-3 p-2 me-3">
-                  <i class="bi bi-x-circle text-danger"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <h6 class="mb-1">Item removed</h6>
-                  <small class="text-muted">Obsolete hardware removed from inventory</small>
-                </div>
-                <small class="text-muted">2 days ago</small>
-              </div>
-            </a>
+          <!-- Empty State for Recent Activity -->
+          <div class="d-flex flex-column justify-content-center align-items-center py-5">
+            <div class="mb-3">
+              <i class="bi bi-activity text-muted opacity-25" style="font-size: 3.5rem;"></i>
+            </div>
+            <h5 class="text-muted mb-2">No Recent Activity</h5>
+            <p class="text-muted text-center mb-4 small px-4">
+              Activity will appear here when you start using the system.
+            </p>
+            <button class="btn btn-outline-primary rounded-3">
+              <i class="bi bi-plus-circle me-2"></i>Get Started
+            </button>
           </div>
         </div>
         <div class="card-footer bg-white border-0 py-3">

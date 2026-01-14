@@ -17,8 +17,8 @@ class DeploymentController extends Controller
     {
         // Get categories with item counts
         $categories = Category::all()->map(function($category) {
-            $itemsCount = Inventory::where('category', $category->name)->count();
-            $availableCount = Inventory::where('category', $category->name)
+            $itemsCount = Inventory::where('category_id', $category->name)->count();
+            $availableCount = Inventory::where('category_id', $category->name)
                 ->where('status', 'Available')
                 ->where('stock_qty', '>', 0)
                 ->count();
