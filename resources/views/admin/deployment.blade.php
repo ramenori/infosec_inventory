@@ -197,9 +197,6 @@
                   <thead class="table-light">
                     <tr>
                       <th width="50">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="selectAllComponents">
-                        </div>
                       </th>
                       <th>Item</th>
                       <th>Brand</th>
@@ -275,12 +272,6 @@
                                     <i class="bi bi-plus"></i>
                                   </button>
                                 </div>
-                                <button type="button" 
-                                        class="btn btn-sm btn-success add-single-component"
-                                        data-item-id="{{ $item->id }}"
-                                        data-component="{{ $item->component }}">
-                                  <i class="bi bi-cart-plus"></i>
-                                </button>
                               </div>
                             @else
                               <span class="badge bg-secondary">Unavailable</span>
@@ -376,8 +367,8 @@
                           </div>
                         </div>
                         <div class="text-end">
-                          <form action="{{ route('admin.deployment.updateCart', $cartItem->id) }}" method="POST" 
-                                class="quantity-form">
+                          <form action="{{ route('admin.deployment.updateCart', $cartItem->inventory_id) }}" method="POST" 
+                              class="quantity-form">
                             @csrf
                             @method('PUT')
                             <div class="input-group input-group-sm mb-2" style="width: 100px;">
@@ -391,8 +382,8 @@
                               <span class="input-group-text bg-light">qty</span>
                             </div>
                           </form>
-                          <form action="{{ route('admin.deployment.removeFromCart', $cartItem->id) }}" method="POST" 
-                                class="d-inline">
+                          <form action="{{ route('admin.deployment.removeFromCart', $cartItem->inventory_id) }}" method="POST" 
+      class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger">

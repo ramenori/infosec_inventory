@@ -42,13 +42,20 @@ class DeploymentController extends Controller
             $cartItems = $cartItems->map(function($item) use ($inventoryItems) {
                 $inventory = $inventoryItems[$item['inventory_id']] ?? null;
                 if ($inventory) {
-                    $item['inventory'] = $inventory;
+                    // Return as object with proper structure
+                    return (object) [
+                        'cart_item_id' => $item['inventory_id'], // Use inventory_id as cart item ID
+                        'inventory_id' => $item['inventory_id'],
+                        'quantity' => $item['quantity'],
+                        'added_at' => $item['added_at'] ?? now(),
+                        'inventory' => $inventory
+                    ];
                 }
-                return (object) $item;
-            });
+                return null;
+            })->filter(); // Remove null items
         }
 
-        // Get items for selected category - use flash data
+        // Get items for selected category
         $categoryItems = collect();
         $selectedCategoryId = session('selected_category');
         $selectedCategoryName = session('selected_category_name');
@@ -65,8 +72,8 @@ class DeploymentController extends Controller
                     $search = $request->component_search;
                     $query->where(function($q) use ($search) {
                         $q->where('component', 'like', "%{$search}%")
-                        ->orWhere('serial_num', 'like', "%{$search}%")
-                        ->orWhere('brand', 'like', "%{$search}%");
+                          ->orWhere('serial_num', 'like', "%{$search}%")
+                          ->orWhere('brand', 'like', "%{$search}%");
                     });
                 }
 
@@ -98,11 +105,15 @@ class DeploymentController extends Controller
             'available_count' => 'required|integer'
         ]);
 
-        session()->flash('selected_category', $request->category_id);
-        session()->flash('selected_category_name', $request->category_name);
-        session()->flash('selected_category_available', $request->available_count);
+        // Store selected category in session
+        session([
+            'selected_category' => $request->category_id,
+            'selected_category_name' => $request->category_name,
+            'selected_category_available' => $request->available_count
+        ]);
 
-        return redirect()->route('admin.deployment')->with('success', 'Category selected. Now choose components to deploy.');
+        return redirect()->route('admin.deployment')
+            ->with('success', 'Category selected. Now choose components to deploy.');
     }
 
     public function clearCategory()
@@ -114,7 +125,8 @@ class DeploymentController extends Controller
             'selected_category_available'
         ]);
 
-        return redirect()->route('admin.deployment')->with('info', 'Category selection cleared.');
+        return redirect()->route('admin.deployment')
+            ->with('info', 'Category selection cleared.');
     }
 
     public function addToCart(Request $request)
@@ -191,32 +203,60 @@ class DeploymentController extends Controller
         $request->validate([
             'component_ids' => 'required|array',
             'component_ids.*' => 'exists:inventories,id',
-            'quantities' => 'required|array',
             'category_id' => 'required|exists:categories,id'
         ]);
 
         $selectedCategory = Category::find($request->category_id);
+        if (!$selectedCategory) {
+            return redirect()->back()->with('error', 'Selected category not found.');
+        }
+
         $cart = session()->get('deployment_cart', []);
         $addedCount = 0;
+        $errors = [];
 
         foreach ($request->component_ids as $componentId) {
-            $quantity = $request->quantities[$componentId] ?? 1;
+            $quantityKey = 'quantities.' . $componentId;
+            $quantity = $request->input($quantityKey, 1);
             
             if ($quantity < 1) continue;
 
             $inventory = Inventory::find($componentId);
 
-            // Verify item belongs to selected category - FIXED
-            if (!$inventory || $inventory->category !== $selectedCategory->name) {
+            // Verify item belongs to selected category
+            if (!$inventory) {
+                $errors[] = "Item ID {$componentId} not found.";
+                continue;
+            }
+
+            if ($inventory->category !== $selectedCategory->name) {
+                $errors[] = "Item '{$inventory->component}' does not belong to selected category.";
                 continue;
             }
 
             // Check availability
-            if ($inventory->status !== 'Available' || $inventory->stock_qty < $quantity) {
+            if ($inventory->status !== 'Available') {
+                $errors[] = "Item '{$inventory->component}' is not available.";
                 continue;
             }
 
-            // Check if item already in cart
+            // Check if item already in cart to calculate total needed
+            $existingInCart = 0;
+            foreach ($cart as $item) {
+                if ($item['inventory_id'] == $componentId) {
+                    $existingInCart = $item['quantity'];
+                    break;
+                }
+            }
+
+            $totalNeeded = $existingInCart + $quantity;
+            
+            if ($totalNeeded > $inventory->stock_qty) {
+                $errors[] = "Insufficient stock for '{$inventory->component}'. Available: {$inventory->stock_qty}, Already in cart: {$existingInCart}, Requested: {$quantity}";
+                continue;
+            }
+
+            // Update or add to cart
             $itemIndex = null;
             foreach ($cart as $index => $item) {
                 if ($item['inventory_id'] == $componentId) {
@@ -226,34 +266,48 @@ class DeploymentController extends Controller
             }
 
             if ($itemIndex !== null) {
-                $newQuantity = $cart[$itemIndex]['quantity'] + $quantity;
-                if ($newQuantity <= $inventory->stock_qty) {
-                    $cart[$itemIndex]['quantity'] = $newQuantity;
-                    $addedCount++;
-                }
+                $cart[$itemIndex]['quantity'] = $totalNeeded;
             } else {
                 $cart[] = [
                     'inventory_id' => $componentId,
                     'quantity' => $quantity,
                     'added_at' => now()->toDateTimeString()
                 ];
-                $addedCount++;
             }
+            
+            $addedCount++;
         }
 
         // Save cart to session
         session()->put('deployment_cart', $cart);
 
+        // Preserve selected category in session
+        session([
+            'selected_category' => $selectedCategory->id,
+            'selected_category_name' => $selectedCategory->name
+        ]);
+
         if ($addedCount > 0) {
-            return redirect()->back()->with('success', "Added {$addedCount} items to cart!");
+            $message = "Successfully added {$addedCount} item(s) to cart!";
+            if (!empty($errors)) {
+                $message .= " Some items could not be added: " . implode(' ', array_slice($errors, 0, 3));
+                if (count($errors) > 3) {
+                    $message .= "... and " . (count($errors) - 3) . " more";
+                }
+            }
+            return redirect()->route('admin.deployment')
+                ->with('success', $message);
         }
 
-        return redirect()->back()->with('error', 'No items were added to cart. Please check availability.');
+        return redirect()->back()
+            ->with('error', 'No items were added to cart. ' . implode(' ', $errors))
+            ->withInput();
     }
 
     public function removeFromCart($inventoryId)
     {
         $cart = session()->get('deployment_cart', []);
+        $originalCount = count($cart);
         
         // Find and remove the item
         foreach ($cart as $index => $item) {
@@ -269,7 +323,11 @@ class DeploymentController extends Controller
         // Save cart to session
         session()->put('deployment_cart', $cart);
 
-        return redirect()->back()->with('success', 'Item removed from cart!');
+        if (count($cart) < $originalCount) {
+            return redirect()->back()->with('success', 'Item removed from cart!');
+        }
+
+        return redirect()->back()->with('error', 'Item not found in cart!');
     }
 
     public function clearCart()
@@ -297,7 +355,7 @@ class DeploymentController extends Controller
 
                 // Check if quantity is valid
                 if ($request->quantity > $inventory->stock_qty) {
-                    return redirect()->back()->with('error', 'Quantity cannot exceed available stock.');
+                    return redirect()->back()->with('error', 'Quantity cannot exceed available stock of ' . $inventory->stock_qty);
                 }
 
                 $item['quantity'] = $request->quantity;
@@ -330,72 +388,67 @@ class DeploymentController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($cartItems, $request) {
-                // Create deployment record
-                $deployment = Deployment::create([
-                    'user_id' => Auth::id(),
-                    'reference_number' => $this->generateReferenceNumber(),
-                    'deployed_to' => $request->deployed_to,
-                    'department' => $request->department,
-                    'deployment_date' => $request->deployment_date,
-                    'remarks' => $request->remarks,
-                    'status' => 'completed',
-                ]);
+            DB::beginTransaction();
 
-                // Process each cart item
-                foreach ($cartItems as $cartItem) {
-                    $inventory = Inventory::find($cartItem['inventory_id']);
-                    
-                    if (!$inventory) {
-                        throw new \Exception("Item not found in inventory.");
-                    }
+            // Create deployment record
+            $deployment = Deployment::create([
+                'user_id' => Auth::id(),
+                'reference_number' => $this->generateReferenceNumber(),
+                'deployed_to' => $request->deployed_to,
+                'department' => $request->department,
+                'deployment_date' => $request->deployment_date,
+                'remarks' => $request->remarks,
+                'status' => 'completed',
+            ]);
 
-                    // Check stock availability with lock
-                    $inventory = Inventory::where('id', $cartItem['inventory_id'])
-                        ->where('stock_qty', '>=', $cartItem['quantity'])
-                        ->lockForUpdate()
-                        ->first();
+            // Process each cart item
+            foreach ($cartItems as $cartItem) {
+                $inventory = Inventory::where('id', $cartItem['inventory_id'])
+                    ->where('stock_qty', '>=', $cartItem['quantity'])
+                    ->first();
 
-                    if (!$inventory) {
-                        throw new \Exception("Item '{$inventory->component}' is no longer available in sufficient quantity.");
-                    }
-
-                    // Create deployment item record
-                    DeploymentItem::create([
-                        'deployment_id' => $deployment->id,
-                        'inventory_id' => $inventory->id,
-                        'quantity' => $cartItem['quantity'],
-                    ]);
-
-                    // Update inventory stock
-                    $inventory->stock_qty -= $cartItem['quantity'];
-                    
-                    // Update status based on new stock
-                    if ($inventory->stock_qty <= 0) {
-                        $inventory->status = 'Out of Stock';
-                    } elseif ($inventory->stock_qty < 5) {
-                        $inventory->status = 'Low Stock';
-                    } else {
-                        $inventory->status = 'Available';
-                    }
-                    
-                    $inventory->save();
+                if (!$inventory) {
+                    throw new \Exception("Item is no longer available in sufficient quantity.");
                 }
 
-                // Clear cart after successful deployment
-                session()->forget('deployment_cart');
-                
-                // Clear selected category
-                session()->forget([
-                    'selected_category',
-                    'selected_category_name',
-                    'selected_category_available'
+                // Create deployment item record
+                DeploymentItem::create([
+                    'deployment_id' => $deployment->id,
+                    'inventory_id' => $inventory->id,
+                    'quantity' => $cartItem['quantity'],
                 ]);
-            });
 
-            return redirect()->route('admin.deployment')->with('success', 'Deployment completed successfully!');
+                // Update inventory stock
+                $inventory->stock_qty -= $cartItem['quantity'];
+                
+                // Update status based on new stock
+                if ($inventory->stock_qty <= 0) {
+                    $inventory->status = 'Out of Stock';
+                } elseif ($inventory->stock_qty < 5) {
+                    $inventory->status = 'Low Stock';
+                } else {
+                    $inventory->status = 'Available';
+                }
+                
+                $inventory->save();
+            }
+
+            DB::commit();
+
+            // Clear cart and selected category after successful deployment
+            session()->forget('deployment_cart');
+            session()->forget([
+                'selected_category',
+                'selected_category_name',
+                'selected_category_available'
+            ]);
+
+            return redirect()->route('admin.deployment')
+                ->with('success', 'Deployment completed successfully! Reference #: ' . $deployment->reference_number);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             return redirect()->back()
                 ->with('error', 'Deployment failed: ' . $e->getMessage())
                 ->withInput();

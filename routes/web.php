@@ -61,9 +61,12 @@ Route::prefix('admin')->group(function () {
             Route::put('/update-cart/{id}', [DeploymentController::class, 'updateCart'])->name('admin.deployment.updateCart');
             Route::post('/deploy', [DeploymentController::class, 'deploy'])->name('admin.deployment.deploy');
             
-            // Optional: Add these if your controller has them
-            // Route::get('/history', [DeploymentController::class, 'history'])->name('admin.deployment.history');
-            // Route::get('/{id}', [DeploymentController::class, 'show'])->name('admin.deployment.show');
+            // ADDED: Deployment history and details routes
+            Route::get('/history', [DeploymentController::class, 'history'])->name('admin.deployment.history');
+            Route::get('/{id}', [DeploymentController::class, 'show'])->name('admin.deployment.show');
+            
+            // Optional: Add a deployment report route if needed
+            // Route::get('/report/export', [DeploymentController::class, 'exportReport'])->name('admin.deployment.export');
         });
 
         // Reports
