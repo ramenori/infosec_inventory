@@ -257,7 +257,7 @@
                 <td class="text-center">
                   <div class="d-flex flex-column">
                     <span class="fw-semibold">{{ $item->date_added->format('M d, Y') }}</span>
-                    <small class="text-muted">{{ $item->date_added->diffForHumans() }}</small>
+                    <small class="text-muted">{{ $item->created_at->diffForHumans() }}</small>
                   </div>
                 </td>
                 <td class="text-center">
@@ -356,6 +356,7 @@
         @csrf
         <div class="modal-body">
           <div class="row g-3">
+            {{-- Row 1 --}}
             <div class="col-md-6">
               <label for="category" class="form-label small fw-semibold">
                 <i class="bi bi-folder me-1"></i> Category *
@@ -378,6 +379,7 @@
                      value="{{ old('component') }}" placeholder="Enter component name" required>
             </div>
             
+            {{-- Row 2 --}}
             <div class="col-md-6">
               <label for="serial_num" class="form-label small fw-semibold">
                 <i class="bi bi-upc-scan me-1"></i> Serial Number
@@ -394,23 +396,17 @@
                      value="{{ old('brand') }}" placeholder="Enter brand name">
             </div>
             
+            {{-- Row 3 --}}
             <div class="col-md-6">
               <label for="stock_qty" class="form-label small fw-semibold">
                 <i class="bi bi-box-arrow-in-down me-1"></i> Stock Quantity *
               </label>
               <div class="input-group">
                 <input type="number" class="form-control" id="stock_qty" name="stock_qty" 
-                       value="{{ old('stock_qty', 0) }}" min="0" required>
+                       value="{{ old('stock_qty', 1) }}" min="0" required>
                 <span class="input-group-text">units</span>
               </div>
-            </div>
-            
-            <div class="col-md-6">
-              <label for="date_added" class="form-label small fw-semibold">
-                <i class="bi bi-calendar-date me-1"></i> Date Added *
-              </label>
-              <input type="date" class="form-control" id="date_added" name="date_added" 
-                     value="{{ old('date_added', date('Y-m-d')) }}" required>
+              <small class="text-muted">Enter initial stock quantity</small>
             </div>
             
             <div class="col-md-6">
@@ -423,8 +419,10 @@
                 <option value="Out of Stock" {{ old('status') == 'Out of Stock' ? 'selected' : '' }}>Out of Stock</option>
                 <option value="Deployed" {{ old('status') == 'Deployed' ? 'selected' : '' }}>Deployed</option>
               </select>
+              <small class="text-muted">Status will auto-update based on stock level</small>
             </div>
             
+            {{-- Row 4 --}}
             <div class="col-md-6">
               <label for="supplier_id" class="form-label small fw-semibold">
                 <i class="bi bi-truck me-1"></i> Supplier
@@ -440,6 +438,21 @@
               </select>
             </div>
             
+            <div class="col-md-6">
+              <div class="card bg-light border">
+                <div class="card-body p-3">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-calendar-date text-primary fs-4 me-3"></i>
+                    <div>
+                      <h6 class="mb-0 fw-semibold">Date Added</h6>
+                      <p class="mb-0 text-muted small">Automatically set to today's date</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {{-- Row 5 --}}
             <div class="col-12">
               <label for="description" class="form-label small fw-semibold">
                 <i class="bi bi-card-text me-1"></i> Description (Optional)
@@ -566,6 +579,24 @@ document.addEventListener('DOMContentLoaded', function() {
   @if(request('search'))
     document.querySelector('input[name="search"]')?.focus();
   @endif
+  
+  // Auto-update status based on stock quantity
+  const stockQtyInput = document.getElementById('stock_qty');
+  const statusSelect = document.getElementById('status');
+  
+  if (stockQtyInput && statusSelect) {
+    stockQtyInput.addEventListener('input', function() {
+      const qty = parseInt(this.value) || 0;
+      
+      if (qty === 0) {
+        statusSelect.value = 'Out of Stock';
+      } else if (qty < 5) {
+        statusSelect.value = 'Low Stock';
+      } else {
+        statusSelect.value = 'Available';
+      }
+    });
+  }
 });
 </script>
 @endpush

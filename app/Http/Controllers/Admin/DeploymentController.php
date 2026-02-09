@@ -17,8 +17,8 @@ class DeploymentController extends Controller
     {
         // Get categories with item counts
         $categories = Category::all()->map(function($category) {
-            $itemsCount = Inventory::where('category_id', $category->name)->count();
-            $availableCount = Inventory::where('category_id', $category->name)
+            $itemsCount = Inventory::where('category', $category->name)->count();
+            $availableCount = Inventory::where('category', $category->name)
                 ->where('status', 'Available')
                 ->where('stock_qty', '>', 0)
                 ->count();
@@ -31,7 +31,7 @@ class DeploymentController extends Controller
             ];
         });
 
-        // Get cart items from session (temporary storage)
+        // Get cart items from session
         $cartItems = collect(session('deployment_cart', []));
         
         // Load inventory details for cart items
@@ -48,10 +48,13 @@ class DeploymentController extends Controller
             });
         }
 
-        // Get items for selected category (if any)
+        // Get items for selected category - use flash data
         $categoryItems = collect();
-        if (session('selected_category')) {
-            $selectedCategory = Category::find(session('selected_category'));
+        $selectedCategoryId = session('selected_category');
+        $selectedCategoryName = session('selected_category_name');
+        
+        if ($selectedCategoryId) {
+            $selectedCategory = Category::find($selectedCategoryId);
             if ($selectedCategory) {
                 $query = Inventory::where('category', $selectedCategory->name)
                     ->where('status', 'Available')
@@ -62,8 +65,8 @@ class DeploymentController extends Controller
                     $search = $request->component_search;
                     $query->where(function($q) use ($search) {
                         $q->where('component', 'like', "%{$search}%")
-                          ->orWhere('serial_num', 'like', "%{$search}%")
-                          ->orWhere('brand', 'like', "%{$search}%");
+                        ->orWhere('serial_num', 'like', "%{$search}%")
+                        ->orWhere('brand', 'like', "%{$search}%");
                     });
                 }
 
@@ -81,7 +84,9 @@ class DeploymentController extends Controller
             'categories', 
             'cartItems', 
             'categoryItems',
-            'recentDeployments'
+            'recentDeployments',
+            'selectedCategoryId',
+            'selectedCategoryName'
         ));
     }
 
@@ -93,12 +98,9 @@ class DeploymentController extends Controller
             'available_count' => 'required|integer'
         ]);
 
-        // Store selected category in session
-        session([
-            'selected_category' => $request->category_id,
-            'selected_category_name' => $request->category_name,
-            'selected_category_available' => $request->available_count
-        ]);
+        session()->flash('selected_category', $request->category_id);
+        session()->flash('selected_category_name', $request->category_name);
+        session()->flash('selected_category_available', $request->available_count);
 
         return redirect()->route('admin.deployment')->with('success', 'Category selected. Now choose components to deploy.');
     }
@@ -204,7 +206,7 @@ class DeploymentController extends Controller
 
             $inventory = Inventory::find($componentId);
 
-            // Verify item belongs to selected category
+            // Verify item belongs to selected category - FIXED
             if (!$inventory || $inventory->category !== $selectedCategory->name) {
                 continue;
             }

@@ -20,7 +20,6 @@ class AdminLoginController extends Controller
             'password' => ['required'],
         ]);
 
-        // Attempt login with username
         if (Auth::attempt(['username' => $request->username, 'password' => $request->password], $request->remember)) {
             $request->session()->regenerate();
             return redirect()->route('admin.dashboard');

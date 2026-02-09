@@ -17,7 +17,7 @@ class Inventory extends Model
         'stock_qty',
         'date_added',
         'status',
-        'supplier_id', // Changed from 'supplier'
+        'supplier_id',
     ];
 
     protected $casts = [
@@ -32,5 +32,16 @@ class Inventory extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    // Fix the category relationship
+    public function categoryRelation(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category', 'name');
+    }
+
+    public function deploymentItems(): HasMany
+    {
+        return $this->hasMany(DeploymentItem::class);
     }
 }

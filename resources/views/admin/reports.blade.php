@@ -164,71 +164,64 @@
 
 {{-- Custom CSS --}}
 <style>
+.stat-card {
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+}
+
 .text-gradient {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+.stat-card:hover {
+  transform: translateY(-5px);
 }
-
+.stat-icon {
+  font-size: 3rem;
+  opacity: 0.3;
+}
+.status-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+}
 .hover-shadow:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-    transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
 }
-
-.report-icon {
-    width: 36px;
-    height: 36px;
-    background: rgba(13, 110, 253, 0.1);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.breadcrumb {
-    background-color: #f8f9fa !important;
-    border-radius: 8px;
-}
-
-.card {
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.table th {
-    font-weight: 600;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    color: #6c757d;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.table td {
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.btn-sm {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-}
-
-.badge {
-    border-radius: 6px;
-    font-weight: 500;
-}
-
 .empty-state {
-    padding: 3rem 1rem;
+  padding: 3rem 1rem;
 }
-
-/* Fix for dropdown z-index */
-.dropdown {
-    z-index: 1000 !important;
+.table tbody tr {
+  transition: all 0.2s ease;
 }
-
-.dropdown-menu {
-    z-index: 1001 !important;
+.progress {
+  border-radius: 10px;
+}
+.bg-gradient {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #0a58ca 100%);
+}
+.bg-gradient.warning {
+  background: linear-gradient(135deg, var(--bs-warning) 0%, #e0a800 100%);
+}
+.bg-gradient.info {
+  background: linear-gradient(135deg, var(--bs-info) 0%, #0aa2c0 100%);
+}
+.bg-gradient.success {
+  background: linear-gradient(135deg, var(--bs-success) 0%, #146c43 100%);
+}
+.item-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(13, 110, 253, 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
 

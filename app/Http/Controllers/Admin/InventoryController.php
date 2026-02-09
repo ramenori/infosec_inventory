@@ -58,8 +58,7 @@ class InventoryController extends Controller
             'serial_num' => 'nullable|string|max:255|unique:inventories,serial_num',
             'brand' => 'nullable|string|max:255',
             'stock_qty' => 'required|integer|min:0',
-            'date_added' => 'required|date',
-            'status' => 'required|in:Available,Low Stock,Out of Stock,Maintenance',
+            'status' => 'required|in:Available,Low Stock,Out of Stock,Maintenance,Deployed',
             'supplier_id' => 'nullable|exists:suppliers,id',
         ]);
 
@@ -77,7 +76,7 @@ class InventoryController extends Controller
             'serial_num' => $request->serial_num,
             'brand' => $request->brand,
             'stock_qty' => $request->stock_qty,
-            'date_added' => $request->date_added,
+            'date_added' => now(), // Automatically set to current date
             'status' => $status,
             'supplier_id' => $request->supplier_id,
         ]);
