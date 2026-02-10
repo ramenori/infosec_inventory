@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Inventory;
 use App\Models\Category;
 use App\Models\Deployment;
-use App\Models\DeploymentItem;
+use App\Models\DeploymentCart;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -412,7 +412,7 @@ class DeploymentController extends Controller
                 }
 
                 // Create deployment item record
-                DeploymentItem::create([
+                DeploymentCart::create([
                     'deployment_id' => $deployment->id,
                     'inventory_id' => $inventory->id,
                     'quantity' => $cartItem['quantity'],

@@ -34,7 +34,7 @@ class Deployment extends Model
     // Relationship with Deployment Items
     public function items(): HasMany
     {
-        return $this->hasMany(DeploymentItem::class);
+        return $this->hasMany(DeploymentCart::class);
     }
 
     // Generate reference number
