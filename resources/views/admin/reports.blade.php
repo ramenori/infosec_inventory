@@ -34,30 +34,7 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-6 mb-3 mb-md-0">
-                    <form method="GET" action="{{ route('admin.reports') }}" class="row g-2">
-                        <div class="col-auto">
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="bi bi-search"></i>
-                                </span>
-                                <input type="search" 
-                                       class="form-control border-start-0" 
-                                       name="search" 
-                                       placeholder="Search reports..." 
-                                       value="{{ request('search') }}">
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-search me-1"></i> Search
-                            </button>
-                            @if(request('search'))
-                                <a href="{{ route('admin.reports') }}" class="btn btn-outline-secondary">
-                                    <i class="bi bi-x-circle"></i>
-                                </a>
-                            @endif
-                        </div>
-                    </form>
+                    
                 </div>
                 
                 <div class="col-md-6">
@@ -100,66 +77,156 @@
     </div>
 
     {{-- Reports Table --}}
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-light py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-semibold">
-                    <i class="bi bi-table me-2"></i> Deployment Reports
-                </h6>
-                <small class="text-muted">
-                    Showing 0 reports
-                </small>
-            </div>
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-light py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-table me-2"></i> Deployment Reports
+            </h6>
+            <small class="text-muted">
+                Showing {{ $reports->firstItem() ?? 0 }} to {{ $reports->lastItem() ?? 0 }} of {{ $reports->total() }} reports
+            </small>
         </div>
-        
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="border-0">REPORT TITLE</th>
-                            <th class="border-0 text-center">TYPE</th>
-                            <th class="border-0 text-center">DATE GENERATED</th>
-                            <th class="border-0 text-center">PERIOD</th>
-                            <th class="border-0 text-center">STATUS</th>
-                            <th class="border-0 text-center">ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="border-0">CATEGORY</th>
+                        <th class="border-0 text-center">COMPONENT</th>
+                        <th class="border-0 text-center">QUANTITY</th>
+                        <th class="border-0 text-center">DEPLOYED TO</th>
+                        <th class="border-0 text-center">DATE DEPLOYED</th>
+                        <th class="border-0 text-center">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($reports as $deployment)
+                        @foreach($deployment->items as $item)
+                            <tr class="hover-shadow">
+                                <td class="align-middle">
+                                    <div class="d-flex align-items-center">
+                                        <div class="item-icon me-2">
+                                            @php
+                                                $categoryIcons = [
+                                                    'Computers' => 'bi-laptop',
+                                                    'Electronics' => 'bi-cpu',
+                                                    'Furniture' => 'bi-chair',
+                                                    'Office Supplies' => 'bi-briefcase',
+                                                    'Network' => 'bi-wifi',
+                                                    'Other' => 'bi-box'
+                                                ];
+                                                // Get category from inventory relationship
+                                                $category = $item->inventory->category ?? 'Other';
+                                                $icon = $categoryIcons[$category] ?? 'bi-grid';
+                                            @endphp
+                                            <i class="bi {{ $icon }} text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <strong class="d-block">{{ $category }}</strong>
+                                            <small class="text-muted">{{ $deployment->reference_number }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <div>
+                                        <strong class="d-block">{{ $item->component }}</strong>
+                                        @if($item->inventory)
+                                            <small class="text-muted">{{ $item->inventory->brand ?? 'N/A' }}</small>
+                                            <br>
+                                            <small class="text-muted">
+                                                <code>{{ $item->inventory->serial_num ?? 'No Serial' }}</code>
+                                            </small>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <span class="badge bg-primary px-3 py-2">{{ $item->quantity }}</span>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <div>
+                                        <strong class="d-block">{{ $deployment->deployed_to }}</strong>
+                                        @if($deployment->department)
+                                            <small class="text-muted">Dept: {{ $deployment->department }}</small>
+                                        @endif
+                                        <br>
+                                        <small class="text-muted">{{ Str::limit($deployment->remarks, 30) ?? 'No remarks' }}</small>
+                                    </div>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <div>
+                                        <strong class="d-block">{{ $deployment->deployment_date->format('M d, Y') }}</strong>
+                                        <small class="text-muted">{{ $deployment->created_at->format('h:i A') }}</small>
+                                    </div>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                title="View Details"
+                                                onclick="viewReport({{ $deployment->id }})">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        
+                                
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    @empty
                         <tr>
                             <td colspan="6" class="text-center py-5">
                                 <div class="empty-state">
                                     <i class="bi bi-file-earmark-text display-4 text-muted mb-3"></i>
-                                    <h5 class="text-muted">No reports generated yet</h5>
-                                    <p class="text-muted mb-4">Reports will appear here once generated</p>
+                                    <h5 class="text-muted">No deployment reports found</h5>
+                                    <p class="text-muted mb-4">Deploy some items first to see reports here</p>
+                                    <a href="{{ route('admin.deployment') }}" class="btn btn-primary">
+                                        <i class="bi bi-truck me-1"></i> Go to Deployment
+                                    </a>
                                 </div>
                             </td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-        
-        {{-- Footer with Pagination --}}
+    </div>
+    
+    {{-- Footer with Pagination --}}
+    @if($reports->hasPages())
         <div class="card-footer bg-light py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="small text-muted">
-                    Showing 0 to 0 of 0 entries
+                    Showing {{ $reports->firstItem() }} to {{ $reports->lastItem() }} of {{ $reports->total() }} entries
                 </div>
                 <nav aria-label="Page navigation">
                     <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item disabled">
-                            <span class="page-link">&laquo;</span>
-                        </li>
-                        <li class="page-item active"><span class="page-link">1</span></li>
-                        <li class="page-item disabled">
-                            <span class="page-link">&raquo;</span>
-                        </li>
+                        {{ $reports->links() }}
                     </ul>
                 </nav>
             </div>
         </div>
-    </div>
+    @endif
+</div>
+    
+    {{-- Footer with Pagination --}}
+    @if($reports->hasPages())
+        <div class="card-footer bg-light py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="small text-muted">
+                    Showing {{ $reports->firstItem() }} to {{ $reports->lastItem() }} of {{ $reports->total() }} entries
+                </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0">
+                        {{ $reports->links() }}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    @endif
+</div>
 </div>
 
 {{-- Custom CSS --}}

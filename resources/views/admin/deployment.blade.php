@@ -432,7 +432,7 @@
                   
                   <div class="mb-3">
                     <label class="form-label small fw-semibold">
-                      <i class="bi bi-person-badge me-1"></i> Deployed To *
+                      <i class="bi bi-person-badge me-1"></i> Deploy To *
                     </label>
                     <input type="text" class="form-control" name="deployed_to" 
                            placeholder="Enter employee name or department" required>
