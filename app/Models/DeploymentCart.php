@@ -13,6 +13,7 @@ class DeploymentCart extends Model
     protected $fillable = [
         'deployment_id',
         'inventory_id',
+        'component', // ADD THIS
         'quantity',
     ];
 
@@ -26,5 +27,29 @@ class DeploymentCart extends Model
     public function inventory(): BelongsTo
     {
         return $this->belongsTo(Inventory::class);
+    }
+
+    // Automatically populate component when saving
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($deploymentCart) {
+            if (empty($deploymentCart->component) && $deploymentCart->inventory_id) {
+                $inventory = Inventory::find($deploymentCart->inventory_id);
+                if ($inventory) {
+                    $deploymentCart->component = $inventory->component;
+                }
+            }
+        });
+
+        static::updating(function ($deploymentCart) {
+            if (empty($deploymentCart->component) && $deploymentCart->inventory_id) {
+                $inventory = Inventory::find($deploymentCart->inventory_id);
+                if ($inventory) {
+                    $deploymentCart->component = $inventory->component;
+                }
+            }
+        });
     }
 }

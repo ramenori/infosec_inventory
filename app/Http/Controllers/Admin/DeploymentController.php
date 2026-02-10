@@ -411,10 +411,11 @@ class DeploymentController extends Controller
                     throw new \Exception("Item is no longer available in sufficient quantity.");
                 }
 
-                // Create deployment item record
+                // Create deployment item record WITH COMPONENT
                 DeploymentCart::create([
                     'deployment_id' => $deployment->id,
                     'inventory_id' => $inventory->id,
+                    'component' => $inventory->component, // ADD THIS
                     'quantity' => $cartItem['quantity'],
                 ]);
 

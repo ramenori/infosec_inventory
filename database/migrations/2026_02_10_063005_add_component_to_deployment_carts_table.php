@@ -12,7 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('deployment_carts', function (Blueprint $table) {
-            //
+            // Add the component column
+            $table->string('component')->nullable()->after('inventory_id');
+            
+            // Optional: Add an index for better performance
+            $table->index('component');
         });
     }
 
@@ -22,7 +26,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('deployment_carts', function (Blueprint $table) {
-            //
+            $table->dropColumn('component');
+            $table->dropIndex(['component']);
         });
     }
 };
