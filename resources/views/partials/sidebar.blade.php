@@ -90,6 +90,13 @@
             <p class="mb-0">Suppliers</p>
           </a>
         </li>
+
+        <li class="nav-item">
+          <a href="{{ route('admin.contactperson') }}" class="nav-link rounded-3 px-3 py-2">
+            <i class="nav-icon bi bi-people me-3"></i>
+            <p class="mb-0">Contact Person</p>
+          </a>
+        </li>
       </ul>
       <!--end::Sidebar Menu-->
     </nav>

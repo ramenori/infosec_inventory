@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\SuppliersController;
 use App\Http\Controllers\Admin\AdminLoginController;
+use App\Http\Controllers\Admin\ContactPersonController;
 
 
 Route::redirect('/', '/admin/login');
@@ -82,6 +83,14 @@ Route::prefix('admin')->group(function () {
         });
     });
 });
+
+        // Contact Person Routes
+        Route::prefix('contactperson')->group(function () {
+            Route::get('/', [ContactPersonController::class, 'index'])->name('admin.contactperson');
+            Route::post('/', [ContactPersonController::class, 'store'])->name('admin.contactperson.store');
+            Route::put('/{id}', [ContactPersonController::class, 'update'])->name('admin.contactperson.update');
+            Route::delete('/{id}', [ContactPersonController::class, 'destroy'])->name('admin.contactperson.destroy');
+        });
 
 // Optional: Add a catch-all route for undefined routes
 Route::fallback(function () {
