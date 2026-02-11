@@ -478,37 +478,6 @@
             @endif
           </div>
         </div>
-
-        {{-- Recent Deployments --}}
-        <div class="card border-0 shadow-sm mt-4">
-          <div class="card-header bg-light py-3">
-            <h6 class="mb-0 fw-semibold">
-              <i class="bi bi-clock-history me-2"></i> Recent Deployments
-            </h6>
-          </div>
-          <div class="card-body">
-            <div class="list-group list-group-flush">
-              @forelse($recentDeployments as $deployment)
-                <a href="#" class="list-group-item list-group-item-action border-0 py-2">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <strong class="d-block">#{{ str_pad($deployment->id, 6, '0', STR_PAD_LEFT) }}</strong>
-                      <small class="text-muted">{{ $deployment->deployed_to }}</small>
-                    </div>
-                    <div class="text-end">
-                      <span class="badge bg-success">{{ $deployment->items_count }} items</span>
-                      <small class="d-block text-muted">{{ $deployment->deployment_date->format('M d, Y') }}</small>
-                    </div>
-                  </div>
-                </a>
-              @empty
-                <div class="text-center py-3">
-                  <small class="text-muted">No recent deployments</small>
-                </div>
-              @endforelse
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
