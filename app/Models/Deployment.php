@@ -14,24 +14,26 @@ class Deployment extends Model
     protected $fillable = [
         'user_id',
         'reference_number',
+        'waybill_number',
         'deployed_to',
-        'department',
+        'contact_number',
+        'address',
+        'satellite_office',
         'deployment_date',
         'remarks',
         'status',
+        'department'
     ];
 
     protected $casts = [
         'deployment_date' => 'date',
     ];
 
-    // Relationship with User
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relationship with Deployment Items
     public function items(): HasMany
     {
         return $this->hasMany(DeploymentCart::class);

@@ -10,7 +10,6 @@ use App\Http\Controllers\Admin\SuppliersController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\ContactPersonController;
 
-
 Route::redirect('/', '/admin/login');
 
 Route::prefix('admin')->group(function () {
@@ -36,9 +35,6 @@ Route::prefix('admin')->group(function () {
             Route::get('/{id}/edit', [InventoryController::class, 'edit'])->name('admin.inventory.edit');
             Route::put('/{id}', [InventoryController::class, 'update'])->name('admin.inventory.update');
             Route::delete('/{id}', [InventoryController::class, 'destroy'])->name('admin.inventory.destroy');
-            
-            // Optional: Quick stock update
-            Route::post('/{id}/update-stock', [InventoryController::class, 'updateStock'])->name('admin.inventory.updateStock');
         });
 
         // Category Routes
@@ -61,13 +57,8 @@ Route::prefix('admin')->group(function () {
             Route::delete('/clear-cart', [DeploymentController::class, 'clearCart'])->name('admin.deployment.clearCart');
             Route::put('/update-cart/{id}', [DeploymentController::class, 'updateCart'])->name('admin.deployment.updateCart');
             Route::post('/deploy', [DeploymentController::class, 'deploy'])->name('admin.deployment.deploy');
-            
-            // ADDED: Deployment history and details routes
             Route::get('/history', [DeploymentController::class, 'history'])->name('admin.deployment.history');
             Route::get('/{id}', [DeploymentController::class, 'show'])->name('admin.deployment.show');
-            
-            // Optional: Add a deployment report route if needed
-            // Route::get('/report/export', [DeploymentController::class, 'exportReport'])->name('admin.deployment.export');
         });
 
         // Reports
@@ -81,16 +72,16 @@ Route::prefix('admin')->group(function () {
             Route::put('/{id}', [SuppliersController::class, 'update'])->name('admin.suppliers.update');
             Route::delete('/{id}', [SuppliersController::class, 'destroy'])->name('admin.suppliers.destroy');
         });
-    });
-});
 
-        // Contact Person Routes
+        // ✅ FIXED: Contact Person Routes - NOW INSIDE auth middleware and admin prefix
         Route::prefix('contactperson')->group(function () {
             Route::get('/', [ContactPersonController::class, 'index'])->name('admin.contactperson');
             Route::post('/', [ContactPersonController::class, 'store'])->name('admin.contactperson.store');
             Route::put('/{id}', [ContactPersonController::class, 'update'])->name('admin.contactperson.update');
             Route::delete('/{id}', [ContactPersonController::class, 'destroy'])->name('admin.contactperson.destroy');
         });
+    });
+});
 
 // Optional: Add a catch-all route for undefined routes
 Route::fallback(function () {

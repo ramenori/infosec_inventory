@@ -13,7 +13,7 @@ class DeploymentCart extends Model
     protected $fillable = [
         'deployment_id',
         'inventory_id',
-        'component', // ADD THIS
+        'component',
         'quantity',
     ];
 

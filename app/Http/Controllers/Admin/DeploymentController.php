@@ -8,6 +8,7 @@ use App\Models\Inventory;
 use App\Models\Category;
 use App\Models\Deployment;
 use App\Models\DeploymentCart;
+use App\Models\ContactPerson;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -42,9 +43,8 @@ class DeploymentController extends Controller
             $cartItems = $cartItems->map(function($item) use ($inventoryItems) {
                 $inventory = $inventoryItems[$item['inventory_id']] ?? null;
                 if ($inventory) {
-                    // Return as object with proper structure
                     return (object) [
-                        'cart_item_id' => $item['inventory_id'], // Use inventory_id as cart item ID
+                        'cart_item_id' => $item['inventory_id'],
                         'inventory_id' => $item['inventory_id'],
                         'quantity' => $item['quantity'],
                         'added_at' => $item['added_at'] ?? now(),
@@ -52,7 +52,7 @@ class DeploymentController extends Controller
                     ];
                 }
                 return null;
-            })->filter(); // Remove null items
+            })->filter();
         }
 
         // Get items for selected category
@@ -67,13 +67,12 @@ class DeploymentController extends Controller
                     ->where('status', 'Available')
                     ->where('stock_qty', '>', 0);
 
-                // Search within category
                 if ($request->has('component_search') && !empty($request->component_search)) {
                     $search = $request->component_search;
                     $query->where(function($q) use ($search) {
                         $q->where('component', 'like', "%{$search}%")
-                          ->orWhere('serial_num', 'like', "%{$search}%")
-                          ->orWhere('brand', 'like', "%{$search}%");
+                        ->orWhere('serial_num', 'like', "%{$search}%")
+                        ->orWhere('brand', 'like', "%{$search}%");
                     });
                 }
 
@@ -81,7 +80,9 @@ class DeploymentController extends Controller
             }
         }
 
-        // Get recent deployments
+        // ADD THIS: Get contact persons for dropdown
+        $contactPersons = ContactPerson::orderBy('name')->get(['id', 'name', 'contact_number', 'address', 'satellite_office']);
+
         $recentDeployments = Deployment::with(['user', 'items'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -93,7 +94,8 @@ class DeploymentController extends Controller
             'categoryItems',
             'recentDeployments',
             'selectedCategoryId',
-            'selectedCategoryName'
+            'selectedCategoryName',
+            'contactPersons'
         ));
     }
 
@@ -375,8 +377,11 @@ class DeploymentController extends Controller
     public function deploy(Request $request)
     {
         $request->validate([
+            'waybill_number' => 'nullable|string|max:255', // CHANGED: not required
             'deployed_to' => 'required|string|max:255',
-            'department' => 'nullable|string|max:255',
+            'contact_number' => 'nullable|string|max:20', // CHANGED: not required
+            'address' => 'nullable|string|max:500', // CHANGED: not required
+            'satellite_office' => 'nullable|string|max:255', // CHANGED: not required
             'deployment_date' => 'required|date',
             'remarks' => 'nullable|string|max:500'
         ]);
@@ -390,16 +395,34 @@ class DeploymentController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create deployment record
-            $deployment = Deployment::create([
+            // Create deployment record - all fields optional except original ones
+            $deploymentData = [
                 'user_id' => Auth::id(),
                 'reference_number' => $this->generateReferenceNumber(),
                 'deployed_to' => $request->deployed_to,
-                'department' => $request->department,
                 'deployment_date' => $request->deployment_date,
                 'remarks' => $request->remarks,
                 'status' => 'completed',
-            ]);
+            ];
+            
+            // Add optional fields only if they have values
+            if ($request->filled('waybill_number')) {
+                $deploymentData['waybill_number'] = $request->waybill_number;
+            }
+            
+            if ($request->filled('contact_number')) {
+                $deploymentData['contact_number'] = $request->contact_number;
+            }
+            
+            if ($request->filled('address')) {
+                $deploymentData['address'] = $request->address;
+            }
+            
+            if ($request->filled('satellite_office')) {
+                $deploymentData['satellite_office'] = $request->satellite_office;
+            }
+
+            $deployment = Deployment::create($deploymentData);
 
             // Process each cart item
             foreach ($cartItems as $cartItem) {
@@ -411,18 +434,16 @@ class DeploymentController extends Controller
                     throw new \Exception("Item is no longer available in sufficient quantity.");
                 }
 
-                // Create deployment item record WITH COMPONENT
                 DeploymentCart::create([
                     'deployment_id' => $deployment->id,
                     'inventory_id' => $inventory->id,
-                    'component' => $inventory->component, // ADD THIS
+                    'component' => $inventory->component,
                     'quantity' => $cartItem['quantity'],
                 ]);
 
                 // Update inventory stock
                 $inventory->stock_qty -= $cartItem['quantity'];
                 
-                // Update status based on new stock
                 if ($inventory->stock_qty <= 0) {
                     $inventory->status = 'Out of Stock';
                 } elseif ($inventory->stock_qty < 5) {
@@ -436,7 +457,7 @@ class DeploymentController extends Controller
 
             DB::commit();
 
-            // Clear cart and selected category after successful deployment
+            // Clear cart and selected category
             session()->forget('deployment_cart');
             session()->forget([
                 'selected_category',

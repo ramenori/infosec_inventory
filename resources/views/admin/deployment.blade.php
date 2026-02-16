@@ -427,37 +427,126 @@
 
                 {{-- Deployment Form --}}
                 <form action="{{ route('admin.deployment.deploy') }}" method="POST">
-                  @csrf
-                  <h6 class="fw-semibold mb-3">Deployment Details</h6>
-                  
-                  <div class="mb-3">
-                    <label class="form-label small fw-semibold">
-                      <i class="bi bi-person-badge me-1"></i> Deploy To *
-                    </label>
-                    <input type="text" class="form-control" name="deployed_to" 
-                           placeholder="Enter the name of who will receive" required>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label class="form-label small fw-semibold">
-                      <i class="bi bi-calendar-date me-1"></i> Deployment Date *
-                    </label>
-                    <input type="date" class="form-control" name="deployment_date" 
-                           value="{{ date('Y-m-d') }}" required>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label class="form-label small fw-semibold">
-                      <i class="bi bi-chat-left-text me-1"></i> Remarks (Optional)
-                    </label>
-                    <textarea class="form-control" name="remarks" rows="2" 
-                              placeholder="Add any additional notes..."></textarea>
-                  </div>
-                  
-                  <button type="submit" class="btn btn-success w-100 py-2 fw-semibold"
-                          onclick="return confirm('Deploy {{ $cartItems->sum('quantity') }} item(s)?')">
-                    <i class="bi bi-rocket-takeoff me-2"></i> Deploy Items
-                  </button>
+                    @csrf
+                    <h6 class="fw-semibold mb-3">Deployment Details</h6>
+
+                    {{-- WAYBILL NUMBER - Optional --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">
+                            <i class="bi bi-upc-scan me-1"></i> Waybill No.
+                        </label>
+                        <input type="text" class="form-control" name="waybill_number" 
+                              placeholder="Enter the Waybill Number (optional)">
+                    </div>
+
+                    {{-- DEPLOY TO - Dropdown for Contact Persons --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">
+                            <i class="bi bi-person-badge me-1"></i> Deploy To *
+                        </label>
+                        <select class="form-select" name="deployed_to" id="deployToSelect" required>
+                            <option value="">-- Select Contact Person --</option>
+                            @foreach($contactPersons ?? [] as $contact)
+                                <option value="{{ $contact->name }}" 
+                                        data-contact="{{ $contact->contact_number }}"
+                                        data-address="{{ $contact->address }}"
+                                        data-office="{{ $contact->satellite_office }}">
+                                    {{ $contact->name }} 
+                                    @if($contact->satellite_office)
+                                        ({{ $contact->satellite_office }})
+                                    @endif
+                                </option>
+                            @endforeach
+                            <option value="new">+ Add New Contact Person</option>
+                        </select>
+                    </div>
+
+                    {{-- HIDDEN FIELDS - These will store the contact details when an existing contact is selected --}}
+                    <input type="hidden" name="contact_number" id="hiddenContactNumber" value="">
+                    <input type="hidden" name="address" id="hiddenAddress" value="">
+                    <input type="hidden" name="satellite_office" id="hiddenSatelliteOffice" value="">
+
+                    {{-- CONTACT PERSON --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">
+                            <i class="bi bi-person-badge me-1"></i> Contact Person
+                        </label>
+                        <input type="text" class="form-control" name="waybill_number" 
+                              placeholder="Enter the Waybill Number (optional)">
+                    </div>
+
+                    {{-- VISIBLE FIELDS - For display only --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">
+                            <i class="bi bi-telephone me-1"></i> Contact No.
+                        </label>
+                        <input type="text" class="form-control" id="displayContactNumber" 
+                              placeholder="Contact number will appear here" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">
+                            <i class="bi bi-geo-alt me-1"></i> Address
+                        </label>
+                        <textarea class="form-control" id="displayAddress" 
+                                  rows="2" placeholder="Address will appear here" readonly></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">
+                            <i class="bi bi-building me-1"></i> Satellite Office
+                        </label>
+                        <input type="text" class="form-control" id="displaySatelliteOffice" 
+                              placeholder="Satellite office will appear here" readonly>
+                    </div>
+                    
+                    {{-- NEW CONTACT FIELDS - Only shown when "Add New" is selected --}}
+                    <div id="newContactFields" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">
+                                <i class="bi bi-telephone me-1"></i> New Contact No.
+                            </label>
+                            <input type="text" class="form-control" name="new_contact_number" id="newContactNumber" 
+                                  placeholder="Enter Contact Number">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">
+                                <i class="bi bi-geo-alt me-1"></i> New Address
+                            </label>
+                            <textarea class="form-control" name="new_address" id="newAddress" 
+                                      rows="2" placeholder="Enter Address"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">
+                                <i class="bi bi-building me-1"></i> New Satellite Office
+                            </label>
+                            <input type="text" class="form-control" name="new_satellite_office" id="newSatelliteOffice" 
+                                  placeholder="Enter Satellite Office">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">
+                            <i class="bi bi-calendar-date me-1"></i> Deployment Date *
+                        </label>
+                        <input type="date" class="form-control" name="deployment_date" 
+                              value="{{ date('Y-m-d') }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">
+                            <i class="bi bi-chat-left-text me-1"></i> Remarks (Optional)
+                        </label>
+                        <textarea class="form-control" name="remarks" rows="2" 
+                                  placeholder="Add any additional notes..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-semibold"
+                            onclick="return confirm('Deploy {{ $cartItems->sum('quantity') }} item(s)?')">
+                        <i class="bi bi-rocket-takeoff me-2"></i> Deploy Items
+                    </button>
                 </form>
               </div>
             @else
@@ -569,11 +658,73 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
+input:read-only, textarea:read-only {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #495057;
+    cursor: not-allowed;
+}
+
+input:read-only:focus, textarea:read-only:focus {
+    border-color: #dee2e6;
+    box-shadow: none;
+}
 </style>
 
 {{-- JavaScript --}}
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deployToSelect = document.getElementById('deployToSelect');
+    const contactNumber = document.getElementById('contactNumber');
+    const address = document.getElementById('address');
+    const satelliteOffice = document.getElementById('satelliteOffice');
+    
+    function handleContactSelection() {
+        const selectedOption = deployToSelect.options[deployToSelect.selectedIndex];
+        
+        if (deployToSelect.value === 'new') {
+            // Enable fields for manual entry
+            contactNumber.readOnly = false;
+            address.readOnly = false;
+            satelliteOffice.readOnly = false;
+            
+            // Clear fields
+            contactNumber.value = '';
+            address.value = '';
+            satelliteOffice.value = '';
+            
+            contactNumber.focus();
+        } 
+        else if (deployToSelect.value === '') {
+            // No selection - disable and clear fields
+            contactNumber.readOnly = true;
+            address.readOnly = true;
+            satelliteOffice.readOnly = true;
+            contactNumber.value = '';
+            address.value = '';
+            satelliteOffice.value = '';
+        }
+        else {
+            // Existing contact selected - populate and disable fields
+            contactNumber.readOnly = true;
+            address.readOnly = true;
+            satelliteOffice.readOnly = true;
+            
+            contactNumber.value = selectedOption.dataset.contact || '';
+            address.value = selectedOption.dataset.address || '';
+            satelliteOffice.value = selectedOption.dataset.office || '';
+        }
+    }
+    
+    deployToSelect.addEventListener('change', handleContactSelection);
+    
+    if (deployToSelect.value) {
+        handleContactSelection();
+    }
+});
+  
 document.addEventListener('DOMContentLoaded', function() {
   // Select All Checkbox
   const selectAll = document.getElementById('selectAllComponents');
@@ -703,6 +854,63 @@ document.addEventListener('DOMContentLoaded', function() {
   tooltips.forEach(tooltip => {
     new bootstrap.Tooltip(tooltip);
   });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const deployToSelect = document.getElementById('deployToSelect');
+    const contactNumber = document.getElementById('contactNumber');
+    const address = document.getElementById('address');
+    const satelliteOffice = document.getElementById('satelliteOffice');
+    
+    // Function to handle contact selection
+    function handleContactSelection() {
+        const selectedOption = deployToSelect.options[deployToSelect.selectedIndex];
+        
+        if (deployToSelect.value === 'new') {
+            // Enable all fields for manual entry
+            contactNumber.readOnly = false;
+            address.readOnly = false;
+            satelliteOffice.readOnly = false;
+            
+            // Clear fields
+            contactNumber.value = '';
+            address.value = '';
+            satelliteOffice.value = '';
+            
+            // Focus on contact number
+            contactNumber.focus();
+        } 
+        else if (deployToSelect.value === '') {
+            // No selection - disable fields
+            contactNumber.readOnly = true;
+            address.readOnly = true;
+            satelliteOffice.readOnly = true;
+            
+            // Clear fields
+            contactNumber.value = '';
+            address.value = '';
+            satelliteOffice.value = '';
+        }
+        else {
+            // Existing contact selected - populate and disable fields
+            contactNumber.readOnly = true;
+            address.readOnly = true;
+            satelliteOffice.readOnly = true;
+            
+            // Get data from data attributes
+            contactNumber.value = selectedOption.dataset.contact || '';
+            address.value = selectedOption.dataset.address || '';
+            satelliteOffice.value = selectedOption.dataset.office || '';
+        }
+    }
+    
+    // Add event listener
+    deployToSelect.addEventListener('change', handleContactSelection);
+    
+    // Initialize on page load (if there's a pre-selected value)
+    if (deployToSelect.value) {
+        handleContactSelection();
+    }
 });
 </script>
 @endpush

@@ -10,7 +10,7 @@
         </div>
         <div class="d-flex align-items-center gap-2">
             <span class="badge bg-primary px-3 py-2">
-                <i class="bi bi-file-earmark-text me-1"></i> 0 Reports Generated
+                <i class="bi bi-file-earmark-text me-1"></i> {{ $reports->total() }} Reports Generated
             </span>
         </div>
     </div>
@@ -77,156 +77,194 @@
     </div>
 
     {{-- Reports Table --}}
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-light py-3">
-        <div class="d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-semibold">
-                <i class="bi bi-table me-2"></i> Deployment Reports
-            </h6>
-            <small class="text-muted">
-                Showing {{ $reports->firstItem() ?? 0 }} to {{ $reports->lastItem() ?? 0 }} of {{ $reports->total() }} reports
-            </small>
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-semibold">
+                    <i class="bi bi-table me-2"></i> Deployment Reports
+                </h6>
+                <small class="text-muted">
+                    Showing {{ $reports->firstItem() ?? 0 }} to {{ $reports->lastItem() ?? 0 }} of {{ $reports->total() }} reports
+                </small>
+            </div>
         </div>
-    </div>
-    
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="border-0">CATEGORY</th>
-                        <th class="border-0 text-center">COMPONENT</th>
-                        <th class="border-0 text-center">QUANTITY</th>
-                        <th class="border-0 text-center">DEPLOYED TO</th>
-                        <th class="border-0 text-center">DATE DEPLOYED</th>
-                        <th class="border-0 text-center">ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($reports as $deployment)
-                        @foreach($deployment->items as $item)
-                            <tr class="hover-shadow">
-                                <td class="align-middle">
-                                    <div class="d-flex align-items-center">
-                                        <div class="item-icon me-2">
-                                            @php
-                                                $categoryIcons = [
-                                                    'Computers' => 'bi-laptop',
-                                                    'Electronics' => 'bi-cpu',
-                                                    'Furniture' => 'bi-chair',
-                                                    'Office Supplies' => 'bi-briefcase',
-                                                    'Network' => 'bi-wifi',
-                                                    'Other' => 'bi-box'
-                                                ];
-                                                // Get category from inventory relationship
-                                                $category = $item->inventory->category ?? 'Other';
-                                                $icon = $categoryIcons[$category] ?? 'bi-grid';
-                                            @endphp
-                                            <i class="bi {{ $icon }} text-primary"></i>
-                                        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0">WAYBILL NO.</th>
+                            <th class="border-0">DATE DEPLOYED</th>
+                            <th class="border-0">CATEGORY</th>
+                            <th class="border-0 text-center">COMPONENT</th>
+                            <th class="border-0 text-center">QUANTITY</th>
+                            <th class="border-0 text-center">DEPLOYED TO</th>
+                            <th class="border-0 text-center">CONTACT NO.</th>
+                            <th class="border-0 text-center">ADDRESS</th>
+                            <th class="border-0 text-center">SATELLITE OFFICE</th>
+                            <th class="border-0 text-center">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($reports as $deployment)
+                            @foreach($deployment->items as $item)
+                                <tr class="hover-shadow">
+                                    {{-- COLUMN 1: WAYBILL NO. --}}
+                                    <td class="align-middle">
+                                        <span class="badge bg-secondary px-3 py-2">
+                                            <i class="bi bi-upc-scan me-1"></i> 
+                                            {{ $deployment->waybill_number ?? 'N/A' }}
+                                        </span>
+                                    </td>
+                                    
+                                    {{-- COLUMN 2: DATE DEPLOYED --}}
+                                    <td class="align-middle">
                                         <div>
-                                            <strong class="d-block">{{ $category }}</strong>
-                                            <small class="text-muted">{{ $deployment->reference_number }}</small>
+                                            <strong>{{ $deployment->deployment_date->format('M d, Y') }}</strong>
+                                            <small class="text-muted d-block">{{ $deployment->created_at->format('h:i A') }}</small>
                                         </div>
-                                    </div>
-                                </td>
-                                <td class="text-center align-middle">
-                                    <div>
-                                        <strong class="d-block">{{ $item->component }}</strong>
-                                        @if($item->inventory)
-                                            <small class="text-muted">{{ $item->inventory->brand ?? 'N/A' }}</small>
-                                            <br>
-                                            <small class="text-muted">
-                                                <code>{{ $item->inventory->serial_num ?? 'No Serial' }}</code>
-                                            </small>
+                                    </td>
+                                    
+                                    {{-- COLUMN 3: CATEGORY --}}
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <div class="item-icon me-2">
+                                                @php
+                                                    $categoryIcons = [
+                                                        'Computers' => 'bi-laptop',
+                                                        'Electronics' => 'bi-cpu',
+                                                        'Furniture' => 'bi-chair',
+                                                        'Office Supplies' => 'bi-briefcase',
+                                                        'Network' => 'bi-wifi',
+                                                        'Other' => 'bi-box'
+                                                    ];
+                                                    $category = $item->inventory->category ?? 'Other';
+                                                    $icon = $categoryIcons[$category] ?? 'bi-grid';
+                                                @endphp
+                                                <i class="bi {{ $icon }} text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <strong class="d-block">{{ $category }}</strong>
+                                                <small class="text-muted">{{ $deployment->reference_number }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    {{-- COLUMN 4: COMPONENT --}}
+                                    <td class="text-center align-middle">
+                                        <div>
+                                            <strong class="d-block">{{ $item->component }}</strong>
+                                            @if($item->inventory)
+                                                <small class="text-muted">{{ $item->inventory->brand ?? 'N/A' }}</small>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <code>{{ $item->inventory->serial_num ?? 'No Serial' }}</code>
+                                                </small>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    
+                                    {{-- COLUMN 5: QUANTITY --}}
+                                    <td class="text-center align-middle">
+                                        <span class="badge bg-primary px-3 py-2">{{ $item->quantity }}</span>
+                                    </td>
+                                    
+                                    {{-- COLUMN 6: DEPLOYED TO --}}
+                                    <td class="text-center align-middle">
+                                        <div>
+                                            <strong class="d-block">{{ $deployment->deployed_to }}</strong>
+                                            @if($deployment->remarks)
+                                                <small class="text-muted d-block">
+                                                    <i class="bi bi-chat me-1"></i> {{ Str::limit($deployment->remarks, 20) }}
+                                                </small>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    
+                                    {{-- COLUMN 7: CONTACT NUMBER --}}
+                                    <td class="text-center align-middle">
+                                        @if($deployment->contact_number)
+                                            <span class="badge bg-info px-3 py-2">
+                                                <i class="bi bi-telephone me-1"></i> {{ $deployment->contact_number }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">—</span>
                                         @endif
-                                    </div>
-                                </td>
-                                <td class="text-center align-middle">
-                                    <span class="badge bg-primary px-3 py-2">{{ $item->quantity }}</span>
-                                </td>
-                                <td class="text-center align-middle">
-                                    <div>
-                                        <strong class="d-block">{{ $deployment->deployed_to }}</strong>
-                                        @if($deployment->department)
-                                            <small class="text-muted">Dept: {{ $deployment->department }}</small>
+                                    </td>
+                                    
+                                    {{-- COLUMN 8: ADDRESS --}}
+                                    <td class="text-center align-middle">
+                                        @if($deployment->address)
+                                            <span class="badge bg-secondary px-3 py-2" 
+                                                  data-bs-toggle="tooltip" 
+                                                  title="{{ $deployment->address }}">
+                                                <i class="bi bi-geo-alt me-1"></i> {{ Str::limit($deployment->address, 20) }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">—</span>
                                         @endif
-                                        <br>
-                                        <small class="text-muted">{{ Str::limit($deployment->remarks, 30) ?? 'No remarks' }}</small>
-                                    </div>
-                                </td>
-                                <td class="text-center align-middle">
-                                    <div>
-                                        <strong class="d-block">{{ $deployment->deployment_date->format('M d, Y') }}</strong>
-                                        <small class="text-muted">{{ $deployment->created_at->format('h:i A') }}</small>
-                                    </div>
-                                </td>
-                                <td class="text-center align-middle">
-                                    <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                data-bs-toggle="tooltip" data-bs-placement="top" 
-                                                title="View Details"
-                                                onclick="viewReport({{ $deployment->id }})">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                        
-                                
+                                    </td>
+                                    
+                                    {{-- COLUMN 9: SATELLITE OFFICE --}}
+                                    <td class="text-center align-middle">
+                                        @if($deployment->satellite_office)
+                                            <span class="badge bg-warning text-dark px-3 py-2">
+                                                <i class="bi bi-building me-1"></i> {{ $deployment->satellite_office }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    
+                                    {{-- COLUMN 10: ACTIONS --}}
+                                    <td class="text-center align-middle">
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                    title="View Details"
+                                                    onclick="viewReport({{ $deployment->id }})">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="10" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-file-earmark-text display-4 text-muted mb-3"></i>
+                                        <h5 class="text-muted">No deployment reports found</h5>
+                                        <p class="text-muted mb-4">Deploy some items first to see reports here</p>
+                                        <a href="{{ route('admin.deployment') }}" class="btn btn-primary">
+                                            <i class="bi bi-truck me-1"></i> Go to Deployment
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-5">
-                                <div class="empty-state">
-                                    <i class="bi bi-file-earmark-text display-4 text-muted mb-3"></i>
-                                    <h5 class="text-muted">No deployment reports found</h5>
-                                    <p class="text-muted mb-4">Deploy some items first to see reports here</p>
-                                    <a href="{{ route('admin.deployment') }}" class="btn btn-primary">
-                                        <i class="bi bi-truck me-1"></i> Go to Deployment
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
+    
+        {{-- Footer with Pagination --}}
+        @if($reports->hasPages())
+            <div class="card-footer bg-light py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="small text-muted">
+                        Showing {{ $reports->firstItem() }} to {{ $reports->lastItem() }} of {{ $reports->total() }} entries
+                    </div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0">
+                            {{ $reports->links() }}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        @endif
     </div>
-    
-    {{-- Footer with Pagination --}}
-    @if($reports->hasPages())
-        <div class="card-footer bg-light py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="small text-muted">
-                    Showing {{ $reports->firstItem() }} to {{ $reports->lastItem() }} of {{ $reports->total() }} entries
-                </div>
-                <nav aria-label="Page navigation">
-                    <ul class="pagination pagination-sm mb-0">
-                        {{ $reports->links() }}
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    @endif
-</div>
-    
-    {{-- Footer with Pagination --}}
-    @if($reports->hasPages())
-        <div class="card-footer bg-light py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="small text-muted">
-                    Showing {{ $reports->firstItem() }} to {{ $reports->lastItem() }} of {{ $reports->total() }} entries
-                </div>
-                <nav aria-label="Page navigation">
-                    <ul class="pagination pagination-sm mb-0">
-                        {{ $reports->links() }}
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    @endif
-</div>
 </div>
 
 {{-- Custom CSS --}}
