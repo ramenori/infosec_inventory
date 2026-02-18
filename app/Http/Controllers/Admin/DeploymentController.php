@@ -515,6 +515,6 @@ class DeploymentController extends Controller
 
         $deployments = $query->orderBy('created_at', 'desc')->paginate(15);
 
-        return view('admin.deployment_history', compact('deployments'));
+        return view('admin.reports', compact('deployments'));
     }
 }
