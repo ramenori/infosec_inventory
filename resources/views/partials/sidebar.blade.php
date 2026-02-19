@@ -74,6 +74,12 @@
                 <p class="mb-0">Categories</p>
               </a>
             </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.suppliers') }}" class="nav-link rounded-3 px-3 py-2">
+                <i class="nav-icon bi bi-people me-3"></i>
+                <p class="mb-0">Suppliers</p>
+              </a>
+            </li>
           </ul>
         </li>
         
@@ -81,13 +87,6 @@
           <a href="{{ route('admin.reports') }}" class="nav-link rounded-3 px-3 py-2 mb-1">
             <i class="nav-icon bi bi-graph-up me-3"></i>
             <p class="mb-0">Reports</p>
-          </a>
-        </li>
-        
-        <li class="nav-item">
-          <a href="{{ route('admin.suppliers') }}" class="nav-link rounded-3 px-3 py-2">
-            <i class="nav-icon bi bi-people me-3"></i>
-            <p class="mb-0">Suppliers</p>
           </a>
         </li>
 
