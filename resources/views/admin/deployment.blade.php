@@ -81,57 +81,67 @@
                   @if(session('selected_category') == $category->id) selected shadow @else shadow-sm @endif"
                   data-category-id="{{ $category->id }}"
                   data-available="{{ $category->available_count }}">
-                  <div class="card-body text-center p-4">
-                    <div class="category-icon mb-3">
-                      @php
-                        $icons = [
-                          'Computers' => 'bi-laptop',
-                          'Electronics' => 'bi-cpu',
-                          'Furniture' => 'bi-chair',
-                          'Office Supplies' => 'bi-briefcase',
-                          'Network' => 'bi-wifi',
-                          'Other' => 'bi-box'
-                        ];
-                        $icon = $icons[$category->name] ?? 'bi-grid';
-                      @endphp
-                      <i class="bi {{ $icon }} fs-1 
-                        @if($category->available_count > 0) text-primary @else text-muted @endif"></i>
-                    </div>
-                    <h6 class="card-title fw-semibold">{{ $category->name }}</h6><br>
-                    <div class="category-stats d-flex justify-content-center gap-4 mb-3">
-                      <div>
-                        <small class="text-muted d-block">Total</small>
-                        <span class="fw-bold">{{ $category->items_count }}</span>
-                      </div>
-                      <div>
-                        <small class="text-muted d-block">Available</small>
-                        <span class="fw-bold text-success">{{ $category->available_count }}</span>
-                      </div>
-                    </div>
-                    
-                    @if($category->available_count > 0)
-                      <form action="{{ route('admin.deployment.selectCategory') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="category_id" value="{{ $category->id }}">
-                        <input type="hidden" name="category_name" value="{{ $category->name }}">
-                        <input type="hidden" name="available_count" value="{{ $category->available_count }}">
-                        <button type="submit" 
-                          class="btn btn-sm 
-                          @if(session('selected_category') == $category->id) btn-primary @else btn-outline-primary @endif
-                          w-100">
-                          @if(session('selected_category') == $category->id)
-                            <i class="bi bi-check-lg me-1"></i> Selected
-                          @else
-                            <i class="bi bi-plus-circle me-1"></i> Select
-                          @endif
-                        </button>
-                      </form>
-                    @else
-                      <button class="btn btn-sm btn-outline-secondary w-100" disabled>
-                        <i class="bi bi-slash-circle me-1"></i> Unavailable
-                      </button>
-                    @endif
+                  <div class="card-body d-flex flex-column align-items-center text-center p-4">
+  
+                  {{-- Icon --}}
+                  <div class="category-icon mb-3">
+                    @php
+                      $icons = [
+                        'Access Control'  => 'bi-shield-lock',
+                        'CCTV'            => 'bi-camera-video',
+                        'GPS'             => 'bi-geo-alt',
+                        'Wireless Alarm'  => 'bi-bell',
+                        'Computers'       => 'bi-laptop',
+                        'Electronics'     => 'bi-cpu',
+                        'Furniture'       => 'bi-chair',
+                        'Office Supplies' => 'bi-briefcase',
+                        'Network'         => 'bi-wifi',
+                      ];
+                      $icon = $icons[$category->name] ?? 'bi-box-seam';
+                    @endphp
+                    <i class="bi {{ $icon }} fs-1 
+                      @if($category->available_count > 0) text-primary @else text-muted @endif">
+                    </i>
                   </div>
+
+                  {{-- Category Name --}}
+                  <h6 class="card-title fw-semibold mb-3 w-100">{{ $category->name }}</h6>
+
+                  {{-- Stats --}}
+                  <div class="category-stats d-flex justify-content-center gap-4 mb-3 w-100">
+                    <div>
+                      <small class="text-muted d-block">Total</small>
+                      <span class="fw-bold">{{ $category->items_count }}</span>
+                    </div>
+                    <div>
+                      <small class="text-muted d-block">Available</small>
+                      <span class="fw-bold text-success">{{ $category->available_count }}</span>
+                    </div>
+                  </div>
+
+                  {{-- Button --}}
+                  @if($category->available_count > 0)
+                    <form action="{{ route('admin.deployment.selectCategory') }}" method="POST" class="w-100">
+                      @csrf
+                      <input type="hidden" name="category_id" value="{{ $category->id }}">
+                      <input type="hidden" name="category_name" value="{{ $category->name }}">
+                      <input type="hidden" name="available_count" value="{{ $category->available_count }}">
+                      <button type="submit" class="btn btn-sm w-100
+                        @if(session('selected_category') == $category->id) btn-primary @else btn-outline-primary @endif">
+                        @if(session('selected_category') == $category->id)
+                          <i class="bi bi-check-lg me-1"></i> Selected
+                        @else
+                          <i class="bi bi-plus-circle me-1"></i> Select
+                        @endif
+                      </button>
+                    </form>
+                  @else
+                    <button class="btn btn-sm btn-outline-secondary w-100" disabled>
+                      <i class="bi bi-slash-circle me-1"></i> Unavailable
+                    </button>
+                  @endif
+
+                </div>
                 </div>
               </div>
             @empty
