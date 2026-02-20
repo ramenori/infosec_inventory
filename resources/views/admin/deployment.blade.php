@@ -6,17 +6,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
     <div>
       <h1 class="h2 mb-1 fw-bold text-gradient">Deployment</h1>
-      <p class="text-muted mb-0">Deploy inventory items to employees or departments</p>
-    </div>
-    <div class="d-flex gap-2">
-      <div class="stat-card bg-primary text-white">
-        <small class="d-block">Available Items</small>
-        <h4 class="mb-0 fw-bold">{{ $categories->sum('available_count') }}</h4>
-      </div>
-      <div class="stat-card bg-success text-white">
-        <small class="d-block">In Cart</small>
-        <h4 class="mb-0 fw-bold">{{ $cartItems->sum('quantity') }}</h4>
-      </div>
+      <p class="text-muted mb-0">Deploy inventory items</p>
     </div>
   </div>
 

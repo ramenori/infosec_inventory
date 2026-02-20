@@ -8,11 +8,6 @@
       <h1 class="h2 mb-1 fw-bold text-gradient">Inventory</h1>
       <p class="text-muted mb-0">Manage all inventory items, stock levels, and status</p>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-primary px-3 py-2">
-        <i class="bi bi-box-seam me-1"></i> {{ $inventory->total() }} Total Items
-      </span>
-    </div>
   </div>
 
   {{-- Breadcrumb --}}

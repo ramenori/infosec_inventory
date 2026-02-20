@@ -8,11 +8,6 @@
             <h1 class="h2 mb-1 fw-bold text-gradient">Deployment Reports</h1>
             <p class="text-muted mb-0">View and manage deployment reports</p>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary px-3 py-2">
-                <i class="bi bi-file-earmark-text me-1"></i> {{ $reports->total() }} Reports Generated
-            </span>
-        </div>
     </div>
 
     {{-- Breadcrumb --}}

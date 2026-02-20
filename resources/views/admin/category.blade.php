@@ -8,11 +8,6 @@
             <h1 class="h2 mb-1 fw-bold text-gradient">Categories</h1>
             <p class="text-muted mb-0">Manage product categories and classifications</p>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary px-3 py-2">
-                <i class="bi bi-tags me-1"></i> {{ $categories->count() }} Total Categories
-            </span>
-        </div>
     </div>
 
     {{-- Breadcrumb --}}

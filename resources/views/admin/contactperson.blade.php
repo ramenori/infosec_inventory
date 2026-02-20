@@ -6,12 +6,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
         <div>
             <h1 class="h2 mb-1 fw-bold text-gradient">Contact Persons</h1>
-            <p class="text-muted mb-0">Manage your contact persons directory</p>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary px-3 py-2">
-                <i class="bi bi-person-lines-fill me-1"></i> {{ $contacts->total() }} Total Contacts
-            </span>
+            <p class="text-muted mb-0">Manage contact persons directory</p>
         </div>
     </div>
 

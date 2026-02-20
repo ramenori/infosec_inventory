@@ -6,12 +6,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
         <div>
             <h1 class="h2 mb-1 fw-bold text-gradient">Suppliers</h1>
-            <p class="text-muted mb-0">Manage your inventory suppliers</p>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary px-3 py-2">
-                <i class="bi bi-truck me-1"></i> {{ $suppliers->total() }} Total Suppliers
-            </span>
+            <p class="text-muted mb-0">Manage inventory suppliers</p>
         </div>
     </div>
 
