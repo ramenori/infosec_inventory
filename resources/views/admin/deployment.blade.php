@@ -97,7 +97,7 @@
                       <i class="bi {{ $icon }} fs-1 
                         @if($category->available_count > 0) text-primary @else text-muted @endif"></i>
                     </div>
-                    <h6 class="card-title fw-semibold">{{ $category->name }}</h6>
+                    <h6 class="card-title fw-semibold">{{ $category->name }}</h6><br>
                     <div class="category-stats d-flex justify-content-center gap-4 mb-3">
                       <div>
                         <small class="text-muted d-block">Total</small>

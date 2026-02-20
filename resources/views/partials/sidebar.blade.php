@@ -103,60 +103,50 @@
   <!--end::Sidebar Wrapper-->
   
   <!--begin::User Panel (Modern Discord-style)-->
-  <div class="user-panel mt-auto mx-3 mb-3 p-3 rounded-3" style="background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); border: 1px solid rgba(255,255,255,0.1);">
-    <div class="d-flex align-items-center">
-      <!-- User Avatar -->
-      <div class="position-relative me-3">
-        <div class="avatar-wrapper position-relative">
-          <img
-            src="{{ asset('admin/dist/assets/img/user2-160x160.jpg') }}"
-            class="rounded-circle shadow-sm"
-            alt="User Image"
-            style="width: 44px; height: 44px; object-fit: cover; border: 2px solid rgba(255,255,255,0.2);"
-          />
-          <!-- Online Status Indicator -->
-          <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-dark" 
-               style="width: 12px; height: 12px;"></div>
-        </div>
+<div class="user-panel mt-auto mx-3 mb-3 p-2 rounded-3" style="background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); border: 1px solid rgba(255,255,255,0.1);">
+  <div class="d-flex align-items-center gap-2">
+    
+    <!-- User Avatar -->
+    <div class="position-relative flex-shrink-0">
+      <img
+        src="{{ asset('admin/dist/assets/img/user2-160x160.jpg') }}"
+        class="rounded-circle shadow-sm"
+        alt="User Image"
+        style="width: 36px; height: 36px; object-fit: cover; border: 2px solid rgba(255,255,255,0.2);"
+      />
+      <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-dark" 
+           style="width: 10px; height: 10px;"></div>
+    </div>
+
+    <!-- User Info -->
+    <div class="flex-grow-1 overflow-hidden">
+      <div class="text-white fw-semibold text-truncate lh-sm" style="font-size: 0.82rem;">
+        @auth {{ Auth::user()->name }} @else Guest @endauth
       </div>
-      
-      <!-- User Info -->
-      <div class="flex-grow-1">
-        <div class="text-white fw-semibold" style="font-size: 0.9rem;">
-          @auth
-            {{ Auth::user()->name }}
-          @else
-            Guest User
-          @endauth
-        </div>
-        <div class="text-info" style="font-size: 0.75rem; opacity: 0.8;">
-          <i class="bi bi-shield-check me-1" style="font-size: 0.7rem;"></i>
-          @auth
-            {{ ucfirst(Auth::user()->role ?? 'Administrator') }}
-          @else
-            Visitor
-          @endauth
-        </div>
-      </div>
-      
-      <!-- Action Buttons -->
-      <div class="ms-2 d-flex">
-        <!-- Settings Button -->
-        <button class="btn btn-sm btn-outline-secondary border-0 p-1 me-1" title="Settings" style="width: 32px; height: 32px;">
-          <i class="bi bi-gear"></i>
-        </button>
-        
-        <!-- Logout Button -->
-        <form method="POST" action="{{ route('admin.logout') }}" class="d-inline">
-          @csrf
-          <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Logout" style="width: 32px; height: 32px;">
-            <i class="bi bi-box-arrow-right"></i>
-          </button>
-        </form>
+      <div class="text-info text-truncate lh-sm" style="font-size: 0.7rem; opacity: 0.8;">
+        <i class="bi bi-shield-check me-1"></i>
+        @auth {{ ucfirst(Auth::user()->role ?? 'Administrator') }} @else Visitor @endauth
       </div>
     </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex flex-shrink-0 gap-1">
+      <button class="btn btn-sm btn-outline-secondary border-0 p-0 d-flex align-items-center justify-content-center" 
+              title="Settings" style="width: 28px; height: 28px;">
+        <i class="bi bi-gear" style="font-size: 0.8rem;"></i>
+      </button>
+      <form method="POST" action="{{ route('admin.logout') }}" class="d-inline">
+        @csrf
+        <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-0 d-flex align-items-center justify-content-center" 
+                title="Logout" style="width: 28px; height: 28px;">
+          <i class="bi bi-box-arrow-right" style="font-size: 0.8rem;"></i>
+        </button>
+      </form>
+    </div>
+
   </div>
-  <!--end::User Panel-->
+</div>
+<!--end::User Panel-->
 </aside>
 
 <style>
