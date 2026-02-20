@@ -91,11 +91,8 @@
                         'CCTV'            => 'bi-camera-video',
                         'GPS'             => 'bi-geo-alt',
                         'Wireless Alarm'  => 'bi-bell',
-                        'Computers'       => 'bi-laptop',
-                        'Electronics'     => 'bi-cpu',
-                        'Furniture'       => 'bi-chair',
-                        'Office Supplies' => 'bi-briefcase',
                         'Network'         => 'bi-wifi',
+                        'Consumables' => 'bi-briefcase',
                       ];
                       $icon = $icons[$category->name] ?? 'bi-box-seam';
                     @endphp

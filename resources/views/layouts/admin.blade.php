@@ -4,7 +4,7 @@
 
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Info Sec | Inventory System</title>
+        <title>SSTS | Inventory System</title>
         <!--begin::Primary Meta Tags-->
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="title" content="AdminLTE v4 | Dashboard" />
@@ -58,7 +58,7 @@
             <!--begin::Footer-->
             <footer class="app-footer">
                 <!--begin::To the end-->
-                <div class="float-end d-none d-sm-inline">Anything you want</div>
+                <div class="float-end d-none d-sm-inline"></div>
                 <!--end::To the end-->
                 <!--begin::Copyright-->
                 <strong>
