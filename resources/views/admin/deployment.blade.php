@@ -199,7 +199,7 @@
                           <td class="text-center">
                             @if($item->stock_qty > 0 && $item->status === 'Available')
                               <div class="d-flex align-items-center justify-content-center">
-                                <div class="quantity-control me-2">
+                                <div class="quantity-control">
                                   <button type="button" class="btn btn-sm btn-outline-secondary decrement" 
                                           data-target="qty-{{ $item->id }}">
                                     <i class="bi bi-dash"></i>
