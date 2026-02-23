@@ -151,7 +151,6 @@
                       <th>Serial</th>
                       <th class="text-center">Stock</th>
                       <th class="text-center">Status</th>
-                      <th class="text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -196,30 +195,6 @@
                               {{ $item->status }}
                             </span>
                           </td>
-                          <td class="text-center">
-                            @if($item->stock_qty > 0 && $item->status === 'Available')
-                              <div class="d-flex align-items-center justify-content-center">
-                                <div class="quantity-control">
-                                  <button type="button" class="btn btn-sm btn-outline-secondary decrement" 
-                                          data-target="qty-{{ $item->id }}">
-                                    <i class="bi bi-dash"></i>
-                                  </button>
-                                  <input type="number" 
-                                         id="qty-{{ $item->id }}"
-                                         class="form-control form-control-sm text-center quantity-input" 
-                                         style="width: 60px;"
-                                         value="1" min="1" max="{{ $item->stock_qty }}"
-                                         data-item-id="{{ $item->id }}">
-                                  <button type="button" class="btn btn-sm btn-outline-secondary increment" 
-                                          data-target="qty-{{ $item->id }}">
-                                    <i class="bi bi-plus"></i>
-                                  </button>
-                                </div>
-                              </div>
-                            @else
-                              <span class="badge bg-secondary">Unavailable</span>
-                            @endif
-                          </td>
                         </tr>
                       @endforeach
                     </form>
@@ -231,9 +206,6 @@
               <div class="d-flex justify-content-between align-items-center mt-4 p-3 bg-light rounded">
                 <div>
                   <span id="selectedCount" class="badge bg-primary px-3 py-2">0 items selected</span>
-                  <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="resetQuantities()">
-                    <i class="bi bi-arrow-clockwise"></i> Reset
-                  </button>
                 </div>
                 <button type="submit" form="bulkAddForm" class="btn btn-success">
                   <i class="bi bi-cart-plus me-1"></i> Add Selected to Cart
@@ -647,27 +619,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (countBadge) countBadge.textContent = `${n} items selected`;
   }
   checkboxes.forEach(cb => cb.addEventListener('change', updateSelectedCount));
-
-  // ── Quantity +/- buttons ──
-  document.querySelectorAll('.increment').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const t = document.getElementById(this.dataset.target);
-      if (t && parseInt(t.value) < parseInt(t.max)) t.value = parseInt(t.value) + 1;
-    });
-  });
-  document.querySelectorAll('.decrement').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const t = document.getElementById(this.dataset.target);
-      if (t && parseInt(t.value) > parseInt(t.min)) t.value = parseInt(t.value) - 1;
-    });
-  });
-
-  // ── Reset quantities ──
-  window.resetQuantities = function() {
-    document.querySelectorAll('.quantity-input').forEach(i => i.value = 1);
-    checkboxes.forEach(cb => cb.checked = false);
-    updateSelectedCount();
-  };
 
   // ── Notification helper ──
   window.showNotification = function(type, message) {
