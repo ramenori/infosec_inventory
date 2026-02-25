@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Deployment extends Model
 {
@@ -13,7 +12,6 @@ class Deployment extends Model
 
     protected $fillable = [
         'user_id',
-        'reference_number',
         'waybill_number',
         'deployed_to',
         'contact_number',
@@ -22,7 +20,10 @@ class Deployment extends Model
         'deployment_date',
         'remarks',
         'status',
-        'department'
+        'department',
+        'inventory_id',
+        'component',     
+        'quantity',      
     ];
 
     protected $casts = [
@@ -34,10 +35,10 @@ class Deployment extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function items(): HasMany
-    {
-        return $this->hasMany(DeploymentCart::class);
-    }
+    public function inventory(): BelongsTo
+{
+    return $this->belongsTo(Inventory::class);
+}
 
     // Generate reference number
     public static function generateReferenceNumber(): string

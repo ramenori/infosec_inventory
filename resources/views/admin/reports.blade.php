@@ -28,10 +28,7 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <div class="row align-items-center">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    
-                </div>
-                
+                <div class="col-md-6 mb-3 mb-md-0"></div>
                 <div class="col-md-6">
                     <div class="d-flex justify-content-end align-items-center gap-2">
                         <div class="dropdown">
@@ -39,22 +36,13 @@
                                 <i class="bi bi-funnel me-1"></i> Filter by Status
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#">
-                                    <span class="badge bg-success me-2">●</span> Completed
-                                </a></li>
-                                <li><a class="dropdown-item" href="#">
-                                    <span class="badge bg-primary me-2">●</span> In Progress
-                                </a></li>
-                                <li><a class="dropdown-item" href="#">
-                                    <span class="badge bg-warning me-2">●</span> Pending
-                                </a></li>
+                                <li><a class="dropdown-item" href="#"><span class="badge bg-success me-2">●</span> Completed</a></li>
+                                <li><a class="dropdown-item" href="#"><span class="badge bg-primary me-2">●</span> In Progress</a></li>
+                                <li><a class="dropdown-item" href="#"><span class="badge bg-warning me-2">●</span> Pending</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">
-                                    <i class="bi bi-eye me-2"></i> View All
-                                </a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-eye me-2"></i> View All</a></li>
                             </ul>
                         </div>
-                        
                         <div class="dropdown">
                             <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static">
                                 <i class="bi bi-download me-1"></i> Export
@@ -83,7 +71,7 @@
                 </small>
             </div>
         </div>
-        
+
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -103,128 +91,115 @@
                     </thead>
                     <tbody>
                         @forelse($reports as $deployment)
-                            @foreach($deployment->items as $item)
-                                <tr class="hover-shadow">
-                                    {{-- COLUMN 1: WAYBILL NO. --}}
-                                    <td class="align-middle">
-                                        <span class="badge bg-secondary px-3 py-2">
-                                            <i class="bi bi-upc-scan me-1"></i> 
-                                            {{ $deployment->waybill_number ?? 'N/A' }}
+                            <tr class="hover-shadow">
+                                {{-- COLUMN 1: WAYBILL NO. --}}
+                                <td class="align-middle">
+                                    <span class="badge bg-secondary px-3 py-2">
+                                        <i class="bi bi-upc-scan me-1"></i>
+                                        {{ $deployment->waybill_number ?? 'N/A' }}
+                                    </span>
+                                </td>
+
+                                {{-- COLUMN 2: DATE DEPLOYED --}}
+                                <td class="align-middle">
+                                    <strong>{{ $deployment->deployment_date->format('M d, Y') }}</strong>
+                                    <small class="text-muted d-block">{{ $deployment->created_at->format('h:i A') }}</small>
+                                </td>
+
+                                {{-- COLUMN 3: CATEGORY --}}
+                                <td class="align-middle">
+                                    <div class="d-flex align-items-center">
+                                        <div class="item-icon me-2">
+                                            @php
+                                                $categoryIcons = [
+                                                    'Access Control' => 'bi-shield-lock',
+                                                    'CCTV'           => 'bi-camera-video',
+                                                    'GPS'            => 'bi-geo-alt',
+                                                    'Wireless Alarm' => 'bi-bell',
+                                                    'Network'        => 'bi-wifi',
+                                                    'Consumables'    => 'bi-briefcase',
+                                                ];
+                                                $category = optional($deployment->inventory)->category ?? 'Other';
+                                                $icon = $categoryIcons[$category] ?? 'bi-box-seam';
+                                            @endphp
+                                            <i class="bi {{ $icon }} text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <strong class="d-block">{{ $category }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                {{-- COLUMN 4: COMPONENT --}}
+                                <td class="text-center align-middle">
+                                    <strong class="d-block">{{ $deployment->component }}</strong>
+                                    <small class="text-muted">{{ optional($deployment->inventory)->brand ?? 'N/A' }}</small>
+                                    <br>
+                                    <small class="text-muted">
+                                        <code>{{ optional($deployment->inventory)->serial_num ?? 'No Serial' }}</code>
+                                    </small>
+                                </td>
+
+                                {{-- COLUMN 5: QUANTITY --}}
+                                <td class="text-center align-middle">
+                                    <span class="badge bg-primary px-3 py-2">{{ $deployment->quantity }}</span>
+                                </td>
+
+                                {{-- COLUMN 6: DEPLOYED TO --}}
+                                <td class="text-center align-middle">
+                                    <strong class="d-block">{{ $deployment->deployed_to }}</strong>
+                                    @if($deployment->remarks)
+                                        <small class="text-muted d-block">
+                                            <i class="bi bi-chat me-1"></i> {{ Str::limit($deployment->remarks, 20) }}
+                                        </small>
+                                    @endif
+                                </td>
+
+                                {{-- COLUMN 7: CONTACT NUMBER --}}
+                                <td class="text-center align-middle">
+                                    @if($deployment->contact_number)
+                                        <span class="badge bg-info px-3 py-2">
+                                            <i class="bi bi-telephone me-1"></i> {{ $deployment->contact_number }}
                                         </span>
-                                    </td>
-                                    
-                                    {{-- COLUMN 2: DATE DEPLOYED --}}
-                                    <td class="align-middle">
-                                        <div>
-                                            <strong>{{ $deployment->deployment_date->format('M d, Y') }}</strong>
-                                            <small class="text-muted d-block">{{ $deployment->created_at->format('h:i A') }}</small>
-                                        </div>
-                                    </td>
-                                    
-                                    {{-- COLUMN 3: CATEGORY --}}
-                                    <td class="align-middle">
-                                        <div class="d-flex align-items-center">
-                                            <div class="item-icon me-2">
-                                                @php
-                                                    $categoryIcons = [
-                                                        'Computers' => 'bi-laptop',
-                                                        'Electronics' => 'bi-cpu',
-                                                        'Furniture' => 'bi-chair',
-                                                        'Office Supplies' => 'bi-briefcase',
-                                                        'Network' => 'bi-wifi',
-                                                        'Other' => 'bi-box'
-                                                    ];
-                                                    $category = $item->inventory->category ?? 'Other';
-                                                    $icon = $categoryIcons[$category] ?? 'bi-grid';
-                                                @endphp
-                                                <i class="bi {{ $icon }} text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <strong class="d-block">{{ $category }}</strong>
-                                                <small class="text-muted">{{ $deployment->reference_number }}</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    
-                                    {{-- COLUMN 4: COMPONENT --}}
-                                    <td class="text-center align-middle">
-                                        <div>
-                                            <strong class="d-block">{{ $item->component }}</strong>
-                                            @if($item->inventory)
-                                                <small class="text-muted">{{ $item->inventory->brand ?? 'N/A' }}</small>
-                                                <br>
-                                                <small class="text-muted">
-                                                    <code>{{ $item->inventory->serial_num ?? 'No Serial' }}</code>
-                                                </small>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    
-                                    {{-- COLUMN 5: QUANTITY --}}
-                                    <td class="text-center align-middle">
-                                        <span class="badge bg-primary px-3 py-2">{{ $item->quantity }}</span>
-                                    </td>
-                                    
-                                    {{-- COLUMN 6: DEPLOYED TO --}}
-                                    <td class="text-center align-middle">
-                                        <div>
-                                            <strong class="d-block">{{ $deployment->deployed_to }}</strong>
-                                            @if($deployment->remarks)
-                                                <small class="text-muted d-block">
-                                                    <i class="bi bi-chat me-1"></i> {{ Str::limit($deployment->remarks, 20) }}
-                                                </small>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    
-                                    {{-- COLUMN 7: CONTACT NUMBER --}}
-                                    <td class="text-center align-middle">
-                                        @if($deployment->contact_number)
-                                            <span class="badge bg-info px-3 py-2">
-                                                <i class="bi bi-telephone me-1"></i> {{ $deployment->contact_number }}
-                                            </span>
-                                        @else
-                                            <span class="text-muted">—</span>
-                                        @endif
-                                    </td>
-                                    
-                                    {{-- COLUMN 8: ADDRESS --}}
-                                    <td class="text-center align-middle">
-                                        @if($deployment->address)
-                                            <span class="badge bg-secondary px-3 py-2" 
-                                                  data-bs-toggle="tooltip" 
-                                                  title="{{ $deployment->address }}">
-                                                <i class="bi bi-geo-alt me-1"></i> {{ Str::limit($deployment->address, 20) }}
-                                            </span>
-                                        @else
-                                            <span class="text-muted">—</span>
-                                        @endif
-                                    </td>
-                                    
-                                    {{-- COLUMN 9: SATELLITE OFFICE --}}
-                                    <td class="text-center align-middle">
-                                        @if($deployment->satellite_office)
-                                            <span class="badge bg-warning text-dark px-3 py-2">
-                                                <i class="bi bi-building me-1"></i> {{ $deployment->satellite_office }}
-                                            </span>
-                                        @else
-                                            <span class="text-muted">—</span>
-                                        @endif
-                                    </td>
-                                    
-                                    {{-- COLUMN 10: ACTIONS --}}
-                                    <td class="text-center align-middle">
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                    data-bs-toggle="tooltip" data-bs-placement="top" 
-                                                    title="View Details"
-                                                    onclick="viewReport({{ $deployment->id }})">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+
+                                {{-- COLUMN 8: ADDRESS --}}
+                                <td class="text-center align-middle">
+                                    @if($deployment->address)
+                                        <span class="badge bg-secondary px-3 py-2"
+                                              data-bs-toggle="tooltip"
+                                              title="{{ $deployment->address }}">
+                                            <i class="bi bi-geo-alt me-1"></i> {{ Str::limit($deployment->address, 20) }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+
+                                {{-- COLUMN 9: SATELLITE OFFICE --}}
+                                <td class="text-center align-middle">
+                                    @if($deployment->satellite_office)
+                                        <span class="badge bg-warning text-dark px-3 py-2">
+                                            <i class="bi bi-building me-1"></i> {{ $deployment->satellite_office }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+
+                                {{-- COLUMN 10: ACTIONS --}}
+                                <td class="text-center align-middle">
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="View Details"
+                                            onclick="viewReport({{ $deployment->id }})">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
                         @empty
                             <tr>
                                 <td colspan="10" class="text-center py-5">
@@ -243,7 +218,7 @@
                 </table>
             </div>
         </div>
-    
+
         {{-- Footer with Pagination --}}
         @if($reports->hasPages())
             <div class="card-footer bg-light py-3">
@@ -264,94 +239,56 @@
 
 {{-- Custom CSS --}}
 <style>
-.stat-card {
-  border-radius: 10px;
-  transition: transform 0.3s ease;
-}
-
 .text-gradient {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-.stat-card:hover {
-  transform: translateY(-5px);
 }
-.stat-icon {
-  font-size: 3rem;
-  opacity: 0.3;
-}
+.stat-card { border-radius: 10px; transition: transform 0.3s ease; }
+.stat-card:hover { transform: translateY(-5px); }
+.stat-icon { font-size: 3rem; opacity: 0.3; }
 .status-badge {
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-block;
 }
 .hover-shadow:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
 }
-.empty-state {
-  padding: 3rem 1rem;
-}
-.table tbody tr {
-  transition: all 0.2s ease;
-}
-.progress {
-  border-radius: 10px;
-}
-.bg-gradient {
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #0a58ca 100%);
-}
-.bg-gradient.warning {
-  background: linear-gradient(135deg, var(--bs-warning) 0%, #e0a800 100%);
-}
-.bg-gradient.info {
-  background: linear-gradient(135deg, var(--bs-info) 0%, #0aa2c0 100%);
-}
-.bg-gradient.success {
-  background: linear-gradient(135deg, var(--bs-success) 0%, #146c43 100%);
-}
+.empty-state { padding: 3rem 1rem; }
+.table tbody tr { transition: all 0.2s ease; }
 .item-icon {
-  width: 40px;
-  height: 40px;
-  background: rgba(13, 110, 253, 0.1);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(13, 110, 253, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>
 
 {{-- JavaScript --}}
 @push('scripts')
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-      // Initialize tooltips
-      const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-      tooltips.forEach(tooltip => {
-          new bootstrap.Tooltip(tooltip);
-      });
-      
-      // Auto-focus search on page load if there's a search query
-      @if(request('search'))
-          document.querySelector('input[name="search"]')?.focus();
-      @endif
-      
-      // Fix dropdown positioning
-      const dropdowns = document.querySelectorAll('.dropdown-toggle');
-      dropdowns.forEach(dropdown => {
-          dropdown.addEventListener('click', function() {
-              // Ensure dropdown menu is properly positioned
-              const menu = this.nextElementSibling;
-              if (menu) {
-                  menu.style.zIndex = '9999';
-              }
-          });
-      });
-  });
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
+    document.querySelectorAll('.dropdown-toggle').forEach(dropdown => {
+        dropdown.addEventListener('click', function() {
+            const menu = this.nextElementSibling;
+            if (menu) menu.style.zIndex = '9999';
+        });
+    });
+});
+
+function viewReport(id) {
+    window.location.href = `/admin/deployment/${id}`;
+}
 </script>
 @endpush
 @endsection

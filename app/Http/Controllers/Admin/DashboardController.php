@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Inventory;
 use App\Models\Deployment;
-use App\Models\DeploymentCart;
 use App\Models\Supplier;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +19,6 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
-        // Your existing authentication checks...
         if (!Auth::check()) {
             Auth::logout();
             $request->session()->invalidate();
@@ -40,7 +38,6 @@ class DashboardController extends Controller
                 ->with('error', 'User not found. Please login again.');
         }
         
-        // Fetch dashboard data
         $dashboardData = $this->getDashboardData();
         
         return view('admin.dashboard', compact('dashboardData'));
@@ -51,7 +48,7 @@ class DashboardController extends Controller
         // ============================================
         // MOST DEPLOYED ITEM
         // ============================================
-        $mostDeployedItem = DeploymentCart::select(
+        $mostDeployedItem = Deployment::select(
                 'component',
                 DB::raw('SUM(quantity) as total_deployed')
             )
@@ -74,16 +71,16 @@ class DashboardController extends Controller
         // ============================================
         // ITEMS DEPLOYED THIS MONTH
         // ============================================
-        $itemsDeployedThisMonth = DeploymentCart::whereMonth('created_at', now()->month)
+        $itemsDeployedThisMonth = Deployment::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('quantity');
         
         // ============================================
-        // ANALYTICS DATA - This is the important part!
+        // ANALYTICS DATA
         // ============================================
         
         // 1. Daily deployment trend (last 7 days)
-        $dailyTrend = DeploymentCart::select(
+        $dailyTrend = Deployment::select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('SUM(quantity) as total')
             )
@@ -102,7 +99,7 @@ class DashboardController extends Controller
         }
         
         // 2. Top 5 deployed items (for pie chart)
-        $topItems = DeploymentCart::select(
+        $topItems = Deployment::select(
                 'component',
                 DB::raw('SUM(quantity) as total')
             )
@@ -114,8 +111,7 @@ class DashboardController extends Controller
         $topItemsLabels = $topItems->pluck('component')->toArray();
         $topItemsData = $topItems->pluck('total')->toArray();
         
-        // Add "Others" category if needed
-        $otherItemsTotal = DeploymentCart::whereNotIn('component', $topItems->pluck('component'))
+        $otherItemsTotal = Deployment::whereNotIn('component', $topItems->pluck('component'))
             ->sum('quantity');
         
         if ($otherItemsTotal > 0) {
@@ -124,7 +120,7 @@ class DashboardController extends Controller
         }
         
         // 3. Monthly comparison (last 6 months)
-        $monthlyData = DeploymentCart::select(
+        $monthlyRaw = Deployment::select(
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('MONTH(created_at) as month'),
                 DB::raw('SUM(quantity) as total')
@@ -145,7 +141,7 @@ class DashboardController extends Controller
             $date = now()->subMonths($i);
             $key = $date->format('Y-m');
             $monthlyLabels[] = $date->format('M Y');
-            $monthlyData[] = $monthlyData[$key] ?? 0;
+            $monthlyData[] = $monthlyRaw[$key] ?? 0;
         }
         
         // 4. Category distribution (from inventory)
@@ -170,29 +166,25 @@ class DashboardController extends Controller
         ];
         
         // 6. Recent activities
-        $recentActivities = DeploymentCart::with('deployment')
-            ->latest()
+        $recentActivities = Deployment::latest()
             ->take(10)
             ->get()
-            ->map(function($cart) {
+            ->map(function($deployment) {
                 return [
-                    'component' => $cart->component,
-                    'quantity' => $cart->quantity,
-                    'deployed_to' => $cart->deployment->deployed_to ?? 'Unknown',
-                    'date' => $cart->created_at->format('M d, Y h:i A'),
-                    'time_ago' => $cart->created_at->diffForHumans(),
+                    'component' => $deployment->component,
+                    'quantity' => $deployment->quantity,
+                    'deployed_to' => $deployment->deployed_to ?? 'Unknown',
+                    'date' => $deployment->created_at->format('M d, Y h:i A'),
+                    'time_ago' => $deployment->created_at->diffForHumans(),
                 ];
             });
         
         return [
-            // Stats cards data
             'most_deployed_item' => $mostDeployedItem ? $mostDeployedItem->component : 'No data',
             'most_deployed_quantity' => $mostDeployedItem ? $mostDeployedItem->total_deployed : 0,
             'top_supplier' => $topSupplier ? $topSupplier->name : 'No supplier',
             'total_stock_qty' => number_format($totalStockQty),
             'items_deployed_month' => $itemsDeployedThisMonth,
-            
-            // Analytics data
             'daily_chart' => [
                 'labels' => $dailyLabels,
                 'data' => $dailyData,

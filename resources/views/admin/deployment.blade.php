@@ -345,17 +345,17 @@
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-telephone me-1"></i> Contact No.</label>
-                    <input type="text" class="form-control" id="displayContactNumber" placeholder="Auto-filled from selection" readonly>
+                    <input type="text" class="form-control" id="displayContactNumber" placeholder="Auto-filled from selection">
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-geo-alt me-1"></i> Address</label>
-                    <textarea class="form-control" id="displayAddress" rows="2" placeholder="Auto-filled from selection" readonly></textarea>
+                    <textarea class="form-control" id="displayAddress" rows="2" placeholder="Auto-filled from selection"></textarea>
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-building me-1"></i> Satellite Office</label>
-                    <input type="text" class="form-control" id="displaySatelliteOffice" placeholder="Auto-filled from selection" readonly>
+                    <input type="text" class="form-control" id="displaySatelliteOffice" placeholder="Auto-filled from selection">
                   </div>
 
                   <div id="newContactFields" style="display: none;">
