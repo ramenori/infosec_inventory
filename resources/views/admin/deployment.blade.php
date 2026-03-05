@@ -3,19 +3,11 @@
 @section('content')
 <div class="container-fluid px-4">
   {{-- Header --}}
-  <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
+  <div class="mb-4 pt-3">
     <div>
       <h1 class="h2 mb-1 fw-bold text-gradient">Deployment</h1>
       <p class="text-muted mb-0">Deploy inventory items</p>
     </div>
-    {{-- Category Button top right --}}
-    <button class="btn btn-primary d-flex align-items-center gap-2 shadow" data-bs-toggle="modal" data-bs-target="#categoryModal">
-      <i class="bi bi-grid-3x3-gap-fill"></i>
-      <span>Select Category</span>
-      @if(session('selected_category'))
-        <span class="badge bg-white text-primary ms-1">{{ session('selected_category_name') }}</span>
-      @endif
-    </button>
   </div>
 
   {{-- Breadcrumb --}}
@@ -32,22 +24,24 @@
     </ol>
   </nav>
 
-  {{-- Notifications --}}
-  @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-      <i class="bi bi-check-circle-fill me-2"></i>
-      <div class="flex-grow-1">{{ session('success') }}</div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  @endif
+  {{-- Toast Notifications (Top Right) --}}
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    @if(session('success'))
+      <div class="alert alert-success alert-dismissible fade show d-flex align-items-center toast-notification" role="alert" style="min-width: 300px;">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <div class="flex-grow-1">{{ session('success') }}</div>
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    @endif
 
-  @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
-      <i class="bi bi-exclamation-circle-fill me-2"></i>
-      <div class="flex-grow-1">{{ session('error') }}</div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  @endif
+    @if(session('error'))
+      <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center toast-notification" role="alert" style="min-width: 300px;">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        <div class="flex-grow-1">{{ session('error') }}</div>
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    @endif
+  </div>
 
   {{-- Selected Category Banner (shows when a category is selected) --}}
   @if(session('selected_category'))
@@ -65,17 +59,71 @@
     {{-- Left Column: Item Selection --}}
     <div class="col-lg-8">
 
-      {{-- Empty state when no category selected --}}
+      {{-- Categories Grid (when no category selected) --}}
       @if(!session('selected_category'))
-        <div class="card border-0 shadow-sm">
-          <div class="card-body text-center py-5">
-            <i class="bi bi-grid-3x3-gap text-muted" style="font-size: 4rem;"></i>
-            <h5 class="text-muted mt-3">No Category Selected</h5>
-            <p class="text-muted small mb-4">Click the button above to select a category and view available items</p>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
-              <i class="bi bi-grid-3x3-gap-fill me-2"></i> Browse Categories
-            </button>
-          </div>
+        <div class="row g-3">
+          @forelse($categories as $category)
+            <div class="col-md-6 col-lg-4">
+              <div class="category-card card h-100 border-0 hover-lift shadow-sm">
+                <div class="card-body d-flex flex-column align-items-center text-center p-4">
+                  {{-- Icon --}}
+                  <div class="category-icon mb-3">
+                    @php
+                      $icons = [
+                        'Access Control' => 'bi-shield-lock',
+                        'CCTV'           => 'bi-camera-video',
+                        'GPS'            => 'bi-geo-alt',
+                        'Wireless Alarm' => 'bi-bell',
+                        'Network'        => 'bi-wifi',
+                        'Consumables'    => 'bi-briefcase',
+                      ];
+                      $icon = $icons[$category->name] ?? 'bi-box-seam';
+                    @endphp
+                    <i class="bi {{ $icon }} fs-1 
+                      @if($category->available_count > 0) text-primary @else text-muted @endif"></i>
+                  </div>
+
+                  {{-- Name --}}
+                  <h6 class="card-title fw-semibold mb-3 w-100">{{ $category->name }}</h6>
+
+                  {{-- Stats --}}
+                  <div class="category-stats d-flex justify-content-center gap-4 mb-3 w-100">
+                    <div>
+                      <small class="text-muted d-block">Total</small>
+                      <span class="fw-bold">{{ $category->items_count }}</span>
+                    </div>
+                    <div>
+                      <small class="text-muted d-block">Available</small>
+                      <span class="fw-bold text-success">{{ $category->available_count }}</span>
+                    </div>
+                  </div>
+
+                  {{-- Button --}}
+                  @if($category->available_count > 0)
+                    <form action="{{ route('admin.deployment.selectCategory') }}" method="POST" class="w-100">
+                      @csrf
+                      <input type="hidden" name="category_id" value="{{ $category->id }}">
+                      <input type="hidden" name="category_name" value="{{ $category->name }}">
+                      <input type="hidden" name="available_count" value="{{ $category->available_count }}">
+                      <button type="submit" class="btn btn-sm w-100 btn-outline-primary">
+                        <i class="bi bi-plus-circle me-1"></i> Select
+                      </button>
+                    </form>
+                  @else
+                    <button type="button" class="btn btn-sm w-100 btn-outline-secondary" disabled>
+                      <i class="bi bi-lock me-1"></i> Out of Stock
+                    </button>
+                  @endif
+                </div>
+              </div>
+            </div>
+          @empty
+            <div class="col-12">
+              <div class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle me-2"></i> No categories available
+              </div>
+            </div>
+          @endforelse
         </div>
       @endif
 
@@ -103,9 +151,9 @@
                 <span class="badge bg-white text-success">
                   {{ $categoryItems->total() }} items found
                 </span>
-                <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                <a href="{{ route('admin.deployment.clearCategory') }}" class="btn btn-sm btn-outline-light">
                   <i class="bi bi-arrow-left-right me-1"></i> Change
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -329,6 +377,7 @@
                       <option value="">-- Select Contact Person --</option>
                       @foreach($contactPersons ?? [] as $contact)
                         <option value="{{ $contact->name }}" 
+                                data-contact-id="{{ $contact->id }}"
                                 data-contact="{{ $contact->contact_number }}"
                                 data-address="{{ $contact->address }}"
                                 data-office="{{ $contact->satellite_office }}">
@@ -338,6 +387,8 @@
                       <option value="new">+ Add New Contact Person</option>
                     </select>
                   </div>
+
+                  <input type="hidden" name="contact_person_id" id="contactPersonId">
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-telephone me-1"></i> Contact No.</label>
@@ -411,97 +462,7 @@
   </div>
 </div>
 
-{{-- ===== CATEGORY MODAL ===== --}}
-<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-gradient-primary text-white">
-        <div class="d-flex align-items-center gap-2">
-          <div class="step-badge"><i class="bi bi-grid-3x3-gap-fill"></i></div>
-          <h5 class="modal-title mb-0" id="categoryModalLabel">Select a Category</h5>
-        </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-4">
-        <div class="row g-3">
-          @forelse($categories as $category)
-            <div class="col-md-4 col-sm-6">
-              <div class="category-card card h-100 border-0 hover-lift 
-                @if(session('selected_category') == $category->id) selected shadow @else shadow-sm @endif">
-                <div class="card-body d-flex flex-column align-items-center text-center p-4">
 
-                  {{-- Icon --}}
-                  <div class="category-icon mb-3">
-                    @php
-                      $icons = [
-                        'Access Control' => 'bi-shield-lock',
-                        'CCTV'           => 'bi-camera-video',
-                        'GPS'            => 'bi-geo-alt',
-                        'Wireless Alarm' => 'bi-bell',
-                        'Network'        => 'bi-wifi',
-                        'Consumables'    => 'bi-briefcase',
-                      ];
-                      $icon = $icons[$category->name] ?? 'bi-box-seam';
-                    @endphp
-                    <i class="bi {{ $icon }} fs-1 
-                      @if($category->available_count > 0) text-primary @else text-muted @endif"></i>
-                  </div>
-
-                  {{-- Name --}}
-                  <h6 class="card-title fw-semibold mb-3 w-100">{{ $category->name }}</h6>
-
-                  {{-- Stats --}}
-                  <div class="category-stats d-flex justify-content-center gap-4 mb-3 w-100">
-                    <div>
-                      <small class="text-muted d-block">Total</small>
-                      <span class="fw-bold">{{ $category->items_count }}</span>
-                    </div>
-                    <div>
-                      <small class="text-muted d-block">Available</small>
-                      <span class="fw-bold text-success">{{ $category->available_count }}</span>
-                    </div>
-                  </div>
-
-                  {{-- Button --}}
-                  @if($category->available_count > 0)
-                    <form action="{{ route('admin.deployment.selectCategory') }}" method="POST" class="w-100">
-                      @csrf
-                      <input type="hidden" name="category_id" value="{{ $category->id }}">
-                      <input type="hidden" name="category_name" value="{{ $category->name }}">
-                      <input type="hidden" name="available_count" value="{{ $category->available_count }}">
-                      <button type="submit" class="btn btn-sm w-100
-                        @if(session('selected_category') == $category->id) btn-primary @else btn-outline-primary @endif">
-                        @if(session('selected_category') == $category->id)
-                          <i class="bi bi-check-lg me-1"></i> Selected
-                        @else
-                          <i class="bi bi-plus-circle me-1"></i> Select
-                        @endif
-                      </button>
-                    </form>
-                  @else
-                    <button class="btn btn-sm btn-outline-secondary w-100" disabled>
-                      <i class="bi bi-slash-circle me-1"></i> Unavailable
-                    </button>
-                  @endif
-
-                </div>
-              </div>
-            </div>
-          @empty
-            <div class="col-12 text-center py-5">
-              <i class="bi bi-folder-x fs-1 text-muted"></i>
-              <p class="text-muted mt-2">No categories found</p>
-            </div>
-          @endforelse
-        </div>
-      </div>
-      <div class="modal-footer bg-light">
-        <small class="text-muted me-auto"><i class="bi bi-info-circle me-1"></i> Select a category to view available items</small>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 {{-- Custom CSS --}}
 <style>
@@ -566,6 +527,44 @@ input[readonly]:focus, textarea[readonly]:focus {
 }
 </style>
 
+{{-- Styles --}}
+@push('styles')
+<style>
+  .toast-notification {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: none;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .toast-notification.fade {
+    animation: slideOut 0.3s ease-out forwards;
+  }
+
+  @keyframes slideOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+  }
+</style>
+@endpush
+
 {{-- JavaScript --}}
 @push('scripts')
 <script>
@@ -577,25 +576,30 @@ document.addEventListener('DOMContentLoaded', function() {
     deployToSelect.addEventListener('change', function() {
       const opt = this.options[this.selectedIndex];
       const newFields = document.getElementById('newContactFields');
+      const contactPersonIdInput = document.getElementById('contactPersonId');
 
       if (this.value === 'new') {
         newFields.style.display = 'block';
         document.getElementById('displayContactNumber').value = '';
         document.getElementById('displayAddress').value = '';
         document.getElementById('displaySatelliteOffice').value = '';
+        contactPersonIdInput.value = '';
       } else if (this.value === '') {
         newFields.style.display = 'none';
         document.getElementById('displayContactNumber').value = '';
         document.getElementById('displayAddress').value = '';
         document.getElementById('displaySatelliteOffice').value = '';
+        contactPersonIdInput.value = '';
       } else {
         newFields.style.display = 'none';
+        const contactId = opt.dataset.contactId || '';
         const contact = opt.dataset.contact || '';
         const address = opt.dataset.address || '';
         const office  = opt.dataset.office  || '';
         document.getElementById('displayContactNumber').value  = contact;
         document.getElementById('displayAddress').value        = address;
         document.getElementById('displaySatelliteOffice').value = office;
+        contactPersonIdInput.value = contactId;
       }
     });
   }
@@ -626,6 +630,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ── Tooltips ──
   document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
+  // ── Auto-dismiss toast notifications ──
+  document.querySelectorAll('.toast-notification').forEach(toast => {
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }, 1000);
+  });
 });
 </script>
 @endpush

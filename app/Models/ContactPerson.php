@@ -24,4 +24,9 @@ class ContactPerson extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime'
     ];
+
+    public function deployments()
+    {
+        return $this->hasMany(Deployment::class, 'contact_person_id');
+    }
 }

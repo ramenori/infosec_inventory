@@ -350,11 +350,16 @@ class DeploymentController extends Controller
         $request->validate([
             'waybill_number'   => 'nullable|string|max:255',
             'deployed_to'      => 'required|string|max:255',
+            'contact_person_id'=> 'nullable|exists:contactperson,id',
             'contact_number'   => 'nullable|string|max:20',
             'address'          => 'nullable|string|max:500',
             'satellite_office' => 'nullable|string|max:255',
             'deployment_date'  => 'required|date',
-            'remarks'          => 'nullable|string|max:500'
+            'remarks'          => 'nullable|string|max:500',
+            'new_contact_name' => 'nullable|string|max:255',
+            'new_contact_number' => 'nullable|string|max:20',
+            'new_address'      => 'nullable|string|max:500',
+            'new_satellite_office' => 'nullable|string|max:255'
         ]);
 
         $cartItems = session()->get('deployment_cart', []);
@@ -365,6 +370,18 @@ class DeploymentController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Handle new contact person creation
+            $contactPersonId = $request->contact_person_id;
+            if ($request->filled('new_contact_name')) {
+                $contactPerson = ContactPerson::create([
+                    'name'             => $request->new_contact_name,
+                    'contact_number'   => $request->new_contact_number,
+                    'address'          => $request->new_address,
+                    'satellite_office' => $request->new_satellite_office
+                ]);
+                $contactPersonId = $contactPerson->id;
+            }
 
             foreach ($cartItems as $cartItem) {
                 $inventory = Inventory::where('id', $cartItem['inventory_id'])
@@ -377,6 +394,7 @@ class DeploymentController extends Controller
 
                 Deployment::create([
                     'user_id'          => Auth::id(),
+                    'contact_person_id'=> $contactPersonId,
                     'deployed_to'      => $request->deployed_to,
                     'deployment_date'  => $request->deployment_date,
                     'remarks'          => $request->remarks,

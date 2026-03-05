@@ -12,6 +12,7 @@ class Deployment extends Model
 
     protected $fillable = [
         'user_id',
+        'contact_person_id',
         'waybill_number',
         'deployed_to',
         'contact_number',
@@ -33,6 +34,11 @@ class Deployment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function contactPerson()
+    {
+        return $this->belongsTo(ContactPerson::class, 'contact_person_id');
     }
 
     public function inventory(): BelongsTo
