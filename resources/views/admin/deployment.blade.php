@@ -339,23 +339,19 @@
                     </select>
                   </div>
 
-                  <input type="hidden" name="contact_number" id="hiddenContactNumber" value="">
-                  <input type="hidden" name="address" id="hiddenAddress" value="">
-                  <input type="hidden" name="satellite_office" id="hiddenSatelliteOffice" value="">
-
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-telephone me-1"></i> Contact No.</label>
-                    <input type="text" class="form-control" id="displayContactNumber" placeholder="Auto-filled from selection">
+                    <input type="text" class="form-control" name="contact_number" id="displayContactNumber" placeholder="Auto-filled from selection">
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-geo-alt me-1"></i> Address</label>
-                    <textarea class="form-control" id="displayAddress" rows="2" placeholder="Auto-filled from selection"></textarea>
+                    <textarea class="form-control" name="address" id="displayAddress" rows="2" placeholder="Auto-filled from selection"></textarea>
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-building me-1"></i> Satellite Office</label>
-                    <input type="text" class="form-control" id="displaySatelliteOffice" placeholder="Auto-filled from selection">
+                    <input type="text" class="form-control" name="satellite_office" id="displaySatelliteOffice" placeholder="Auto-filled from selection">
                   </div>
 
                   <div id="newContactFields" style="display: none;">
@@ -592,9 +588,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('displayContactNumber').value = '';
         document.getElementById('displayAddress').value = '';
         document.getElementById('displaySatelliteOffice').value = '';
-        document.getElementById('hiddenContactNumber').value = '';
-        document.getElementById('hiddenAddress').value = '';
-        document.getElementById('hiddenSatelliteOffice').value = '';
       } else {
         newFields.style.display = 'none';
         const contact = opt.dataset.contact || '';
@@ -603,9 +596,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('displayContactNumber').value  = contact;
         document.getElementById('displayAddress').value        = address;
         document.getElementById('displaySatelliteOffice').value = office;
-        document.getElementById('hiddenContactNumber').value   = contact;
-        document.getElementById('hiddenAddress').value         = address;
-        document.getElementById('hiddenSatelliteOffice').value = office;
       }
     });
   }
