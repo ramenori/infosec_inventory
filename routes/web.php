@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\SuppliersController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\ContactPersonController;
+use App\Http\Controllers\Admin\AccountsController;
 
 Route::redirect('/', '/admin/login');
 
@@ -79,6 +80,15 @@ Route::prefix('admin')->group(function () {
             Route::post('/', [ContactPersonController::class, 'store'])->name('admin.contactperson.store');
             Route::put('/{id}', [ContactPersonController::class, 'update'])->name('admin.contactperson.update');
             Route::delete('/{id}', [ContactPersonController::class, 'destroy'])->name('admin.contactperson.destroy');
+        });
+
+        // Accounts Management Routes
+        Route::prefix('accounts')->group(function () {
+            Route::get('/', [AccountsController::class, 'index'])->name('admin.accounts');
+            Route::post('/', [AccountsController::class, 'store'])->name('admin.accounts.store');
+            Route::get('/{id}/edit', [AccountsController::class, 'edit'])->name('admin.accounts.edit');
+            Route::put('/{id}', [AccountsController::class, 'update'])->name('admin.accounts.update');
+            Route::delete('/{id}', [AccountsController::class, 'destroy'])->name('admin.accounts.destroy');
         });
     });
 });

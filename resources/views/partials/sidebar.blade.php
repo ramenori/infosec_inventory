@@ -91,9 +91,21 @@
         </li>
 
         <li class="nav-item">
-          <a href="{{ route('admin.contactperson') }}" class="nav-link rounded-3 px-3 py-2">
+          <a href="{{ route('admin.contactperson') }}" class="nav-link rounded-3 px-3 py-2 mb-1">
             <i class="nav-icon bi bi-people me-3"></i>
             <p class="mb-0">Contact Person</p>
+          </a>
+        </li>
+
+        <!-- Settings Menu Header -->
+        <li class="nav-header text-uppercase text-secondary mt-3 mb-2 px-3" style="font-size: 0.7rem; letter-spacing: 1px;">
+          Administration
+        </li>
+
+        <li class="nav-item">
+          <a href="{{ route('admin.accounts') }}" class="nav-link rounded-3 px-3 py-2 mb-1">
+            <i class="nav-icon bi bi-people-fill me-3"></i>
+            <p class="mb-0">Accounts</p>
           </a>
         </li>
       </ul>
@@ -131,10 +143,10 @@
 
     <!-- Action Buttons -->
     <div class="d-flex flex-shrink-0 gap-1">
-      <button class="btn btn-sm btn-outline-secondary border-0 p-0 d-flex align-items-center justify-content-center" 
-              title="Settings" style="width: 28px; height: 28px;">
+      <a href="{{ route('admin.accounts') }}" class="btn btn-sm btn-outline-secondary border-0 p-0 d-flex align-items-center justify-content-center" 
+         title="Settings" style="width: 28px; height: 28px;">
         <i class="bi bi-gear" style="font-size: 0.8rem;"></i>
-      </button>
+      </a>
       <form method="POST" action="{{ route('admin.logout') }}" class="d-inline">
         @csrf
         <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-0 d-flex align-items-center justify-content-center" 
