@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Inventory;
 use App\Models\Category;
 use App\Models\Supplier;
+use App\Models\ActivityLog;
 
 class InventoryController extends Controller
 {
@@ -70,7 +71,7 @@ class InventoryController extends Controller
             $status = 'Low Stock';
         }
 
-        Inventory::create([
+        $inventory = Inventory::create([
             'category' => $request->category,
             'component' => $request->component,
             'serial_num' => $request->serial_num,
@@ -79,6 +80,16 @@ class InventoryController extends Controller
             'date_added' => now(), // Automatically set to current date
             'status' => $status,
             'supplier_id' => $request->supplier_id,
+        ]);
+
+        // Log the activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'created',
+            'entity_type' => 'inventory',
+            'entity_id' => $inventory->id,
+            'component' => $request->component,
+            'details' => "Created new inventory item: {$request->component}",
         ]);
 
         return redirect()->route('admin.inventory')->with('success', 'Item added successfully!');
@@ -126,6 +137,16 @@ class InventoryController extends Controller
             'supplier_id' => $request->supplier_id,
         ]);
 
+        // Log the activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'updated',
+            'entity_type' => 'inventory',
+            'entity_id' => $inventory->id,
+            'component' => $request->component,
+            'details' => "Updated inventory item: {$request->component}",
+        ]);
+
         return redirect()->route('admin.inventory')->with('success', 'Item updated successfully!');
     }
 
@@ -138,7 +159,20 @@ class InventoryController extends Controller
             return redirect()->route('admin.inventory')->with('error', 'Cannot delete item that has deployment history!');
         }
 
+        $component = $inventory->component;
+
         $inventory->delete();
+
+        // Log the activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'entity_type' => 'inventory',
+            'entity_id' => $id,
+            'component' => $component,
+            'details' => "Deleted inventory item: {$component}",
+        ]);
+
         return redirect()->route('admin.inventory')->with('success', 'Item deleted successfully!');
     }
 
@@ -169,5 +203,27 @@ class InventoryController extends Controller
             'message' => 'Stock updated successfully',
             'data' => $inventory
         ]);
+    }
+
+    /**
+     * Get inventory logs for the current user - show logs page
+     */
+    public function getLogs(Request $request)
+    {
+        $query = ActivityLog::where('entity_type', 'inventory')
+            ->where('user_id', auth()->id())
+            ->with('user');
+
+        // Filter by date if provided
+        if ($request->has('date') && !empty($request->date)) {
+            $query->whereDate('created_at', $request->date);
+        } else {
+            // Default to last 30 days
+            $query->where('created_at', '>=', now()->subDays(30));
+        }
+
+        $logs = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        return view('admin.inventory_logs', compact('logs'));
     }
 }

@@ -144,6 +144,10 @@
                 </a></li>
               </ul>
             </div>
+
+            <a href="{{ route('admin.inventory.logs') }}" class="btn btn-outline-info">
+              <i class="bi bi-clock-history me-1"></i> Logs
+            </a>
             
             <div class="dropdown">
               <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -592,6 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
 });
 </script>
 @endpush

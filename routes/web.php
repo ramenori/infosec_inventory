@@ -36,6 +36,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/{id}/edit', [InventoryController::class, 'edit'])->name('admin.inventory.edit');
             Route::put('/{id}', [InventoryController::class, 'update'])->name('admin.inventory.update');
             Route::delete('/{id}', [InventoryController::class, 'destroy'])->name('admin.inventory.destroy');
+            Route::get('/logs/view', [InventoryController::class, 'getLogs'])->name('admin.inventory.logs');
         });
 
         // Category Routes
