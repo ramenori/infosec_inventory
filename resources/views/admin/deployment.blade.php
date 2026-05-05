@@ -373,55 +373,22 @@
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-person-badge me-1"></i> Deploy To *</label>
-                    <select class="form-select" name="deployed_to" id="deployToSelect" required>
-                      <option value="">-- Select Contact Person --</option>
-                      @foreach($contactPersons ?? [] as $contact)
-                        <option value="{{ $contact->name }}" 
-                                data-contact-id="{{ $contact->id }}"
-                                data-contact="{{ $contact->contact_number }}"
-                                data-address="{{ $contact->address }}"
-                                data-office="{{ $contact->satellite_office }}">
-                          {{ $contact->name }} @if($contact->satellite_office)({{ $contact->satellite_office }})@endif
-                        </option>
-                      @endforeach
-                      <option value="new">+ Add New Contact Person</option>
-                    </select>
+                    <input type="text" class="form-control" name="deployed_to" placeholder="Enter deployment location name" required>
                   </div>
-
-                  <input type="hidden" name="contact_person_id" id="contactPersonId">
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-telephone me-1"></i> Contact No.</label>
-                    <input type="text" class="form-control" name="contact_number" id="displayContactNumber" placeholder="Auto-filled from selection">
+                    <input type="text" class="form-control" name="contact_number" placeholder="Enter contact number">
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-geo-alt me-1"></i> Address</label>
-                    <textarea class="form-control" name="address" id="displayAddress" rows="2" placeholder="Auto-filled from selection"></textarea>
+                    <textarea class="form-control" name="address" rows="2" placeholder="Enter address"></textarea>
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-building me-1"></i> Satellite Office</label>
-                    <input type="text" class="form-control" name="satellite_office" id="displaySatelliteOffice" placeholder="Auto-filled from selection">
-                  </div>
-
-                  <div id="newContactFields" style="display: none;">
-                    <div class="mb-3">
-                      <label class="form-label small fw-semibold"><i class="bi bi-person me-1"></i> New Contact Name *</label>
-                      <input type="text" class="form-control" name="new_contact_name" placeholder="Enter Name">
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label small fw-semibold"><i class="bi bi-telephone me-1"></i> New Contact No.</label>
-                      <input type="text" class="form-control" name="new_contact_number" id="newContactNumber" placeholder="Enter Contact Number">
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label small fw-semibold"><i class="bi bi-geo-alt me-1"></i> New Address</label>
-                      <textarea class="form-control" name="new_address" id="newAddress" rows="2" placeholder="Enter Address"></textarea>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label small fw-semibold"><i class="bi bi-building me-1"></i> New Satellite Office</label>
-                      <input type="text" class="form-control" name="new_satellite_office" id="newSatelliteOffice" placeholder="Enter Satellite Office">
-                    </div>
+                    <input type="text" class="form-control" name="satellite_office" placeholder="Enter satellite office">
                   </div>
 
                   <div class="mb-3">
@@ -569,40 +536,6 @@ input[readonly]:focus, textarea[readonly]:focus {
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-
-  // ── Deploy To select: auto-fill contact details ──
-  const deployToSelect = document.getElementById('deployToSelect');
-  if (deployToSelect) {
-    deployToSelect.addEventListener('change', function() {
-      const opt = this.options[this.selectedIndex];
-      const newFields = document.getElementById('newContactFields');
-      const contactPersonIdInput = document.getElementById('contactPersonId');
-
-      if (this.value === 'new') {
-        newFields.style.display = 'block';
-        document.getElementById('displayContactNumber').value = '';
-        document.getElementById('displayAddress').value = '';
-        document.getElementById('displaySatelliteOffice').value = '';
-        contactPersonIdInput.value = '';
-      } else if (this.value === '') {
-        newFields.style.display = 'none';
-        document.getElementById('displayContactNumber').value = '';
-        document.getElementById('displayAddress').value = '';
-        document.getElementById('displaySatelliteOffice').value = '';
-        contactPersonIdInput.value = '';
-      } else {
-        newFields.style.display = 'none';
-        const contactId = opt.dataset.contactId || '';
-        const contact = opt.dataset.contact || '';
-        const address = opt.dataset.address || '';
-        const office  = opt.dataset.office  || '';
-        document.getElementById('displayContactNumber').value  = contact;
-        document.getElementById('displayAddress').value        = address;
-        document.getElementById('displaySatelliteOffice').value = office;
-        contactPersonIdInput.value = contactId;
-      }
-    });
-  }
 
   // ── Checkboxes: selected count ──
   const checkboxes = document.querySelectorAll('.component-checkbox');

@@ -211,7 +211,6 @@ class InventoryController extends Controller
     public function getLogs(Request $request)
     {
         $query = ActivityLog::where('entity_type', 'inventory')
-            ->where('user_id', auth()->id())
             ->with('user');
 
         // Filter by date if provided

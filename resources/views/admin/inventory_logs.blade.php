@@ -76,6 +76,7 @@
               <tr>
                 <th class="border-0">DATE & TIME</th>
                 <th class="border-0">ACTION</th>
+                <th class="border-0">USER</th>
                 <th class="border-0">ITEM</th>
                 <th class="border-0">DETAILS</th>
               </tr>
@@ -93,6 +94,17 @@
                     <span class="badge {{ getActionBadgeClass($log->action) }} px-3 py-2">
                       {!! getActionIcon($log->action) !!} {{ formatAction($log->action) }}
                     </span>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="user-avatar me-2" style="width: 32px; height: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">
+                        {{ substr($log->user?->name ?? 'U', 0, 1) }}
+                      </div>
+                      <div class="d-flex flex-column">
+                        <span class="fw-semibold small">{{ $log->user?->name ?? 'Unknown User' }}</span>
+                        <small class="text-muted">{{ $log->user?->email ?? '-' }}</small>
+                      </div>
+                    </div>
                   </td>
                   <td>
                     <div class="d-flex align-items-center">
