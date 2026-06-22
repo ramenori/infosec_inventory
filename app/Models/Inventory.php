@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Inventory extends Model
 {
@@ -42,6 +44,6 @@ class Inventory extends Model
 
     public function deploymentItems(): HasMany
     {
-        return $this->hasMany(DeploymentItem::class);
+        return $this->hasMany(Deployment::class, 'inventory_id');
     }
 }
