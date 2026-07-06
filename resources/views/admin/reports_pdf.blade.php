@@ -21,30 +21,30 @@
     <thead>
       <tr>
         <th>#</th>
-        <th>Reference</th>
+        <th>Waybill No.</th>
         <th>Date</th>
-        <th>Deployed To</th>
-        <th>Contact</th>
-        <th>Address</th>
         <th>Component</th>
-        <th>Qty</th>
-        <th>Remarks</th>
+        <th>Contact Person</th>
+        <th>Contact Number</th>
+        <th>Address</th>
+        <th>Satellite Office</th>
         <th>Prepared By</th>
+        <th>Remarks</th>
       </tr>
     </thead>
     <tbody>
       @foreach($reports as $i => $r)
         <tr>
           <td>{{ $i+1 }}</td>
-          <td>{{ $r->reference_number }}</td>
+          <td>{{ $r->waybill_number ?? 'N/A' }}</td>
           <td>{{ optional($r->deployment_date)->format('Y-m-d') }}</td>
-          <td>{{ $r->deployed_to }}</td>
-          <td>{{ $r->contact_number ?? ($r->contactPerson->contact_number ?? '') }}</td>
-          <td>{{ $r->address ?? ($r->contactPerson->address ?? '') }}</td>
           <td>{{ $r->component }}</td>
-          <td>{{ $r->quantity }}</td>
-          <td>{{ $r->remarks }}</td>
+          <td>{{ optional($r->contactPerson)->name ?? $r->deployed_to }}</td>
+          <td>{{ $r->contact_number ?? optional($r->contactPerson)->contact_number }}</td>
+          <td>{{ $r->address ?? optional($r->contactPerson)->address }}</td>
+          <td>{{ $r->satellite_office ?? optional($r->contactPerson)->satellite_office }}</td>
           <td>{{ optional($r->user)->name }}</td>
+          <td>{{ $r->remarks }}</td>
         </tr>
       @endforeach
     </tbody>
