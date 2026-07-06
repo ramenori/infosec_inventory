@@ -50,7 +50,6 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i> Excel</a></li>
                                 <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i> PDF</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-printer me-2"></i> Print</a></li>
                             </ul>
                         </div>
                     </div>
@@ -142,7 +141,7 @@
 
                                 {{-- COLUMN 5: QUANTITY --}}
                                 <td class="text-center align-middle">
-                                    <span class="badge bg-primary px-3 py-2">{{ $deployment->quantity }}</span>
+                                    {{ $deployment->quantity }}
                                 </td>
 
                                 {{-- COLUMN 6: DEPLOYED TO --}}
@@ -154,32 +153,12 @@
                                         $displayOffice = optional($deployment->contactPerson)->satellite_office ?? $deployment->satellite_office;
                                     @endphp
                                     <strong class="d-block">{{ $displayName }}</strong>
-                                    @if($displayContact || $displayAddress || $displayOffice)
-                                        <small class="text-muted d-block">
-                                            @if($displayContact)
-                                                <i class="bi bi-telephone me-1"></i> {{ $displayContact }}
-                                            @endif
-                                            @if($displayAddress)
-                                                <br><i class="bi bi-geo-alt me-1"></i> {{ Str::limit($displayAddress, 22) }}
-                                            @endif
-                                            @if($displayOffice)
-                                                <br><i class="bi bi-building me-1"></i> {{ Str::limit($displayOffice, 18) }}
-                                            @endif
-                                        </small>
-                                    @endif
-                                    @if($deployment->remarks)
-                                        <small class="text-muted d-block">
-                                            <i class="bi bi-chat me-1"></i> {{ Str::limit($deployment->remarks, 20) }}
-                                        </small>
-                                    @endif
                                 </td>
 
                                 {{-- COLUMN 7: CONTACT NUMBER --}}
                                 <td class="text-center align-middle">
                                     @if($displayContact)
-                                        <span class="badge bg-info px-3 py-2">
-                                            <i class="bi bi-telephone me-1"></i> {{ $displayContact }}
-                                        </span>
+                                        <i class="bi bi-telephone me-1"></i> {{ $displayContact }}
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
@@ -188,11 +167,8 @@
                                 {{-- COLUMN 8: ADDRESS --}}
                                 <td class="text-center align-middle">
                                     @if($displayAddress)
-                                        <span class="badge bg-secondary px-3 py-2"
-                                              data-bs-toggle="tooltip"
-                                              title="{{ $displayAddress }}">
                                             <i class="bi bi-geo-alt me-1"></i> {{ Str::limit($displayAddress, 20) }}
-                                        </span>
+
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
@@ -201,9 +177,7 @@
                                 {{-- COLUMN 9: SATELLITE OFFICE --}}
                                 <td class="text-center align-middle">
                                     @if($displayOffice)
-                                        <span class="badge bg-warning text-dark px-3 py-2">
                                             <i class="bi bi-building me-1"></i> {{ $displayOffice }}
-                                        </span>
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif

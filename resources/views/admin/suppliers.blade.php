@@ -84,17 +84,6 @@
                             </ul>
                         </div>
                         
-                        <div class="dropdown">
-                            <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static">
-                                <i class="bi bi-download me-1"></i> Export
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i> Excel</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i> PDF</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-printer me-2"></i> Print</a></li>
-                            </ul>
-                        </div>
-                        
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
                             <i class="bi bi-plus-circle me-1"></i> Add Supplier
                         </button>

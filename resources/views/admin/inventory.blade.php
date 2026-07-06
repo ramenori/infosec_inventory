@@ -156,7 +156,6 @@
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i> Excel</a></li>
                 <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-pdf me-2"></i> PDF</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi bi-printer me-2"></i> Print</a></li>
               </ul>
             </div>
             
@@ -228,9 +227,7 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <span class="badge bg-light text-dark px-3 py-2">
                     <i class="bi bi-folder me-1"></i> {{ $item->category }}
-                  </span>
                 </td>
                 <td class="text-center">
                   <div class="stock-indicator">
@@ -262,9 +259,7 @@
                 <td class="text-center">
                   @if($item->supplier)
                     <div class="d-flex flex-column align-items-center">
-                      <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
                         <i class="bi bi-truck me-1"></i> {{ $item->supplier->name }}
-                      </span>
                       @if($item->supplier->contact)
                         <small class="text-muted mt-1">{{ $item->supplier->contact }}</small>
                       @endif
