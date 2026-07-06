@@ -18,7 +18,7 @@
   <!-- Stats Cards (keep your existing cards but with real data) -->
   <div class="row g-4 mb-4">
     <!-- Most Item Deployed -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-4 col-md-6">
       <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #667eea;">
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start mb-3">
@@ -29,7 +29,7 @@
               {{ $dashboardData['most_deployed_quantity'] }} deployed
             </span>
           </div>
-          <h3 class="mb-2 fw-bold">{{ Str::limit($dashboardData['most_deployed_item'], 15) }}</h3>
+          <h3 class="mb-2 fw-bold">{{ Str::limit($dashboardData['most_deployed_item'], 20) }}</h3>
           <p class="text-muted mb-0">Most Deployed Item</p>
           <div class="mt-3">
             <small class="text-success"><i class="bi bi-arrow-up-right me-1"></i> Top performing item</small>
@@ -38,27 +38,8 @@
       </div>
     </div>
 
-    <!-- Top Supplier -->
-    <div class="col-xl-3 col-md-6">
-      <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #10b981;">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <div class="bg-success bg-opacity-10 rounded-3 p-3">
-              <i class="bi bi-truck text-success fs-4"></i>
-            </div>
-            <span class="badge bg-success bg-opacity-20 text-success rounded-pill">Reliable</span>
-          </div>
-          <h3 class="mb-2 fw-bold">{{ Str::limit($dashboardData['top_supplier'], 15) }}</h3>
-          <p class="text-muted mb-0">Top Supplier</p>
-          <div class="mt-3">
-            <small class="text-info"><i class="bi bi-star-fill me-1"></i> Highest rated supplier</small>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Total Stock QTY -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-4 col-md-6">
       <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #f59e0b;">
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start mb-3">
@@ -77,7 +58,7 @@
     </div>
 
     <!-- Items Deployed This Month -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-4 col-md-6">
       <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #3b82f6;">
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start mb-3">
@@ -303,6 +284,11 @@ document.addEventListener('DOMContentLoaded', function() {
         labels: {!! json_encode($dashboardData['top_items_chart']['labels']) !!},
         values: {!! json_encode($dashboardData['top_items_chart']['data']) !!}
     };
+
+    const monthlyData = {
+        labels: {!! json_encode($dashboardData['monthly_chart']['labels']) !!},
+        values: {!! json_encode($dashboardData['monthly_chart']['data']) !!}
+    };
     
     const categoryData = {
         labels: {!! json_encode($dashboardData['category_chart']['labels']) !!},
@@ -455,10 +441,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.getElementById('monthlyView').addEventListener('click', function() {
         setActiveButton(this);
-        // You can add monthly data here if you have it
-        mainChart.data.labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-        mainChart.data.datasets[0].data = [65, 59, 80, 81, 56, 55];
+        mainChart.data.labels = monthlyData.labels;
+        mainChart.data.datasets[0].data = monthlyData.values;
         mainChart.data.datasets[0].label = 'Monthly Deployments';
+        mainChart.type = 'line';
         mainChart.update();
     });
     
