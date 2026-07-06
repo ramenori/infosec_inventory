@@ -7,6 +7,8 @@ use App\Models\Deployment;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\DeploymentReportsExport;
 
 class ReportsController extends Controller
 {
@@ -68,5 +70,33 @@ class ReportsController extends Controller
         $filename = 'deployment_reports_' . now()->format('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Export deployment reports as Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $reportsQuery = Deployment::with(['user', 'inventory', 'contactPerson'])->orderBy('deployment_date', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $reportsQuery->where(function($query) use ($search) {
+                $query->where('deployed_to', 'like', "%{$search}%")
+                      ->orWhere('reference_number', 'like', "%{$search}%")
+                      ->orWhere('remarks', 'like', "%{$search}%")
+                      ->orWhere('component', 'like', "%{$search}%")
+                      ->orWhereHas('inventory', function($q) use ($search) {
+                          $q->where('category', 'like', "%{$search}%")
+                            ->orWhere('brand', 'like', "%{$search}%");
+                      });
+            });
+        }
+
+        $reports = $reportsQuery->get();
+
+        $filename = 'deployment_reports_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new DeploymentReportsExport($reports), $filename);
     }
 }
