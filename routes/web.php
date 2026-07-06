@@ -65,6 +65,7 @@ Route::prefix('admin')->group(function () {
 
         // Reports
         Route::get('reports', [ReportsController::class, 'index'])->name('admin.reports');
+        Route::get('reports/export', [ReportsController::class, 'exportPdf'])->name('admin.reports.export');
 
         // Suppliers Routes
         Route::prefix('suppliers')->group(function () {
