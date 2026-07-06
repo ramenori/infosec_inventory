@@ -347,6 +347,21 @@ class DeploymentController extends Controller
 
     public function deploy(Request $request)
     {
+        $contactPerson = null;
+
+        if ($request->filled('contact_person_id')) {
+            $contactPerson = ContactPerson::find($request->contact_person_id);
+
+            if ($contactPerson) {
+                $request->merge([
+                    'deployed_to' => $contactPerson->name,
+                    'contact_number' => $request->filled('contact_number') ? $request->contact_number : $contactPerson->contact_number,
+                    'address' => $request->filled('address') ? $request->address : $contactPerson->address,
+                    'satellite_office' => $request->filled('satellite_office') ? $request->satellite_office : $contactPerson->satellite_office,
+                ]);
+            }
+        }
+
         $request->validate([
             'waybill_number'   => 'nullable|string|max:255',
             'deployed_to'      => 'required|string|max:255',
@@ -437,7 +452,7 @@ class DeploymentController extends Controller
 
     public function history(Request $request)
     {
-        $query = Deployment::with(['user', 'inventory']);
+        $query = Deployment::with(['user', 'inventory', 'contactPerson']);
 
         if ($request->filled('search')) {
             $search = $request->search;

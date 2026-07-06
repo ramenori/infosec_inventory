@@ -373,22 +373,36 @@
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-person-badge me-1"></i> Deploy To *</label>
-                    <input type="text" class="form-control" name="deployed_to" placeholder="Enter deployment location name" required>
+                    <select class="form-select" name="contact_person_id" id="contactPersonSelect" required>
+                      <option value="">Select a contact person</option>
+                      @foreach($contactPersons as $contactPerson)
+                        <option value="{{ $contactPerson->id }}"
+                                data-name="{{ $contactPerson->name }}"
+                                data-contact-number="{{ $contactPerson->contact_number }}"
+                                data-address="{{ $contactPerson->address }}"
+                                data-satellite-office="{{ $contactPerson->satellite_office }}"
+                                {{ old('contact_person_id') == $contactPerson->id ? 'selected' : '' }}>
+                          {{ $contactPerson->name }}
+                        </option>
+                      @endforeach
+                    </select>
+                    <input type="hidden" name="deployed_to" id="deployedToInput" value="{{ old('deployed_to') }}">
+                    <div class="form-text">Selecting a contact person will auto-fill their details below.</div>
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-telephone me-1"></i> Contact No.</label>
-                    <input type="text" class="form-control" name="contact_number" placeholder="Enter contact number">
+                    <input type="text" class="form-control" id="contactNumberInput" name="contact_number" placeholder="Enter contact number" value="{{ old('contact_number') }}">
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-geo-alt me-1"></i> Address</label>
-                    <textarea class="form-control" name="address" rows="2" placeholder="Enter address"></textarea>
+                    <textarea class="form-control" id="addressInput" name="address" rows="2" placeholder="Enter address">{{ old('address') }}</textarea>
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-building me-1"></i> Satellite Office</label>
-                    <input type="text" class="form-control" name="satellite_office" placeholder="Enter satellite office">
+                    <input type="text" class="form-control" id="satelliteOfficeInput" name="satellite_office" placeholder="Enter satellite office" value="{{ old('satellite_office') }}">
                   </div>
 
                   <div class="mb-3">
@@ -560,6 +574,36 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(el);
     setTimeout(() => el.parentNode && el.remove(), 5000);
   };
+
+  // ── Contact person auto-fill ──
+  const contactPersonSelect = document.getElementById('contactPersonSelect');
+  const deployedToInput = document.getElementById('deployedToInput');
+  const contactNumberInput = document.getElementById('contactNumberInput');
+  const addressInput = document.getElementById('addressInput');
+  const satelliteOfficeInput = document.getElementById('satelliteOfficeInput');
+
+  function populateContactDetails() {
+    const selectedOption = contactPersonSelect?.selectedOptions[0];
+    if (!selectedOption) return;
+
+    const selectedValue = selectedOption.value;
+
+    if (!selectedValue) {
+      deployedToInput.value = '';
+      contactNumberInput.value = '';
+      addressInput.value = '';
+      satelliteOfficeInput.value = '';
+      return;
+    }
+
+    deployedToInput.value = selectedOption.dataset.name || '';
+    contactNumberInput.value = selectedOption.dataset.contactNumber || '';
+    addressInput.value = selectedOption.dataset.address || '';
+    satelliteOfficeInput.value = selectedOption.dataset.satelliteOffice || '';
+  }
+
+  contactPersonSelect?.addEventListener('change', populateContactDetails);
+  populateContactDetails();
 
   // ── Tooltips ──
   document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
