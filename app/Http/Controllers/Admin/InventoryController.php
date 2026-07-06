@@ -8,6 +8,7 @@ use App\Models\Inventory;
 use App\Models\Category;
 use App\Models\Supplier;
 use App\Models\ActivityLog;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class InventoryController extends Controller
 {
@@ -224,5 +225,41 @@ class InventoryController extends Controller
         $logs = $query->orderBy('created_at', 'desc')->paginate(20);
 
         return view('admin.inventory_logs', compact('logs'));
+    }
+
+    /**
+     * Export inventory as PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = Inventory::with(['category', 'supplier']);
+
+        // Apply search if provided
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('component', 'like', "%{$search}%")
+                  ->orWhere('serial_num', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhereHas('category', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Apply status filter if provided
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $inventory = $query->orderBy('created_at', 'desc')->get();
+
+        $data = compact('inventory');
+
+        $pdf = PDF::loadView('admin.inventory_pdf', $data)->setPaper('a4', 'landscape');
+
+        $filename = 'inventory_report_' . now()->format('Ymd_His') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }
