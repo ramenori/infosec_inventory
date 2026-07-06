@@ -24,66 +24,53 @@
     </ol>
   </nav>
 
-  {{-- Stats Cards --}}
-  <div class="row mb-4">
-    <div class="col-xl-3 col-md-6 mb-4">
-      <div class="card stat-card border-0 bg-primary bg-gradient text-white">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-              <h6 class="card-title mb-1">Available Items</h6>
-              <h2 class="fw-bold mb-0">{{ \App\Models\Inventory::where('status', 'Available')->count() }}</h2>
-            </div>
-            <div class="stat-icon">
-              <i class="bi bi-check-circle display-6 opacity-50"></i>
+  {{-- Stats Cards (improved UI) --}}
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="card stat-card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="icon-circle bg-primary bg-opacity-10">
+            <i class="bi bi-check-circle-fill text-primary"></i>
+          </div>
+          <div>
+            <small class="text-muted">Available Items</small>
+            <div class="d-flex align-items-baseline gap-3">
+              <h2 class="stat-number mb-0">{{ \App\Models\Inventory::where('status', 'Available')->count() }}</h2>
+              <small class="text-muted">Ready for deployment</small>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
-    <div class="col-xl-3 col-md-6 mb-4">
-      <div class="card stat-card border-0 bg-warning bg-gradient text-dark">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-              <h6 class="card-title mb-1">Low Stock</h6>
-              <h2 class="fw-bold mb-0">{{ \App\Models\Inventory::where('stock_qty', '<', 5)->count() }}</h2>
-            </div>
-            <div class="stat-icon">
-              <i class="bi bi-exclamation-triangle display-6 opacity-50"></i>
+
+    <div class="col-md-4">
+      <div class="card stat-card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="icon-circle bg-warning bg-opacity-10">
+            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+          </div>
+          <div>
+            <small class="text-muted">Low Stock</small>
+            <div class="d-flex align-items-baseline gap-3">
+              <h2 class="stat-number mb-0">{{ \App\Models\Inventory::where('stock_qty', '<', 5)->count() }}</h2>
+              <small class="text-muted">Below reorder threshold</small>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
-    <div class="col-xl-3 col-md-6 mb-4">
-      <div class="card stat-card border-0 bg-info bg-gradient text-white">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-              <h6 class="card-title mb-1">Total Categories</h6>
-              <h2 class="fw-bold mb-0">{{ \App\Models\Category::count() }}</h2>
-            </div>
-            <div class="stat-icon">
-              <i class="bi bi-tags display-6 opacity-50"></i>
-            </div>
+
+    <div class="col-md-4">
+      <div class="card stat-card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="icon-circle bg-info bg-opacity-10">
+            <i class="bi bi-tags-fill text-info"></i>
           </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6 mb-4">
-      <div class="card stat-card border-0 bg-success bg-gradient text-white">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-              <h6 class="card-title mb-1">Active Suppliers</h6>
-              <h2 class="fw-bold mb-0">{{ \App\Models\Supplier::count() }}</h2>
-            </div>
-            <div class="stat-icon">
-              <i class="bi bi-truck display-6 opacity-50"></i>
+          <div>
+            <small class="text-muted">Total Categories</small>
+            <div class="d-flex align-items-baseline gap-3">
+              <h2 class="stat-number mb-0">{{ \App\Models\Category::count() }}</h2>
+              <small class="text-muted">Inventory groups</small>
             </div>
           </div>
         </div>
@@ -302,10 +289,12 @@
                   <div class="empty-state">
                     <i class="bi bi-inboxes display-4 text-muted mb-3"></i>
                     <h5 class="text-muted">No inventory items found</h5>
-                    <p class="text-muted mb-4">Get started by adding your first inventory item</p>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                      <i class="bi bi-plus-circle me-1"></i> Add Item
-                    </button>
+                  .stat-card { border-radius: .6rem; }
+                  .stat-number { font-size: 1.9rem; }
+                  .stat-icon { width: 56px; height: 56px; display:flex; align-items:center; justify-content:center; }
+                  .icon-circle { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+                  .icon-circle i { font-size:1.4rem; }
+                  .bg-opacity-10 { opacity: .12; }
                   </div>
                 </td>
               </tr>
