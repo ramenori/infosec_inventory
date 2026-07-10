@@ -97,6 +97,16 @@
               </div>
             </div>
             <div class="col-auto">
+              <select class="form-select" name="category">
+                <option value="">All Categories</option>
+                @foreach($categories as $cat)
+                  <option value="{{ $cat->name }}" {{ request('category') == $cat->name ? 'selected' : '' }}>
+                    {{ $cat->name }}
+                  </option>
+                @endforeach
+              </select>
+            </div>
+            <div class="col-auto">
               <button type="submit" class="btn btn-primary">
                 <i class="bi bi-search me-1"></i> Search
               </button>
@@ -125,6 +135,13 @@
                 <li><a class="dropdown-item" href="{{ route('admin.inventory', ['status' => 'Out of Stock']) }}">
                   <span class="badge bg-danger me-2">●</span> Out of Stock
                 </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Categories</h6></li>
+                @foreach($categories as $cat)
+                  <li><a class="dropdown-item" href="{{ route('admin.inventory', ['category' => $cat->name]) }}">
+                    <i class="bi bi-folder me-2"></i> {{ $cat->name }}
+                  </a></li>
+                @endforeach
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="{{ route('admin.inventory') }}">
                   <i class="bi bi-eye me-2"></i> View All
