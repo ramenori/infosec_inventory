@@ -280,12 +280,25 @@
                        title="Edit Item">
                       <i class="bi bi-pencil"></i>
                     </a>
-                    <a href="{{ route('admin.inventory', $item->id) }}"
-                       class="btn btn-sm btn-outline-info"
-                       data-bs-toggle="tooltip"
-                       title="View Details">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-info view-details-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#inventoryDetailsModal"
+                            data-component="{{ $item->component }}"
+                            data-serial="{{ $item->serial_num ?: 'No Serial' }}"
+                            data-brand="{{ $item->brand ?: 'No Brand' }}"
+                            data-category="{{ $item->category }}"
+                            data-stock="{{ $item->stock_qty }}"
+                            data-status="{{ $item->status }}"
+                            data-date="{{ $item->date_added->format('M d, Y') }}"
+                            data-created="{{ $item->created_at->diffForHumans() }}"
+                            data-supplier="{{ $item->supplier ? $item->supplier->name : 'No Supplier' }}"
+                            data-supplier-contact="{{ $item->supplier && $item->supplier->contact ? $item->supplier->contact : '' }}"
+                            data-description="{{ e($item->description ?: 'No description provided.') }}"
+                            data-bs-toggle="tooltip"
+                            title="View Details">
                       <i class="bi bi-eye"></i>
-                    </a>
+                    </button>
                     <form action="{{ route('admin.inventory.destroy', $item->id) }}" method="POST" class="d-inline">
                       @csrf
                       @method('DELETE')
@@ -474,6 +487,88 @@
     </div>
   </div>
 </div>
+
+{{-- Inventory Details Modal --}}
+<div class="modal fade" id="inventoryDetailsModal" tabindex="-1" aria-labelledby="inventoryDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title" id="inventoryDetailsModalLabel">
+          <i class="bi bi-box-seam me-2"></i> Inventory Item Details
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <h6 class="text-muted mb-1">Component</h6>
+            <p class="fw-semibold mb-0" id="detailComponent">-</p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-1">Category</h6>
+            <p class="fw-semibold mb-0" id="detailCategory">-</p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-1">Serial Number</h6>
+            <p class="fw-semibold mb-0" id="detailSerial">-</p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-1">Brand</h6>
+            <p class="fw-semibold mb-0" id="detailBrand">-</p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-1">Stock Quantity</h6>
+            <p class="fw-semibold mb-0" id="detailStock">-</p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-1">Status</h6>
+            <p class="fw-semibold mb-0" id="detailStatus">-</p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-1">Date Added</h6>
+            <p class="fw-semibold mb-0" id="detailDate">-</p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-1">Supplier</h6>
+            <p class="fw-semibold mb-0" id="detailSupplier">-</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <h6 class="text-muted mb-2">Description</h6>
+          <p class="mb-0" id="detailDescription">-</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-1"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const buttons = document.querySelectorAll('.view-details-btn');
+
+  buttons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      document.getElementById('detailComponent').textContent = button.dataset.component || 'N/A';
+      document.getElementById('detailCategory').textContent = button.dataset.category || 'N/A';
+      document.getElementById('detailSerial').textContent = button.dataset.serial || 'N/A';
+      document.getElementById('detailBrand').textContent = button.dataset.brand || 'N/A';
+      document.getElementById('detailStock').textContent = button.dataset.stock || 'N/A';
+      document.getElementById('detailStatus').textContent = button.dataset.status || 'N/A';
+      document.getElementById('detailDate').textContent = button.dataset.date || 'N/A';
+      document.getElementById('detailDescription').textContent = button.dataset.description || 'No description provided.';
+
+      const supplierName = button.dataset.supplier || 'No Supplier';
+      const supplierContact = button.dataset.supplierContact;
+      document.getElementById('detailSupplier').textContent = supplierContact ? `${supplierName} • ${supplierContact}` : supplierName;
+    });
+  });
+});
+</script>
 
 {{-- Custom CSS --}}
 <style>
