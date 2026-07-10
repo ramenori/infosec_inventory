@@ -274,12 +274,23 @@
                 </td>
                 <td class="text-center">
                   <div class="d-flex justify-content-center gap-2">
-                    <a href="{{ route('admin.inventory.edit', $item->id) }}" 
-                       class="btn btn-sm btn-outline-primary" 
-                       data-bs-toggle="tooltip" 
-                       title="Edit Item">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-primary edit-details-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editInventoryModal"
+                            data-item-id="{{ $item->id }}"
+                            data-component="{{ $item->component }}"
+                            data-serial="{{ $item->serial_num ?: '' }}"
+                            data-brand="{{ $item->brand ?: '' }}"
+                            data-category="{{ $item->category }}"
+                            data-stock="{{ $item->stock_qty }}"
+                            data-date="{{ $item->date_added->format('Y-m-d') }}"
+                            data-status="{{ $item->status }}"
+                            data-supplier-id="{{ $item->supplier_id ?? '' }}"
+                            data-bs-toggle="tooltip"
+                            title="Edit Item">
                       <i class="bi bi-pencil"></i>
-                    </a>
+                    </button>
                     <button type="button"
                             class="btn btn-sm btn-outline-info view-details-btn"
                             data-bs-toggle="modal"
@@ -549,9 +560,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const buttons = document.querySelectorAll('.view-details-btn');
+  const detailButtons = document.querySelectorAll('.view-details-btn');
 
-  buttons.forEach(function (button) {
+  detailButtons.forEach(function (button) {
     button.addEventListener('click', function () {
       document.getElementById('detailComponent').textContent = button.dataset.component || 'N/A';
       document.getElementById('detailCategory').textContent = button.dataset.category || 'N/A';
@@ -567,8 +578,125 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('detailSupplier').textContent = supplierContact ? `${supplierName} • ${supplierContact}` : supplierName;
     });
   });
+
+  const editButtons = document.querySelectorAll('.edit-details-btn');
+
+  editButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      document.getElementById('editInventoryForm').action = `/admin/inventory/${button.dataset.itemId}`;
+      document.getElementById('editCategory').value = button.dataset.category || '';
+      document.getElementById('editComponent').value = button.dataset.component || '';
+      document.getElementById('editSerial').value = button.dataset.serial || '';
+      document.getElementById('editBrand').value = button.dataset.brand || '';
+      document.getElementById('editStock').value = button.dataset.stock || '';
+      document.getElementById('editDate').value = button.dataset.date || '';
+      document.getElementById('editStatus').value = button.dataset.status || 'Available';
+      document.getElementById('editSupplierId').value = button.dataset.supplierId || '';
+    });
+  });
 });
 </script>
+
+{{-- Edit Inventory Modal --}}
+<div class="modal fade" id="editInventoryModal" tabindex="-1" aria-labelledby="editInventoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="editInventoryModalLabel">
+          <i class="bi bi-pencil-square me-2"></i> Edit Inventory Item
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editInventoryForm" method="POST">
+        @csrf
+        @method('PUT')
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="editCategory" class="form-label small fw-semibold">
+                <i class="bi bi-folder me-1"></i> Category *
+              </label>
+              <select class="form-select" id="editCategory" name="category" required>
+                <option value="">Select Category</option>
+                @foreach(
+App\Models\Category::all() as $cat)
+                  <option value="{{ $cat->name }}">{{ $cat->name }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editComponent" class="form-label small fw-semibold">
+                <i class="bi bi-box me-1"></i> Component Name *
+              </label>
+              <input type="text" class="form-control" id="editComponent" name="component" required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editSerial" class="form-label small fw-semibold">
+                <i class="bi bi-upc-scan me-1"></i> Serial Number
+              </label>
+              <input type="text" class="form-control" id="editSerial" name="serial_num">
+            </div>
+
+            <div class="col-md-6">
+              <label for="editBrand" class="form-label small fw-semibold">
+                <i class="bi bi-tag me-1"></i> Brand
+              </label>
+              <input type="text" class="form-control" id="editBrand" name="brand">
+            </div>
+
+            <div class="col-md-6">
+              <label for="editStock" class="form-label small fw-semibold">
+                <i class="bi bi-box-arrow-in-down me-1"></i> Stock Quantity *
+              </label>
+              <input type="number" class="form-control" id="editStock" name="stock_qty" min="0" required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editStatus" class="form-label small fw-semibold">
+                <i class="bi bi-circle-fill me-1"></i> Status *
+              </label>
+              <select class="form-select" id="editStatus" name="status" required>
+                <option value="Available">Available</option>
+                <option value="Low Stock">Low Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+                <option value="Maintenance">Maintenance</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editDate" class="form-label small fw-semibold">
+                <i class="bi bi-calendar-date me-1"></i> Date Added *
+              </label>
+              <input type="date" class="form-control" id="editDate" name="date_added" required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editSupplierId" class="form-label small fw-semibold">
+                <i class="bi bi-truck me-1"></i> Supplier
+              </label>
+              <select class="form-select" id="editSupplierId" name="supplier_id">
+                <option value="">Select Supplier</option>
+                @foreach(\App\Models\Supplier::all() as $supplier)
+                  <option value="{{ $supplier->id }}">{{ $supplier->name }}@if($supplier->contact) - {{ $supplier->contact }} @endif</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle me-1"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {{-- Custom CSS --}}
 <style>
