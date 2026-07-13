@@ -330,12 +330,12 @@
                   <div class="empty-state">
                     <i class="bi bi-inboxes display-4 text-muted mb-3"></i>
                     <h5 class="text-muted">No inventory items found</h5>
-                  .stat-card { border-radius: .6rem; }
+                  <!-- .stat-card { border-radius: .6rem; }
                   .stat-number { font-size: 1.9rem; }
                   .stat-icon { width: 56px; height: 56px; display:flex; align-items:center; justify-content:center; }
                   .icon-circle { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
                   .icon-circle i { font-size:1.4rem; }
-                  .bg-opacity-10 { opacity: .12; }
+                  .bg-opacity-10 { opacity: .12; } -->
                   </div>
                 </td>
               </tr>
