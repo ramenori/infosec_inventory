@@ -390,7 +390,7 @@
                     <div class="form-text">Selecting a contact person will auto-fill their details below.</div>
                   </div>
 
-                  <div class="mb-3">
+                  <!-- <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-telephone me-1"></i> Contact No.</label>
                     <input type="text" class="form-control" id="contactNumberInput" name="contact_number" placeholder="Enter contact number" value="{{ old('contact_number') }}">
                   </div>
@@ -403,7 +403,7 @@
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-building me-1"></i> Satellite Office</label>
                     <input type="text" class="form-control" id="satelliteOfficeInput" name="satellite_office" placeholder="Enter satellite office" value="{{ old('satellite_office') }}">
-                  </div>
+                  </div> -->
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-calendar-date me-1"></i> Deployment Date *</label>
