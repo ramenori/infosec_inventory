@@ -407,7 +407,7 @@
 
                   <div class="mb-3">
                     <label class="form-label small fw-semibold"><i class="bi bi-calendar-date me-1"></i> Deployment Date *</label>
-                    <input type="date" class="form-control" name="deployment_date" value="{{ date('Y-m-d') }}" required>
+                    <input type="date" class="form-control" name="deployment_date" value="{{ old('deployment_date', date('Y-m-d')) }}" required>
                   </div>
 
                   <div class="mb-3">

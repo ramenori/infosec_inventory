@@ -109,8 +109,7 @@
 
                                 {{-- COLUMN 2: DATE DEPLOYED --}}
                                 <td class="align-middle">
-                                    <strong>{{ $deployment->deployment_date->format('M d, Y') }}</strong>
-                                    <small class="text-muted d-block">{{ $deployment->created_at->format('h:i A') }}</small>
+                                    <strong>{{ optional($deployment->deployment_date)->format('M d, Y') }}</strong>
                                 </td>
 
                                 {{-- COLUMN 3: CATEGORY --}}
