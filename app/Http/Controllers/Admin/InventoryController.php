@@ -234,20 +234,25 @@ class InventoryController extends Controller
     {
         $query = Inventory::with(['category', 'supplier']);
 
-        // Apply search if provided
+        // 1. Apply Search Filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('component', 'like', "%{$search}%")
-                  ->orWhere('serial_num', 'like', "%{$search}%")
-                  ->orWhere('brand', 'like', "%{$search}%")
-                  ->orWhereHas('category', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+                ->orWhere('serial_num', 'like', "%{$search}%")
+                ->orWhere('brand', 'like', "%{$search}%")
+                ->orWhereHas('categoryRelation', function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
             });
         }
 
-        // Apply status filter if provided
+        // 2. Apply Category Filter (Added to match your index query logic)
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        // 3. Apply Status Filter
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }

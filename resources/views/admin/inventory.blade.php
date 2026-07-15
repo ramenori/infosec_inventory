@@ -159,7 +159,12 @@
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i> Excel</a></li>
-                <li><a class="dropdown-item" href="{{ route('admin.inventory.export.pdf') }}"><i class="bi bi-file-earmark-pdf me-2"></i> PDF</a></li>
+                <!-- <li><a class="dropdown-item" href="{{ route('admin.inventory.export.pdf') }}"><i class="bi bi-file-earmark-pdf me-2"></i> PDF</a></li> -->
+                <li>
+                  <a class="dropdown-item" href="{{ route('admin.inventory.export.pdf', request()->query()) }}">
+                    <i class="bi bi-file-earmark-pdf me-2"></i> PDF
+                  </a>
+                </li>
               </ul>
             </div>
             
