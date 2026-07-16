@@ -9,6 +9,11 @@ use App\Models\Category;
 use App\Models\Supplier;
 use App\Models\ActivityLog;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class InventoryController extends Controller
 {
@@ -266,5 +271,102 @@ class InventoryController extends Controller
         $filename = 'inventory_report_' . now()->format('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
+    }
+
+    public function exportCsv(Request $request) 
+    {
+        $query = Inventory::with(['categoryRelation', 'supplier']);
+
+        // Apply your active filters...
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('component', 'like', "%{$search}%")
+                ->orWhere('serial_num', 'like', "%{$search}%")
+                ->orWhere('brand', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $inventory = $query->orderBy('created_at', 'desc')->get();
+
+        // Create a new Spreadsheet
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Inventory Report');
+
+        // Define columns
+        $columns = ['A' => 'ID', 'B' => 'Item/Component', 'C' => 'Category', 'D' => 'Brand', 'E' => 'Serial Number', 'F' => 'Stock Qty', 'G' => 'Status', 'H' => 'Supplier', 'I' => 'Date Added'];
+
+        // Write Headers
+        foreach ($columns as $col => $title) {
+            $sheet->setCellValue($col . '1', $title);
+        }
+
+        // Style the Header Row (Dark blue background, white bold text)
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '1F3B68'], // Sleek Dark Blue
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ];
+        $sheet->getStyle('A1:I1')->applyFromArray($headerStyle);
+        $sheet->getRowDimension('1')->setRowHeight(28);
+
+        // Write Data Rows
+        $rowNum = 2;
+        foreach ($inventory as $item) {
+            $sheet->setCellValue('A' . $rowNum, $item->id);
+            $sheet->setCellValue('B' . $rowNum, $item->component);
+            $sheet->setCellValue('C' . $rowNum, $item->category);
+            $sheet->setCellValue('D' . $rowNum, $item->brand ?: 'N/A');
+            $sheet->setCellValue('E' . $rowNum, $item->serial_num ?: 'No Serial');
+            $sheet->setCellValue('F' . $rowNum, $item->stock_qty);
+            $sheet->setCellValue('G' . $rowNum, $item->status);
+            $sheet->setCellValue('H' . $rowNum, $item->supplier ? $item->supplier->name : 'No Supplier');
+            $sheet->setCellValue('I' . $rowNum, $item->date_added ? $item->date_added->format('M d, Y') : 'N/A');
+
+            // Style the dynamic status cell colors!
+            $statusCell = 'G' . $rowNum;
+            if ($item->status === 'Available') {
+                $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('1F8B4C')); // Green text
+            } elseif ($item->status === 'Low Stock') {
+                $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('A06E00')); // Orange text
+            } elseif ($item->status === 'Out of Stock') {
+                $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('D12A3A')); // Red text
+            }
+
+            $rowNum++;
+        }
+
+        // Auto-fit all column widths perfectly to prevent text wrapping
+        foreach (range('A', 'I') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Apply thin borders to all data cells
+        $styleRange = 'A1:I' . ($rowNum - 1);
+        $sheet->getStyle($styleRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        // Export as genuine .xlsx file
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'inventory_report_' . now()->format('Ymd_His') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
     }
 }

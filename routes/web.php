@@ -34,6 +34,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/create', [InventoryController::class, 'create'])->name('admin.inventory.create');
             Route::post('/', [InventoryController::class, 'store'])->name('admin.inventory.store');
             Route::get('/export/pdf', [InventoryController::class, 'exportPdf'])->name('admin.inventory.export.pdf');
+            Route::get('/export/csv', [InventoryController::class, 'exportCsv'])->name('admin.inventory.export.csv'); // <-- ADD THIS
             Route::get('/{id}/edit', [InventoryController::class, 'edit'])->name('admin.inventory.edit');
             Route::put('/{id}', [InventoryController::class, 'update'])->name('admin.inventory.update');
             Route::delete('/{id}', [InventoryController::class, 'destroy'])->name('admin.inventory.destroy');
