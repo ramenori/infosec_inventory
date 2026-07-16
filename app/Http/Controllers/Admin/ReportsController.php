@@ -20,24 +20,59 @@ class ReportsController extends Controller
     public function index(Request $request)
     {
         $reportsQuery = Deployment::with(['user', 'inventory'])
-            ->orderBy('deployment_date', 'desc');
+            ->orderBy('created_at', 'desc');
 
         if ($request->filled('search')) {
             $search = $request->search;
             $reportsQuery->where(function($query) use ($search) {
                 $query->where('deployed_to', 'like', "%{$search}%")
-                      ->orWhere('remarks', 'like', "%{$search}%")
-                      ->orWhere('component', 'like', "%{$search}%") // This row will now dynamically match your custom serial inputs!
-                      ->orWhereHas('inventory', function($q) use ($search) {
-                          $q->where('category', 'like', "%{$search}%")
-                            ->orWhere('brand', 'like', "%{$search}%");
-                      });
+                    ->orWhere('remarks', 'like', "%{$search}%")
+                    ->orWhere('component', 'like', "%{$search}%");
             });
         }
 
-        $reports = $reportsQuery->paginate(10);
+        // Fetch flat entries and group them by Waybill + Created Timestamp combination
+        $allReports = $reportsQuery->get();
+        
+        $groupedReports = $allReports->groupBy(function($item) {
+            // Group by waybill number if available, otherwise fall back to timestamp matching window
+            return ($item->waybill_number ?? 'NO-WAYBILL') . '_' . $item->created_at->format('YmdHi');
+        })->map(function($group) {
+            // The master row represents the overarching shipment metadata envelope
+            $masterRow = $group->first();
+            
+            // Map down all nested breakout lines into a structured JSON string collection
+            $componentsPayload = $group->map(function($item) {
+                return [
+                    'category' => optional($item->inventory)->category ?? 'Other',
+                    'component' => $item->component,
+                    'brand' => optional($item->inventory)->brand ?? 'N/A',
+                    'quantity' => $item->quantity,
+                    // Department field holds our unique individual unit serial payload string array
+                    'serials' => json_decode($item->department, true) ?? ['No Serial'] 
+                ];
+            })->values()->toJson();
 
-        // Calculates sum of individually logged units correctly
+            // Attach the composite payload back onto our custom model array object instance
+            $masterRow->components_payload = $componentsPayload;
+            $masterRow->total_combined_qty = $group->sum('quantity');
+            
+            return $masterRow;
+        });
+
+        // Manually paginate the grouped collections array smoothly
+        $page = $request->get('page', 1);
+        $perPage = 10;
+        $slicedCollection = $groupedReports->slice(($page - 1) * $perPage, $perPage)->values();
+        
+        $reports = new \Illuminate\Pagination\LengthAwarePaginator(
+            $slicedCollection,
+            $groupedReports->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         $totalItemsDeployed = Deployment::sum('quantity');
 
         return view('admin.reports', compact('reports', 'totalItemsDeployed'));

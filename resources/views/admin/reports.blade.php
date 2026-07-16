@@ -87,9 +87,6 @@
                             <th class="border-0">WAYBILL NO.</th>
                             <th class="border-0">DATE DEPLOYED</th>
                             <th class="border-0">CATEGORY</th>
-                            <th class="border-0 text-center">COMPONENT</th>
-                            <th class="border-0 text-center">BRAND</th>
-                            <th class="border-0 text-center">SERIAL NUMBER</th>
                             <th class="border-0 text-center">QUANTITY</th>
                             <th class="border-0 text-center">DEPLOYED TO</th>
                             <th class="border-0 text-center">CONTACT NO.</th>
@@ -138,41 +135,12 @@
                                     </div>
                                 </td>
 
-                                {{-- COLUMN 4: COMPONENT NAME --}}
-                                <td class="text-center align-middle">
-                                    @php
-                                        $displayComponent = $deployment->component;
-                                        if (str_contains($deployment->component, '[SN:')) {
-                                            preg_match('/\[SN:\s*(.*?)\]/', $deployment->component, $matches);
-                                            $currentSerial = $matches[1] ?? null;
-                                            $displayComponent = trim(preg_replace('/\[SN:\s*.*?\]/', '', $deployment->component));
-                                        } else {
-                                            $currentSerial = optional($deployment->inventory)->serial_num;
-                                        }
-                                    @endphp
-                                    <strong class="d-block">{{ $displayComponent }}</strong>
-                                </td>
-
-                                {{-- COLUMN 5: BRAND --}}
-                                <td class="text-center align-middle">
-                                    <span class="text-muted fw-semibold">{{ optional($deployment->inventory)->brand ?? 'N/A' }}</span>
-                                </td>
-
-                                {{-- COLUMN 6: SERIAL NUMBER --}}
-                                <td class="text-center align-middle">
-                                    @if($currentSerial && $currentSerial !== 'No Serial')
-                                        <code class="text-primary fw-bold px-2 py-1 bg-light rounded" style="font-size: 0.85rem;">{{ $currentSerial }}</code>
-                                    @else
-                                        <code class="text-danger opacity-75">No Serial</code>
-                                    @endif
-                                </td>
-
-                                {{-- COLUMN 7: QUANTITY --}}
+                                {{-- COLUMN 4: QUANTITY --}}
                                 <td class="text-center align-middle">
                                     {{ $deployment->quantity }}
                                 </td>
 
-                                {{-- COLUMN 8: DEPLOYED TO --}}
+                                {{-- COLUMN 5: DEPLOYED TO --}}
                                 <td class="text-center align-middle">
                                     @php
                                         $displayName = optional($deployment->contactPerson)->name ?? $deployment->deployed_to;
@@ -183,7 +151,7 @@
                                     <strong class="d-block">{{ $displayName }}</strong>
                                 </td>
 
-                                {{-- COLUMN 9: CONTACT NUMBER --}}
+                                {{-- COLUMN 6: CONTACT NUMBER --}}
                                 <td class="text-center align-middle">
                                     @if($displayContact)
                                         <i class="bi bi-telephone me-1"></i> {{ $displayContact }}
@@ -192,7 +160,7 @@
                                     @endif
                                 </td>
 
-                                {{-- COLUMN 10: ADDRESS --}}
+                                {{-- COLUMN 7: ADDRESS --}}
                                 <td class="text-center align-middle">
                                     @if($displayAddress)
                                         <i class="bi bi-geo-alt me-1"></i> {{ Str::limit($displayAddress, 20) }}
@@ -201,7 +169,7 @@
                                     @endif
                                 </td>
 
-                                {{-- COLUMN 11: SATELLITE OFFICE --}}
+                                {{-- COLUMN 8: SATELLITE OFFICE --}}
                                 <td class="text-center align-middle">
                                     @if($displayOffice)
                                         <i class="bi bi-building me-1"></i> {{ $displayOffice }}
@@ -210,7 +178,7 @@
                                     @endif
                                 </td>
 
-                                {{-- COLUMN 12: ACTIONS --}}
+                                {{-- COLUMN 9: ACTIONS --}}
                                 <td class="text-center align-middle">
                                     <button type="button" 
                                             class="btn btn-sm btn-outline-primary view-report-btn"
@@ -218,17 +186,17 @@
                                             data-bs-target="#reportDetailsModal"
                                             data-waybill="{{ $deployment->waybill_number ?? 'N/A' }}"
                                             data-date="{{ optional($deployment->deployment_date)->format('M d, Y') ?? 'N/A' }}"
-                                            data-category="{{ $category }}"
-                                            data-component="{{ $deployment->component }}"
-                                            data-brand="{{ optional($deployment->inventory)->brand ?? 'N/A' }}"
-                                            data-serial="{{ optional($deployment->inventory)->serial_num ?? 'No Serial' }}"
-                                            data-quantity="{{ $deployment->quantity }}"
                                             data-deployed-to="{{ $displayName }}"
                                             data-contact="{{ $displayContact ?: 'N/A' }}"
                                             data-address="{{ $displayAddress ?: 'N/A' }}"
                                             data-office="{{ $displayOffice ?: 'N/A' }}"
                                             data-prepared-by="{{ optional($deployment->user)->name ?? 'N/A' }}"
                                             data-remarks="{{ e($deployment->remarks ?: 'No remarks provided.') }}"
+                                            data-components-bundle="{{ $deployment->components_payload }}"
+                                            data-category="{{ $category }}"
+                                            data-component="{{ $deployment->component }}"
+                                            data-brand="{{ optional($deployment->inventory)->brand ?? 'N/A' }}"
+                                            data-quantity="{{ $deployment->quantity }}"
                                             title="View Details">
                                         <i class="bi bi-eye"></i>
                                     </button>
@@ -236,7 +204,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="12" class="text-center py-5">
+                                <td colspan="9" class="text-center py-5">
                                     <div class="empty-state">
                                         <i class="bi bi-file-earmark-text display-4 text-muted mb-3"></i>
                                         <h5 class="text-muted">No deployment reports found</h5>
@@ -426,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
         reportDetailsModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             
-            // Extract base layout attributes
+            // Extract base transaction layout attributes
             const waybill = button.getAttribute('data-waybill') || 'N/A';
             const date = button.getAttribute('data-date') || 'N/A';
             const preparedBy = button.getAttribute('data-prepared-by') || 'N/A';
@@ -434,14 +402,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const contact = button.getAttribute('data-contact') || 'N/A';
             const office = button.getAttribute('data-office') || 'N/A';
             const address = button.getAttribute('data-address') || 'N/A';
-            const category = button.getAttribute('data-category') || 'N/A';
-            const component = button.getAttribute('data-component') || 'N/A';
-            const brand = button.getAttribute('data-brand') || 'N/A';
-            const serial = button.getAttribute('data-serial') || 'No Serial';
-            const quantity = parseInt(button.getAttribute('data-quantity')) || 1;
             const remarks = button.getAttribute('data-remarks') || 'No remarks provided.';
+            
+            // Fallback parameters for older records that haven't been bundled via JSON strings
+            const fallbackCategory = button.getAttribute('data-category') || 'Other';
+            const fallbackComponent = button.getAttribute('data-component') || 'N/A';
+            const fallbackBrand = button.getAttribute('data-brand') || 'N/A';
+            const fallbackQuantity = parseInt(button.getAttribute('data-quantity')) || 1;
 
-            // Inject base values
+            // This bundle contains the JSON array of all unique items inside the deployment
+            const componentsBundle = button.getAttribute('data-components-bundle') || '';
+
+            // Inject base transaction context values
             document.getElementById('modalWaybill').textContent = waybill;
             document.getElementById('modalDate').textContent = date;
             document.getElementById('modalPreparedBy').textContent = preparedBy;
@@ -451,49 +423,90 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('modalAddress').textContent = address;
             document.getElementById('modalRemarks').textContent = remarks;
 
-            // Grab container and purge previous rows
             const container = document.getElementById('modalComponentContainer');
             container.innerHTML = '';
 
-            // Dynamic tracking string extraction
-            for (let i = 1; i <= quantity; i++) {
-                let finalComponentName = component;
-                let parsedSerial = serial;
+            let itemsList = [];
+            
+            // Handle parsing if a multi-component bundle payload is active
+            if (componentsBundle && componentsBundle !== 'null') {
+                try {
+                    itemsList = JSON.parse(componentsBundle);
+                } catch (e) {
+                    console.error("Failed to parse components bundle JSON:", e);
+                    itemsList = [];
+                }
+            }
 
-                // Match and split embedded serial number strings out of the component block text
-                if (component.includes('[SN:')) {
-                    const serialMatch = component.match(/\[SN:\s*(.*?)\]/);
+            // Fallback render strategy if parsing legacy entries
+            if (itemsList.length === 0) {
+                // Parse legacy single serial formatting if present
+                let cleanComponent = fallbackComponent;
+                let cleanSerial = 'No Serial';
+                if (fallbackComponent.includes('[SN:')) {
+                    const serialMatch = fallbackComponent.match(/\[SN:\s*(.*?)\]/);
                     if (serialMatch && serialMatch[1]) {
-                        parsedSerial = serialMatch[1];
-                        finalComponentName = component.replace(/\[SN:\s*.*?\]/, '').trim();
+                        cleanSerial = serialMatch[1];
+                        cleanComponent = fallbackComponent.replace(/\[SN:\s*.*?\]/, '').trim();
                     }
                 }
 
-                const componentRow = `
-                    <div class="row g-3 mb-3 align-items-center ${i < quantity ? 'border-bottom pb-3' : ''}">
-                        <div class="col-md-2">
-                            <label class="text-muted small d-block">Category ${quantity > 1 ? '#' + i : ''}</label>
-                            <p class="fw-semibold mb-0">${category}</p>
+                itemsList = [{
+                    category: fallbackCategory,
+                    component: cleanComponent,
+                    brand: fallbackBrand,
+                    quantity: fallbackQuantity,
+                    serials: [cleanSerial]
+                }];
+            }
+
+            let structuralIndex = 1;
+
+            // Loop 1: Iterate through each uniquely deployed distinct item type in the bundle array
+            itemsList.forEach((item) => {
+                const category = item.category || 'Other';
+                const componentName = item.component || 'N/A';
+                const brand = item.brand || 'N/A';
+                const itemQuantity = parseInt(item.quantity) || 1;
+                const serialsArray = item.serials || [];
+
+                // Loop 2: Explode individual row units out per item quantity amount
+                for (let j = 0; j < itemQuantity; j++) {
+                    // Pick the specific custom serial number from the array signature layout map index
+                    const currentUnitSerial = serialsArray[j] || 'No Serial';
+
+                    const componentRow = `
+                        <div class="row g-3 mb-3 align-items-center border-bottom pb-3">
+                            <div class="col-md-2">
+                                <label class="text-muted small d-block">Category #${structuralIndex}</label>
+                                <p class="fw-semibold mb-0">${category}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-muted small d-block">Component Name</label>
+                                <p class="fw-semibold mb-0 text-dark">${componentName} ${itemQuantity > 1 ? '(#' + (j + 1) + ')' : ''}</p>
+                            </div>
+                            <div class="col-md-2 text-md-center">
+                                <label class="text-muted small d-block">Brand</label>
+                                <p class="fw-semibold mb-0 text-muted">${brand}</p>
+                            </div>
+                            <div class="col-md-2 text-md-center">
+                                <label class="text-muted small d-block">Serial Number</label>
+                                <code class="text-primary fw-bold d-block mt-1" style="font-size: 0.9rem;">${currentUnitSerial}</code>
+                            </div>
+                            <div class="col-md-2 text-md-center">
+                                <label class="text-muted small d-block">Item Unit</label>
+                                <span class="badge bg-primary fs-6 px-3 mt-1">1 pc</span>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="text-muted small d-block">Component Name</label>
-                            <p class="fw-semibold mb-0 text-dark">${finalComponentName}</p>
-                        </div>
-                        <div class="col-md-2 text-md-center">
-                            <label class="text-muted small d-block">Brand</label>
-                            <p class="fw-semibold mb-0 text-muted">${brand}</p>
-                        </div>
-                        <div class="col-md-2 text-md-center">
-                            <label class="text-muted small d-block">Serial Number</label>
-                            <code class="text-primary fw-bold d-block mt-1" style="font-size: 0.9rem;">${parsedSerial}</code>
-                        </div>
-                        <div class="col-md-2 text-md-center">
-                            <label class="text-muted small d-block">Item Unit</label>
-                            <span class="badge bg-primary fs-6 px-3 mt-1">1 pc</span>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', componentRow);
+                    `;
+                    container.insertAdjacentHTML('beforeend', componentRow);
+                    structuralIndex++;
+                }
+            });
+
+            // Cleanly remove the trailing bottom border helper from the last generated row
+            if (container.lastElementChild) {
+                container.lastElementChild.classList.remove('border-bottom', 'pb-3');
             }
         });
     }
