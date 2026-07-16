@@ -378,24 +378,9 @@
                     {{-- Bottom Section: Component Details --}}
                     <div class="col-12">
                         <h5 class="text-primary mb-3 fw-bold"><i class="bi bi-box-seam me-2"></i>Component Details</h5>
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label class="text-muted small d-block">Category</label>
-                                <p class="fw-semibold mb-0" id="modalCategory">-</p>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="text-muted small d-block">Component Name</label>
-                                <p class="fw-semibold mb-0" id="modalComponent">-</p>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="text-muted small d-block">Brand / Serial</label>
-                                <p class="fw-semibold mb-0"><span id="modalBrand">-</span> • <code id="modalSerial">-</code></p>
-                            </div>
-                            <div class="col-md-2 text-md-center">
-                                <label class="text-muted small d-block">Quantity</label>
-                                <span class="badge bg-primary fs-6 px-3" id="modalQuantity">-</span>
-                            </div>
-                        </div>
+                        
+                        {{-- JavaScript completely controls this container. Keep this div empty! --}}
+                        <div id="modalComponentContainer"></div>
                     </div>
 
                     {{-- Remarks Section --}}
@@ -428,42 +413,62 @@ document.addEventListener('DOMContentLoaded', function() {
     if (reportDetailsModal) {
         // Listen to Bootstrap's native show event
         reportDetailsModal.addEventListener('show.bs.modal', function (event) {
-            // Button (or element) that triggered the modal
-            const button = event.relatedTarget;
-            
-            // Safely extract info from data-* attributes
-            const waybill = button.getAttribute('data-waybill') || 'N/A';
-            const date = button.getAttribute('data-date') || 'N/A';
-            const preparedBy = button.getAttribute('data-prepared-by') || 'N/A';
-            const deployedTo = button.getAttribute('data-deployed-to') || 'N/A';
-            const contact = button.getAttribute('data-contact') || 'N/A';
-            const office = button.getAttribute('data-office') || 'N/A';
-            const address = button.getAttribute('data-address') || 'N/A';
-            const category = button.getAttribute('data-category') || 'N/A';
-            const component = button.getAttribute('data-component') || 'N/A';
-            const brand = button.getAttribute('data-brand') || 'N/A';
-            const serial = button.getAttribute('data-serial') || 'No Serial';
-            const quantity = button.getAttribute('data-quantity') || '0';
-            const remarks = button.getAttribute('data-remarks') || 'No remarks provided.';
+        const button = event.relatedTarget;
+        
+        // Extract base layout attributes
+        const waybill = button.getAttribute('data-waybill') || 'N/A';
+        const date = button.getAttribute('data-date') || 'N/A';
+        const preparedBy = button.getAttribute('data-prepared-by') || 'N/A';
+        const deployedTo = button.getAttribute('data-deployed-to') || 'N/A';
+        const contact = button.getAttribute('data-contact') || 'N/A';
+        const office = button.getAttribute('data-office') || 'N/A';
+        const address = button.getAttribute('data-address') || 'N/A';
+        const category = button.getAttribute('data-category') || 'N/A';
+        const component = button.getAttribute('data-component') || 'N/A';
+        const brand = button.getAttribute('data-brand') || 'N/A';
+        const serial = button.getAttribute('data-serial') || 'No Serial';
+        const quantity = parseInt(button.getAttribute('data-quantity')) || 1; // Base integer fallback
+        const remarks = button.getAttribute('data-remarks') || 'No remarks provided.';
 
-            // Inject the values directly into the modal elements
-            document.getElementById('modalWaybill').textContent = waybill;
-            document.getElementById('modalDate').textContent = date;
-            document.getElementById('modalPreparedBy').textContent = preparedBy;
-            
-            document.getElementById('modalDeployedTo').textContent = deployedTo;
-            document.getElementById('modalContact').textContent = contact;
-            document.getElementById('modalOffice').textContent = office;
-            document.getElementById('modalAddress').textContent = address;
-            
-            document.getElementById('modalCategory').textContent = category;
-            document.getElementById('modalComponent').textContent = component;
-            document.getElementById('modalBrand').textContent = brand;
-            document.getElementById('modalSerial').textContent = serial;
-            document.getElementById('modalQuantity').textContent = quantity;
-            
-            document.getElementById('modalRemarks').textContent = remarks;
-        });
+        // Inject base values
+        document.getElementById('modalWaybill').textContent = waybill;
+        document.getElementById('modalDate').textContent = date;
+        document.getElementById('modalPreparedBy').textContent = preparedBy;
+        document.getElementById('modalDeployedTo').textContent = deployedTo;
+        document.getElementById('modalContact').textContent = contact;
+        document.getElementById('modalOffice').textContent = office;
+        document.getElementById('modalAddress').textContent = address;
+        document.getElementById('modalRemarks').textContent = remarks;
+
+        // Grab container and purge historical lines
+        const container = document.getElementById('modalComponentContainer');
+        container.innerHTML = '';
+
+        // Loop through the quantity and render structured grid line-items
+        for (let i = 1; i <= quantity; i++) {
+            const componentRow = `
+                <div class="row g-3 mb-3 align-items-center ${i < quantity ? 'border-bottom pb-3' : ''}">
+                    <div class="col-md-3">
+                        <label class="text-muted small d-block">Category ${quantity > 1 ? '#' + i : ''}</label>
+                        <p class="fw-semibold mb-0">${category}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small d-block">Component Name</label>
+                        <p class="fw-semibold mb-0">${component}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="text-muted small d-block">Brand / Serial</label>
+                        <p class="fw-semibold mb-0"><span>${brand}</span> • <code>${serial}</code></p>
+                    </div>
+                    <div class="col-md-2 text-md-center">
+                        <label class="text-muted small d-block">Item Unit</label>
+                        <span class="badge bg-primary fs-6 px-3">1 pc</span>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', componentRow);
+        }
+    });
     }
 
     // Fix dropdown z-index overlap issues
