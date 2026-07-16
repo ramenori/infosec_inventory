@@ -54,7 +54,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('admin.reports.export', request()->only('search')) }}">
+                                    <a class="dropdown-item" href="{{ route('admin.reports.export', request()->query()) }}">
                                         <i class="bi bi-file-earmark-pdf me-2"></i> PDF
                                     </a>
                                 </li>
