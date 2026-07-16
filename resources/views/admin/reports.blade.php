@@ -101,9 +101,9 @@
                             <tr class="hover-shadow">
                                 {{-- COLUMN 1: WAYBILL NO. --}}
                                 <td class="align-middle">
-                                    <span class="badge bg-secondary px-3 py-2">
-                                        <i class="bi bi-upc-scan me-1"></i>
-                                        {{ $deployment->waybill_number ?? 'N/A' }}
+                                    <span class="waybill-pill">
+                                        <i class="bi bi-upc-scan pill-icon"></i>
+                                        <span class="waybill-text">{{ $deployment->waybill_number ?? 'N/A' }}</span>
                                     </span>
                                 </td>
 
@@ -269,6 +269,41 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Modern Waybill Pill */
+.waybill-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background-color: rgba(102, 126, 234, 0.08); /* Soft tint matching your header's indigo/purple gradient */
+    color: #4a5dca;
+    border: 1px solid rgba(102, 126, 234, 0.15);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Adds a nice interactive lift when hovering over the table row */
+.waybill-pill:hover {
+    background-color: rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.3);
+    color: #3b4cb4;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.1);
+}
+
+.pill-icon {
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+/* Monospace font gives tracking and waybill numbers a high-tech, readable layout */
+.waybill-text {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Monaco, monospace;
+    letter-spacing: 0.5px;
 }
 </style>
 
