@@ -251,11 +251,12 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <span class="status-badge 
-                    @if($item->status === 'Available') bg-success
-                    @elseif($item->status === 'Low Stock') bg-warning text-dark
-                    @elseif($item->status === 'Out of Stock') bg-danger
-                    @else bg-secondary @endif">
+                  <span class="status-badge-modern 
+                    @if($item->status === 'Available') status-available
+                    @elseif($item->status === 'Low Stock') status-low-stock
+                    @elseif($item->status === 'Out of Stock') status-out-of-stock
+                    @else status-default @endif">
+                    <span class="status-dot"></span>
                     {{ $item->status }}
                   </span>
                 </td>
@@ -723,12 +724,81 @@ App\Models\Category::all() as $cat)
   font-size: 3rem;
   opacity: 0.3;
 }
-.status-badge {
-  padding: 6px 16px;
-  border-radius: 20px;
+/* Modern Status Badges */
+.status-badge-modern {
+  padding: 6px 14px;
+  border-radius: 30px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
   display: inline-block;
+}
+
+/* Available Status Design (Soft Green) */
+.status-available {
+  background-color: rgba(25, 135, 84, 0.12);
+  color: #1f8b4c;
+  border: 1px solid rgba(25, 135, 84, 0.2);
+}
+.status-available .status-dot {
+  background-color: #198754;
+  box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.25);
+  animation: pulse-green 2s infinite;
+}
+
+/* Low Stock Status Design (Soft Amber) */
+.status-low-stock {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #a06e00;
+  border: 1px solid rgba(255, 193, 7, 0.25);
+}
+.status-low-stock .status-dot {
+  background-color: #ffb700;
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
+}
+
+/* Out of Stock Status Design (Soft Red/Rose) */
+.status-out-of-stock {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #d12a3a;
+  border: 1px solid rgba(220, 53, 69, 0.18);
+}
+.status-out-of-stock .status-dot {
+  background-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+/* Default / Other Status Design (Soft Slate) */
+.status-default {
+  background-color: rgba(108, 117, 125, 0.1);
+  color: #5c636a;
+  border: 1px solid rgba(108, 117, 125, 0.15);
+}
+.status-default .status-dot {
+  background-color: #6c757d;
+}
+
+/* Pulse animation for the "Available" status dot to show active system status */
+@keyframes pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(25, 135, 84, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+  }
 }
 .hover-shadow:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
