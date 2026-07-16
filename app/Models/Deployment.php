@@ -14,6 +14,7 @@ class Deployment extends Model
         'user_id',
         'contact_person_id',
         'waybill_number',
+        'reference_number',
         'deployed_to',
         'contact_number',
         'address',

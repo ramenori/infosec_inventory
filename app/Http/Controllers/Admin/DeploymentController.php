@@ -15,18 +15,24 @@ class DeploymentController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = Category::all()->map(function($category) {
-            $itemsCount = Inventory::where('category', $category->name)->count();
-            $availableCount = Inventory::where('category', $category->name)
-                ->where('status', 'Available')
-                ->where('stock_qty', '>', 0)
-                ->count();
+        // Fetch all stock counts grouped by category in ONE efficient database trip
+        $categoryStats = Inventory::select('category')
+            ->selectRaw('COUNT(*) as total_items')
+            ->selectRaw("SUM(CASE WHEN status = 'Available' AND stock_qty > 0 THEN 1 ELSE 0 END) as available_items")
+            ->whereNotNull('category')
+            ->groupBy('category')
+            ->get()
+            ->keyBy('category');
+
+        // Load categories and cleanly map the pre-calculated counts
+        $categories = Category::all()->map(function($category) use ($categoryStats) {
+            $stats = $categoryStats->get($category->name);
 
             return (object) [
                 'id'              => $category->id,
                 'name'            => $category->name,
-                'items_count'     => $itemsCount,
-                'available_count' => $availableCount
+                'items_count'     => $stats ? $stats->total_items : 0,
+                'available_count' => $stats ? $stats->available_items : 0
             ];
         });
 
@@ -68,8 +74,8 @@ class DeploymentController extends Controller
                     $search = $request->component_search;
                     $query->where(function($q) use ($search) {
                         $q->where('component', 'like', "%{$search}%")
-                          ->orWhere('serial_num', 'like', "%{$search}%")
-                          ->orWhere('brand', 'like', "%{$search}%");
+                        ->orWhere('serial_num', 'like', "%{$search}%")
+                        ->orWhere('brand', 'like', "%{$search}%");
                     });
                 }
 
@@ -414,6 +420,7 @@ class DeploymentController extends Controller
                     'deployment_date'  => $request->deployment_date,
                     'remarks'          => $request->remarks,
                     'status'           => 'completed',
+                    'reference_number'  => Deployment::generateReferenceNumber(),
                     'waybill_number'   => $request->filled('waybill_number') ? $request->waybill_number : null,
                     'contact_number'   => $request->filled('contact_number') ? $request->contact_number : null,
                     'address'          => $request->filled('address') ? $request->address : null,
