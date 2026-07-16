@@ -192,10 +192,24 @@
 
                                 {{-- COLUMN 10: ACTIONS --}}
                                 <td class="text-center align-middle">
-                                    <button type="button" class="btn btn-sm btn-outline-primary"
-                                            data-bs-toggle="tooltip" data-bs-placement="top"
-                                            title="View Details"
-                                            onclick="viewReport({{ $deployment->id }})">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-primary view-report-btn"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#reportDetailsModal"
+                                            data-waybill="{{ $deployment->waybill_number ?? 'N/A' }}"
+                                            data-date="{{ optional($deployment->deployment_date)->format('M d, Y') ?? 'N/A' }}"
+                                            data-category="{{ $category }}"
+                                            data-component="{{ $deployment->component }}"
+                                            data-brand="{{ optional($deployment->inventory)->brand ?? 'N/A' }}"
+                                            data-serial="{{ optional($deployment->inventory)->serial_num ?? 'No Serial' }}"
+                                            data-quantity="{{ $deployment->quantity }}"
+                                            data-deployed-to="{{ $displayName }}"
+                                            data-contact="{{ $displayContact ?: 'N/A' }}"
+                                            data-address="{{ $displayAddress ?: 'N/A' }}"
+                                            data-office="{{ $displayOffice ?: 'N/A' }}"
+                                            data-prepared-by="{{ optional($deployment->user)->name ?? 'N/A' }}"
+                                            data-remarks="{{ e($deployment->remarks ?: 'No remarks provided.') }}"
+                                            title="View Details">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </td>
@@ -307,12 +321,152 @@
 }
 </style>
 
-{{-- JavaScript --}}
+{{-- Deployment Report Details Modal --}}
+<div class="modal fade" id="reportDetailsModal" tabindex="-1" aria-labelledby="reportDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="reportDetailsModalLabel">
+                    <i class="bi bi-file-earmark-text me-2"></i> Deployment Report Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    {{-- Left Section: Deployment Info --}}
+                    <div class="col-md-6 border-end">
+                        <h5 class="text-primary mb-3 fw-bold"><i class="bi bi-truck me-2"></i>Deployment Info</h5>
+                        <div class="mb-3">
+                            <label class="text-muted small d-block mb-1">Waybill Number</label>
+                            <span class="waybill-pill py-1 px-2" id="modalWaybill">-</span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Date Deployed</label>
+                            <p class="fw-semibold mb-0" id="modalDate">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Prepared By</label>
+                            <p class="fw-semibold mb-0" id="modalPreparedBy">-</p>
+                        </div>
+                    </div>
+
+                    {{-- Right Section: Client Info --}}
+                    <div class="col-md-6">
+                        <h5 class="text-primary mb-3 fw-bold"><i class="bi bi-person-circle me-2"></i>Recipient Info</h5>
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Deployed To / Contact Person</label>
+                            <p class="fw-semibold mb-0" id="modalDeployedTo">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Contact Number</label>
+                            <p class="fw-semibold mb-0" id="modalContact">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Satellite Office</label>
+                            <p class="fw-semibold mb-0" id="modalOffice">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Address</label>
+                            <p class="fw-semibold mb-0" id="modalAddress">-</p>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <hr class="my-1">
+                    </div>
+
+                    {{-- Bottom Section: Component Details --}}
+                    <div class="col-12">
+                        <h5 class="text-primary mb-3 fw-bold"><i class="bi bi-box-seam me-2"></i>Component Details</h5>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="text-muted small d-block">Category</label>
+                                <p class="fw-semibold mb-0" id="modalCategory">-</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-muted small d-block">Component Name</label>
+                                <p class="fw-semibold mb-0" id="modalComponent">-</p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="text-muted small d-block">Brand / Serial</label>
+                                <p class="fw-semibold mb-0"><span id="modalBrand">-</span> • <code id="modalSerial">-</code></p>
+                            </div>
+                            <div class="col-md-2 text-md-center">
+                                <label class="text-muted small d-block">Quantity</label>
+                                <span class="badge bg-primary fs-6 px-3" id="modalQuantity">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Remarks Section --}}
+                    <div class="col-12">
+                        <div class="bg-light p-3 rounded">
+                            <label class="text-muted small d-block fw-bold mb-1"><i class="bi bi-card-text me-1"></i>Remarks</label>
+                            <p class="mb-0 text-dark" id="modalRemarks">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize standard tooltips
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
 
+    // Get the modal element
+    const reportDetailsModal = document.getElementById('reportDetailsModal');
+    
+    if (reportDetailsModal) {
+        // Listen to Bootstrap's native show event
+        reportDetailsModal.addEventListener('show.bs.modal', function (event) {
+            // Button (or element) that triggered the modal
+            const button = event.relatedTarget;
+            
+            // Safely extract info from data-* attributes
+            const waybill = button.getAttribute('data-waybill') || 'N/A';
+            const date = button.getAttribute('data-date') || 'N/A';
+            const preparedBy = button.getAttribute('data-prepared-by') || 'N/A';
+            const deployedTo = button.getAttribute('data-deployed-to') || 'N/A';
+            const contact = button.getAttribute('data-contact') || 'N/A';
+            const office = button.getAttribute('data-office') || 'N/A';
+            const address = button.getAttribute('data-address') || 'N/A';
+            const category = button.getAttribute('data-category') || 'N/A';
+            const component = button.getAttribute('data-component') || 'N/A';
+            const brand = button.getAttribute('data-brand') || 'N/A';
+            const serial = button.getAttribute('data-serial') || 'No Serial';
+            const quantity = button.getAttribute('data-quantity') || '0';
+            const remarks = button.getAttribute('data-remarks') || 'No remarks provided.';
+
+            // Inject the values directly into the modal elements
+            document.getElementById('modalWaybill').textContent = waybill;
+            document.getElementById('modalDate').textContent = date;
+            document.getElementById('modalPreparedBy').textContent = preparedBy;
+            
+            document.getElementById('modalDeployedTo').textContent = deployedTo;
+            document.getElementById('modalContact').textContent = contact;
+            document.getElementById('modalOffice').textContent = office;
+            document.getElementById('modalAddress').textContent = address;
+            
+            document.getElementById('modalCategory').textContent = category;
+            document.getElementById('modalComponent').textContent = component;
+            document.getElementById('modalBrand').textContent = brand;
+            document.getElementById('modalSerial').textContent = serial;
+            document.getElementById('modalQuantity').textContent = quantity;
+            
+            document.getElementById('modalRemarks').textContent = remarks;
+        });
+    }
+
+    // Fix dropdown z-index overlap issues
     document.querySelectorAll('.dropdown-toggle').forEach(dropdown => {
         dropdown.addEventListener('click', function() {
             const menu = this.nextElementSibling;
@@ -320,10 +474,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-
-function viewReport(id) {
-    window.location.href = `/admin/deployment/${id}`;
-}
 </script>
 @endpush
 @endsection
