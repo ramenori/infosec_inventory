@@ -298,43 +298,58 @@
             @if($cartItems->count() > 0)
               <div class="cart-items mb-4" style="max-height: 300px; overflow-y: auto;">
                 @foreach($cartItems as $cartItem)
-                  <div class="cart-item card border mb-3">
-                    <div class="card-body p-3">
-                      <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1 me-3">
-                          <h6 class="mb-1 fw-semibold">{{ $cartItem->inventory->component }}</h6>
-                          <div class="d-flex flex-wrap gap-2 mb-2">
-                            <small class="text-muted"><i class="bi bi-tag"></i> {{ $cartItem->inventory->category }}</small>
-                            @if($cartItem->inventory->serial_num)
-                              <small class="text-muted"><i class="bi bi-upc-scan"></i> {{ $cartItem->inventory->serial_num }}</small>
-                            @endif
-                            <small class="text-muted"><i class="bi bi-box"></i> Max: {{ $cartItem->inventory->stock_qty + $cartItem->quantity }}</small>
-                          </div>
-                        </div>
-                        <div class="text-end">
-                          <form action="{{ route('admin.deployment.updateCart', $cartItem->inventory_id) }}" method="POST" class="quantity-form">
-                            @csrf
-                            @method('PUT')
-                            <div class="input-group input-group-sm mb-2" style="width: 100px;">
-                              <input type="number" name="quantity" class="form-control" 
-                                     value="{{ $cartItem->quantity }}" min="1" 
-                                     max="{{ $cartItem->inventory->stock_qty + $cartItem->quantity }}"
-                                     onchange="this.form.submit()">
-                              <span class="input-group-text bg-light">qty</span>
-                            </div>
-                          </form>
-                          <form action="{{ route('admin.deployment.removeFromCart', $cartItem->inventory_id) }}" method="POST" class="d-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                              <i class="bi bi-trash"></i>
-                            </button>
-                          </form>
+                <div class="cart-item card border mb-3">
+                  <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div class="flex-grow-1 me-3">
+                        <h6 class="mb-1 fw-semibold">{{ $cartItem->inventory->component }}</h6>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                          <small class="text-muted"><i class="bi bi-tag"></i> {{ $cartItem->inventory->category }}</small>
+                          <small class="text-muted"><i class="bi bi-box"></i> Max: {{ $cartItem->inventory->stock_qty + $cartItem->quantity }}</small>
                         </div>
                       </div>
+                      <div class="text-end">
+                        <form action="{{ route('admin.deployment.updateCart', $cartItem->inventory_id) }}" method="POST" class="quantity-form">
+                          @csrf
+                          @method('PUT')
+                          <div class="input-group input-group-sm mb-2" style="width: 100px;">
+                            <input type="number" name="quantity" class="form-control" 
+                                  value="{{ $cartItem->quantity }}" min="1" 
+                                  max="{{ $cartItem->inventory->stock_qty + $cartItem->quantity }}"
+                                  onchange="this.form.submit()">
+                            <span class="input-group-text bg-light">qty</span>
+                          </div>
+                        </form>
+                        <form action="{{ route('admin.deployment.removeFromCart', $cartItem->inventory_id) }}" method="POST" class="d-inline">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                      </div>
                     </div>
+
+                    {{-- Dynamic Individual Serial Inputs --}}
+                    <div class="border-top pt-2 mt-2">
+                      <small class="text-muted d-block mb-1 fw-semibold"><i class="bi bi-upc-scan me-1"></i> Individual Serials:</small>
+                      @for($i = 0; $i < $cartItem->quantity; $i++)
+                        <div class="input-group input-group-sm mb-1">
+                          <span class="input-group-text bg-light text-muted" style="font-size: 0.75rem;">#{{ $i + 1 }}</span>
+                          {{-- Pass as nested array: serials[inventory_id][] --}}
+                          <input type="text" 
+                                name="serials[{{ $cartItem->inventory_id }}][]" 
+                                class="form-control form-control-sm" 
+                                placeholder="Enter serial number"
+                                form="deploymentSubmitForm"
+                                value="{{ $cartItem->inventory->serial_num && $cartItem->quantity == 1 ? $cartItem->inventory->serial_num : '' }}">
+                        </div>
+                      @endfor
+                    </div>
+
                   </div>
-                @endforeach
+                </div>
+              @endforeach
               </div>
 
               <div class="cart-summary border-top pt-3">
@@ -362,7 +377,7 @@
                   </button>
                 </form>
 
-                <form action="{{ route('admin.deployment.deploy') }}" method="POST">
+                <form id="deploymentSubmitForm" action="{{ route('admin.deployment.deploy') }}" method="POST">
                   @csrf
                   <h6 class="fw-semibold mb-3">Deployment Details</h6>
 

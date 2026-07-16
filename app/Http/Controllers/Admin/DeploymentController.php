@@ -405,36 +405,48 @@ class DeploymentController extends Controller
             }
 
             foreach ($cartItems as $cartItem) {
-                $inventory = Inventory::where('id', $cartItem['inventory_id'])
-                    ->where('stock_qty', '>=', $cartItem['quantity'])
-                    ->first();
+            $inventory = Inventory::where('id', $cartItem['inventory_id'])
+                ->where('stock_qty', '>=', $cartItem['quantity'])
+                ->first();
 
-                if (!$inventory) {
-                    throw new \Exception("Item ID {$cartItem['inventory_id']} is no longer available in sufficient quantity.");
-                }
+            if (!$inventory) {
+                throw new \Exception("Item ID {$cartItem['inventory_id']} is no longer available in sufficient quantity.");
+            }
+
+            // Grab the serials array for this specific inventory item
+            $submittedSerials = $request->input("serials.{$inventory->id}", []);
+
+            // Loop through the quantity and create individual deployment records for each unit
+            for ($i = 0; $i < $cartItem['quantity']; $i++) {
+                // Fall back to submitted serial, original inventory serial, or 'No Serial'
+                $specificSerial = $submittedSerials[$i] ?? $inventory->serial_num ?? 'No Serial';
 
                 Deployment::create([
-                    'user_id'          => Auth::id(),
-                    'contact_person_id'=> $contactPersonId,
-                    'deployed_to'      => $request->deployed_to,
-                    'deployment_date'  => $request->deployment_date,
-                    'remarks'          => $request->remarks,
-                    'status'           => 'completed',
-                    'reference_number'  => Deployment::generateReferenceNumber(),
-                    'waybill_number'   => $request->filled('waybill_number') ? $request->waybill_number : null,
-                    'contact_number'   => $request->filled('contact_number') ? $request->contact_number : null,
-                    'address'          => $request->filled('address') ? $request->address : null,
-                    'satellite_office' => $request->filled('satellite_office') ? $request->satellite_office : null,
-                    'inventory_id'     => $inventory->id,
-                    'component'        => $inventory->component,
-                    'quantity'         => $cartItem['quantity'],
+                    'user_id'           => Auth::id(),
+                    'contact_person_id' => $contactPersonId,
+                    'deployed_to'       => $request->deployed_to,
+                    'deployment_date'   => $request->deployment_date,
+                    'remarks'           => $request->remarks,
+                    'status'            => 'completed',
+                    'waybill_number'    => $request->filled('waybill_number') ? $request->waybill_number : null,
+                    'contact_number'    => $request->filled('contact_number') ? $request->contact_number : null,
+                    'address'           => $request->filled('address') ? $request->address : null,
+                    'satellite_office'  => $request->filled('satellite_office') ? $request->satellite_office : null,
+                    'inventory_id'      => $inventory->id,
+                    
+                    // ◄ UPDATE THIS LINE BELOW TO DYNAMICALLY ATTACH THE CUSTOM SERIAL NUMBER STRING
+                    'component'         => $inventory->component . ($cartItem['quantity'] > 1 ? " (#" . ($i + 1) . ")" : "") . " [SN: " . $specificSerial . "]",
+                    
+                    'quantity'          => 1, // Store each unit individually!
                 ]);
-
-                $inventory->stock_qty -= $cartItem['quantity'];
-                $inventory->status = $inventory->stock_qty <= 0 ? 'Out of Stock'
-                    : ($inventory->stock_qty < 5 ? 'Low Stock' : 'Available');
-                $inventory->save();
             }
+
+    // Subtract total stock
+    $inventory->stock_qty -= $cartItem['quantity'];
+    $inventory->status = $inventory->stock_qty <= 0 ? 'Out of Stock'
+        : ($inventory->stock_qty < 5 ? 'Low Stock' : 'Available');
+    $inventory->save();
+}
 
             DB::commit();
 

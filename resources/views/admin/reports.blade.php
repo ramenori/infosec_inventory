@@ -88,6 +88,8 @@
                             <th class="border-0">DATE DEPLOYED</th>
                             <th class="border-0">CATEGORY</th>
                             <th class="border-0 text-center">COMPONENT</th>
+                            <th class="border-0 text-center">BRAND</th>
+                            <th class="border-0 text-center">SERIAL NUMBER</th>
                             <th class="border-0 text-center">QUANTITY</th>
                             <th class="border-0 text-center">DEPLOYED TO</th>
                             <th class="border-0 text-center">CONTACT NO.</th>
@@ -136,22 +138,41 @@
                                     </div>
                                 </td>
 
-                                {{-- COLUMN 4: COMPONENT --}}
+                                {{-- COLUMN 4: COMPONENT NAME --}}
                                 <td class="text-center align-middle">
-                                    <strong class="d-block">{{ $deployment->component }}</strong>
-                                    <small class="text-muted">{{ optional($deployment->inventory)->brand ?? 'N/A' }}</small>
-                                    <br>
-                                    <small class="text-muted">
-                                        <code>{{ optional($deployment->inventory)->serial_num ?? 'No Serial' }}</code>
-                                    </small>
+                                    @php
+                                        $displayComponent = $deployment->component;
+                                        if (str_contains($deployment->component, '[SN:')) {
+                                            preg_match('/\[SN:\s*(.*?)\]/', $deployment->component, $matches);
+                                            $currentSerial = $matches[1] ?? null;
+                                            $displayComponent = trim(preg_replace('/\[SN:\s*.*?\]/', '', $deployment->component));
+                                        } else {
+                                            $currentSerial = optional($deployment->inventory)->serial_num;
+                                        }
+                                    @endphp
+                                    <strong class="d-block">{{ $displayComponent }}</strong>
                                 </td>
 
-                                {{-- COLUMN 5: QUANTITY --}}
+                                {{-- COLUMN 5: BRAND --}}
+                                <td class="text-center align-middle">
+                                    <span class="text-muted fw-semibold">{{ optional($deployment->inventory)->brand ?? 'N/A' }}</span>
+                                </td>
+
+                                {{-- COLUMN 6: SERIAL NUMBER --}}
+                                <td class="text-center align-middle">
+                                    @if($currentSerial && $currentSerial !== 'No Serial')
+                                        <code class="text-primary fw-bold px-2 py-1 bg-light rounded" style="font-size: 0.85rem;">{{ $currentSerial }}</code>
+                                    @else
+                                        <code class="text-danger opacity-75">No Serial</code>
+                                    @endif
+                                </td>
+
+                                {{-- COLUMN 7: QUANTITY --}}
                                 <td class="text-center align-middle">
                                     {{ $deployment->quantity }}
                                 </td>
 
-                                {{-- COLUMN 6: DEPLOYED TO --}}
+                                {{-- COLUMN 8: DEPLOYED TO --}}
                                 <td class="text-center align-middle">
                                     @php
                                         $displayName = optional($deployment->contactPerson)->name ?? $deployment->deployed_to;
@@ -162,7 +183,7 @@
                                     <strong class="d-block">{{ $displayName }}</strong>
                                 </td>
 
-                                {{-- COLUMN 7: CONTACT NUMBER --}}
+                                {{-- COLUMN 9: CONTACT NUMBER --}}
                                 <td class="text-center align-middle">
                                     @if($displayContact)
                                         <i class="bi bi-telephone me-1"></i> {{ $displayContact }}
@@ -171,26 +192,25 @@
                                     @endif
                                 </td>
 
-                                {{-- COLUMN 8: ADDRESS --}}
+                                {{-- COLUMN 10: ADDRESS --}}
                                 <td class="text-center align-middle">
                                     @if($displayAddress)
-                                            <i class="bi bi-geo-alt me-1"></i> {{ Str::limit($displayAddress, 20) }}
-
+                                        <i class="bi bi-geo-alt me-1"></i> {{ Str::limit($displayAddress, 20) }}
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
 
-                                {{-- COLUMN 9: SATELLITE OFFICE --}}
+                                {{-- COLUMN 11: SATELLITE OFFICE --}}
                                 <td class="text-center align-middle">
                                     @if($displayOffice)
-                                            <i class="bi bi-building me-1"></i> {{ $displayOffice }}
+                                        <i class="bi bi-building me-1"></i> {{ $displayOffice }}
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
 
-                                {{-- COLUMN 10: ACTIONS --}}
+                                {{-- COLUMN 12: ACTIONS --}}
                                 <td class="text-center align-middle">
                                     <button type="button" 
                                             class="btn btn-sm btn-outline-primary view-report-btn"
@@ -216,7 +236,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center py-5">
+                                <td colspan="12" class="text-center py-5">
                                     <div class="empty-state">
                                         <i class="bi bi-file-earmark-text display-4 text-muted mb-3"></i>
                                         <h5 class="text-muted">No deployment reports found</h5>
@@ -284,14 +304,12 @@
     align-items: center;
     justify-content: center;
 }
-
-/* Modern Waybill Pill */
 .waybill-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    background-color: rgba(102, 126, 234, 0.08); /* Soft tint matching your header's indigo/purple gradient */
+    background-color: rgba(102, 126, 234, 0.08);
     color: #4a5dca;
     border: 1px solid rgba(102, 126, 234, 0.15);
     border-radius: 6px;
@@ -299,8 +317,6 @@
     font-weight: 600;
     transition: all 0.2s ease-in-out;
 }
-
-/* Adds a nice interactive lift when hovering over the table row */
 .waybill-pill:hover {
     background-color: rgba(102, 126, 234, 0.15);
     border-color: rgba(102, 126, 234, 0.3);
@@ -308,13 +324,10 @@
     transform: translateY(-1px);
     box-shadow: 0 2px 6px rgba(102, 126, 234, 0.1);
 }
-
 .pill-icon {
     font-size: 0.85rem;
     opacity: 0.85;
 }
-
-/* Monospace font gives tracking and waybill numbers a high-tech, readable layout */
 .waybill-text {
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Monaco, monospace;
     letter-spacing: 0.5px;
@@ -378,8 +391,6 @@
                     {{-- Bottom Section: Component Details --}}
                     <div class="col-12">
                         <h5 class="text-primary mb-3 fw-bold"><i class="bi bi-box-seam me-2"></i>Component Details</h5>
-                        
-                        {{-- JavaScript completely controls this container. Keep this div empty! --}}
                         <div id="modalComponentContainer"></div>
                     </div>
 
@@ -413,62 +424,78 @@ document.addEventListener('DOMContentLoaded', function() {
     if (reportDetailsModal) {
         // Listen to Bootstrap's native show event
         reportDetailsModal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget;
-        
-        // Extract base layout attributes
-        const waybill = button.getAttribute('data-waybill') || 'N/A';
-        const date = button.getAttribute('data-date') || 'N/A';
-        const preparedBy = button.getAttribute('data-prepared-by') || 'N/A';
-        const deployedTo = button.getAttribute('data-deployed-to') || 'N/A';
-        const contact = button.getAttribute('data-contact') || 'N/A';
-        const office = button.getAttribute('data-office') || 'N/A';
-        const address = button.getAttribute('data-address') || 'N/A';
-        const category = button.getAttribute('data-category') || 'N/A';
-        const component = button.getAttribute('data-component') || 'N/A';
-        const brand = button.getAttribute('data-brand') || 'N/A';
-        const serial = button.getAttribute('data-serial') || 'No Serial';
-        const quantity = parseInt(button.getAttribute('data-quantity')) || 1; // Base integer fallback
-        const remarks = button.getAttribute('data-remarks') || 'No remarks provided.';
+            const button = event.relatedTarget;
+            
+            // Extract base layout attributes
+            const waybill = button.getAttribute('data-waybill') || 'N/A';
+            const date = button.getAttribute('data-date') || 'N/A';
+            const preparedBy = button.getAttribute('data-prepared-by') || 'N/A';
+            const deployedTo = button.getAttribute('data-deployed-to') || 'N/A';
+            const contact = button.getAttribute('data-contact') || 'N/A';
+            const office = button.getAttribute('data-office') || 'N/A';
+            const address = button.getAttribute('data-address') || 'N/A';
+            const category = button.getAttribute('data-category') || 'N/A';
+            const component = button.getAttribute('data-component') || 'N/A';
+            const brand = button.getAttribute('data-brand') || 'N/A';
+            const serial = button.getAttribute('data-serial') || 'No Serial';
+            const quantity = parseInt(button.getAttribute('data-quantity')) || 1;
+            const remarks = button.getAttribute('data-remarks') || 'No remarks provided.';
 
-        // Inject base values
-        document.getElementById('modalWaybill').textContent = waybill;
-        document.getElementById('modalDate').textContent = date;
-        document.getElementById('modalPreparedBy').textContent = preparedBy;
-        document.getElementById('modalDeployedTo').textContent = deployedTo;
-        document.getElementById('modalContact').textContent = contact;
-        document.getElementById('modalOffice').textContent = office;
-        document.getElementById('modalAddress').textContent = address;
-        document.getElementById('modalRemarks').textContent = remarks;
+            // Inject base values
+            document.getElementById('modalWaybill').textContent = waybill;
+            document.getElementById('modalDate').textContent = date;
+            document.getElementById('modalPreparedBy').textContent = preparedBy;
+            document.getElementById('modalDeployedTo').textContent = deployedTo;
+            document.getElementById('modalContact').textContent = contact;
+            document.getElementById('modalOffice').textContent = office;
+            document.getElementById('modalAddress').textContent = address;
+            document.getElementById('modalRemarks').textContent = remarks;
 
-        // Grab container and purge historical lines
-        const container = document.getElementById('modalComponentContainer');
-        container.innerHTML = '';
+            // Grab container and purge previous rows
+            const container = document.getElementById('modalComponentContainer');
+            container.innerHTML = '';
 
-        // Loop through the quantity and render structured grid line-items
-        for (let i = 1; i <= quantity; i++) {
-            const componentRow = `
-                <div class="row g-3 mb-3 align-items-center ${i < quantity ? 'border-bottom pb-3' : ''}">
-                    <div class="col-md-3">
-                        <label class="text-muted small d-block">Category ${quantity > 1 ? '#' + i : ''}</label>
-                        <p class="fw-semibold mb-0">${category}</p>
+            // Dynamic tracking string extraction
+            for (let i = 1; i <= quantity; i++) {
+                let finalComponentName = component;
+                let parsedSerial = serial;
+
+                // Match and split embedded serial number strings out of the component block text
+                if (component.includes('[SN:')) {
+                    const serialMatch = component.match(/\[SN:\s*(.*?)\]/);
+                    if (serialMatch && serialMatch[1]) {
+                        parsedSerial = serialMatch[1];
+                        finalComponentName = component.replace(/\[SN:\s*.*?\]/, '').trim();
+                    }
+                }
+
+                const componentRow = `
+                    <div class="row g-3 mb-3 align-items-center ${i < quantity ? 'border-bottom pb-3' : ''}">
+                        <div class="col-md-2">
+                            <label class="text-muted small d-block">Category ${quantity > 1 ? '#' + i : ''}</label>
+                            <p class="fw-semibold mb-0">${category}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="text-muted small d-block">Component Name</label>
+                            <p class="fw-semibold mb-0 text-dark">${finalComponentName}</p>
+                        </div>
+                        <div class="col-md-2 text-md-center">
+                            <label class="text-muted small d-block">Brand</label>
+                            <p class="fw-semibold mb-0 text-muted">${brand}</p>
+                        </div>
+                        <div class="col-md-2 text-md-center">
+                            <label class="text-muted small d-block">Serial Number</label>
+                            <code class="text-primary fw-bold d-block mt-1" style="font-size: 0.9rem;">${parsedSerial}</code>
+                        </div>
+                        <div class="col-md-2 text-md-center">
+                            <label class="text-muted small d-block">Item Unit</label>
+                            <span class="badge bg-primary fs-6 px-3 mt-1">1 pc</span>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="text-muted small d-block">Component Name</label>
-                        <p class="fw-semibold mb-0">${component}</p>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="text-muted small d-block">Brand / Serial</label>
-                        <p class="fw-semibold mb-0"><span>${brand}</span> • <code>${serial}</code></p>
-                    </div>
-                    <div class="col-md-2 text-md-center">
-                        <label class="text-muted small d-block">Item Unit</label>
-                        <span class="badge bg-primary fs-6 px-3">1 pc</span>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', componentRow);
-        }
-    });
+                `;
+                container.insertAdjacentHTML('beforeend', componentRow);
+            }
+        });
     }
 
     // Fix dropdown z-index overlap issues

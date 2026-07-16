@@ -26,9 +26,8 @@ class ReportsController extends Controller
             $search = $request->search;
             $reportsQuery->where(function($query) use ($search) {
                 $query->where('deployed_to', 'like', "%{$search}%")
-                      ->orWhere('reference_number', 'like', "%{$search}%")
                       ->orWhere('remarks', 'like', "%{$search}%")
-                      ->orWhere('component', 'like', "%{$search}%")
+                      ->orWhere('component', 'like', "%{$search}%") // This row will now dynamically match your custom serial inputs!
                       ->orWhereHas('inventory', function($q) use ($search) {
                           $q->where('category', 'like', "%{$search}%")
                             ->orWhere('brand', 'like', "%{$search}%");
@@ -38,7 +37,8 @@ class ReportsController extends Controller
 
         $reports = $reportsQuery->paginate(10);
 
-        $totalItemsDeployed  = Deployment::sum('quantity');
+        // Calculates sum of individually logged units correctly
+        $totalItemsDeployed = Deployment::sum('quantity');
 
         return view('admin.reports', compact('reports', 'totalItemsDeployed'));
     }
@@ -48,13 +48,13 @@ class ReportsController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $reportsQuery = Deployment::with(['user', 'inventory', 'contactPerson'])->orderBy('deployment_date', 'desc');
+        $reportsQuery = Deployment::with(['user', 'inventory', 'contactPerson'])
+            ->orderBy('deployment_date', 'desc');
 
         if ($request->filled('search')) {
             $search = $request->search;
             $reportsQuery->where(function($query) use ($search) {
                 $query->where('deployed_to', 'like', "%{$search}%")
-                      ->orWhere('reference_number', 'like', "%{$search}%")
                       ->orWhere('remarks', 'like', "%{$search}%")
                       ->orWhere('component', 'like', "%{$search}%")
                       ->orWhereHas('inventory', function($q) use ($search) {
@@ -65,13 +65,10 @@ class ReportsController extends Controller
         }
 
         $reports = $reportsQuery->get();
-
-        $totalItemsDeployed  = $reports->sum('quantity');
-
+        $totalItemsDeployed = $reports->sum('quantity');
         $data = compact('reports', 'totalItemsDeployed');
 
         $pdf = PDF::loadView('admin.reports_pdf', $data)->setPaper('a4', 'landscape');
-
         $filename = 'deployment_reports_' . now()->format('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
@@ -85,18 +82,16 @@ class ReportsController extends Controller
         $reportsQuery = Deployment::with(['user', 'inventory', 'contactPerson'])
             ->orderBy('deployment_date', 'desc');
 
-        // Apply active search filter to keep export synchronized with the UI
         if ($request->filled('search')) {
             $search = $request->search;
             $reportsQuery->where(function($query) use ($search) {
                 $query->where('deployed_to', 'like', "%{$search}%")
-                    ->orWhere('reference_number', 'like', "%{$search}%")
-                    ->orWhere('remarks', 'like', "%{$search}%")
-                    ->orWhere('component', 'like', "%{$search}%")
-                    ->orWhereHas('inventory', function($q) use ($search) {
-                        $q->where('category', 'like', "%{$search}%")
+                      ->orWhere('remarks', 'like', "%{$search}%")
+                      ->orWhere('component', 'like', "%{$search}%")
+                      ->orWhereHas('inventory', function($q) use ($search) {
+                          $q->where('category', 'like', "%{$search}%")
                             ->orWhere('brand', 'like', "%{$search}%");
-                    });
+                      });
             });
         }
 
@@ -111,7 +106,7 @@ class ReportsController extends Controller
         $columns = [
             'A' => 'Waybill No.',
             'B' => 'Date Deployed',
-            'C' => 'Component',
+            'C' => 'Component / Serial Number', // Clean header title tracking change
             'D' => 'Contact Person',
             'E' => 'Contact Number',
             'F' => 'Address',
@@ -143,7 +138,6 @@ class ReportsController extends Controller
         // Populate Data Rows
         $rowNum = 2;
         foreach ($reports as $r) {
-            // Handle contact person fallback values beautifully
             $displayName = optional($r->contactPerson)->name ?: ($r->deployed_to ?: 'N/A');
             $displayContact = $r->contact_number ?: (optional($r->contactPerson)->contact_number ?: 'N/A');
             $displayAddress = $r->address ?: (optional($r->contactPerson)->address ?: 'N/A');
@@ -151,7 +145,7 @@ class ReportsController extends Controller
 
             $sheet->setCellValue('A' . $rowNum, $r->waybill_number ?? 'N/A');
             $sheet->setCellValue('B' . $rowNum, $r->deployment_date ? $r->deployment_date->format('Y-m-d') : 'N/A');
-            $sheet->setCellValue('C' . $rowNum, $r->component);
+            $sheet->setCellValue('C' . $rowNum, $r->component); // Outputs component text strings built with [SN: XXX] automatically!
             $sheet->setCellValue('D' . $rowNum, $displayName);
             $sheet->setCellValue('E' . $rowNum, $displayContact);
             $sheet->setCellValue('F' . $rowNum, $displayAddress);
@@ -159,7 +153,6 @@ class ReportsController extends Controller
             $sheet->setCellValue('H' . $rowNum, optional($r->user)->name ?? 'N/A');
             $sheet->setCellValue('I' . $rowNum, $r->remarks ?? 'N/A');
 
-            // Align values like Waybill and Date to the center for a clean look
             $sheet->getStyle('A' . $rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle('B' . $rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
