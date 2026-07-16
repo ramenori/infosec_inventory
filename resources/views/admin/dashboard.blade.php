@@ -2,279 +2,279 @@
 
 @section('content')
 <div class="container-fluid px-4">
-  <!-- Page Header (keep your existing header) -->
-  <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
-    <div>
-      <h1 class="h2 mb-1 fw-bold text-gradient">Dashboard Overview</h1>
-      <p class="text-muted mb-0">Welcome back, {{ Auth::user()->name ?? 'Admin' }}! Here's what's happening with your inventory.</p>
-    </div>
-    
-    <!-- Action Buttons (keep your existing buttons) -->
-    <div class="d-flex gap-2">
-      <!-- ... your existing buttons ... -->
-    </div>
-  </div>
-
-  <!-- Stats Cards (keep your existing cards but with real data) -->
-  <div class="row g-4 mb-4">
-    <!-- Most Item Deployed -->
-    <div class="col-xl-4 col-md-6">
-      <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #667eea;">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
-              <i class="bi bi-rocket-fill text-primary fs-4"></i>
-            </div>
-            <span class="badge bg-primary bg-opacity-20 text-primary rounded-pill">
-              {{ $dashboardData['most_deployed_quantity'] }} deployed
-            </span>
-          </div>
-          <h3 class="mb-2 fw-bold">{{ Str::limit($dashboardData['most_deployed_item'], 20) }}</h3>
-          <p class="text-muted mb-0">Most Deployed Item</p>
-          <div class="mt-3">
-            <small class="text-success"><i class="bi bi-arrow-up-right me-1"></i> Top performing item</small>
-          </div>
+    {{-- Page Header --}}
+    <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
+        <div>
+            <h1 class="h2 mb-1 fw-bold text-gradient">Dashboard Overview</h1>
+            <p class="text-muted mb-0">Welcome back, {{ Auth::user()->name ?? 'Admin' }}! Here's what's happening with your inventory.</p>
         </div>
-      </div>
     </div>
 
-    <!-- Total Stock QTY -->
-    <div class="col-xl-4 col-md-6">
-      <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #f59e0b;">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <div class="bg-warning bg-opacity-10 rounded-3 p-3">
-              <i class="bi bi-box-seam text-warning fs-4"></i>
-            </div>
-            <span class="badge bg-warning bg-opacity-20 text-warning rounded-pill">Inventory</span>
-          </div>
-          <h3 class="mb-2 fw-bold">{{ $dashboardData['total_stock_qty'] }}</h3>
-          <p class="text-muted mb-0">Total Stock Quantity</p>
-          <div class="mt-3">
-            <small class="text-warning"><i class="bi bi-bar-chart me-1"></i> All items in stock</small>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Items Deployed This Month -->
-    <div class="col-xl-4 col-md-6">
-      <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #3b82f6;">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <div class="bg-info bg-opacity-10 rounded-3 p-3">
-              <i class="bi bi-calendar-check text-info fs-4"></i>
-            </div>
-            <span class="badge bg-info bg-opacity-20 text-info rounded-pill">This Month</span>
-          </div>
-          <h3 class="mb-2 fw-bold">{{ $dashboardData['items_deployed_month'] }}</h3>
-          <p class="text-muted mb-0">Items Deployed</p>
-          <div class="mt-3">
-            <small class="text-primary"><i class="bi bi-arrow-up-circle me-1"></i> Monthly deployment count</small>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Charts Section - NOW WITH REAL DATA! -->
-  <div class="row g-4 mb-4">
-    <!-- Main Chart Area -->
-    <div class="col-lg-8">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-white border-0 py-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h5 class="mb-0 fw-bold">Analytics Overview</h5>
-              <p class="text-muted mb-0 small">Last 7 days deployment trends</p>
-            </div>
-            <div class="btn-group btn-group-sm">
-              <button type="button" class="btn btn-outline-primary active" id="dailyView">Daily</button>
-              <button type="button" class="btn btn-outline-primary" id="monthlyView">Monthly</button>
-              <button type="button" class="btn btn-outline-primary" id="itemsView">Top Items</button>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <!-- Chart Container -->
-          <canvas id="mainChart" style="height: 300px; width: 100%;"></canvas>
-          
-          <!-- Quick Stats -->
-          <div class="row mt-4 g-3">
-            <div class="col-md-4">
-              <div class="bg-light p-3 rounded-3">
-                <small class="text-muted d-block">Total Deployments (7 days)</small>
-                <h4 class="mb-0 fw-bold">{{ array_sum($dashboardData['daily_chart']['data']) }}</h4>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="bg-light p-3 rounded-3">
-                <small class="text-muted d-block">Average Daily</small>
-                <h4 class="mb-0 fw-bold">{{ round(array_sum($dashboardData['daily_chart']['data']) / 7, 1) }}</h4>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="bg-light p-3 rounded-3">
-                <small class="text-muted d-block">Peak Day</small>
-                <h4 class="mb-0 fw-bold">{{ max($dashboardData['daily_chart']['data']) }}</h4>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Column - Stats and Mini Charts -->
-    <div class="col-lg-4">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-white border-0 py-3">
-          <h5 class="mb-0 fw-bold">Inventory Insights</h5>
-        </div>
-        <div class="card-body">
-          <!-- Top Items Mini Chart -->
-          <div class="mb-4">
-            <h6 class="text-muted mb-3">Top Deployed Items</h6>
-            <canvas id="topItemsChart" style="height: 150px;"></canvas>
-          </div>
-          
-          <!-- Category Distribution -->
-          <div class="mb-4">
-            <h6 class="text-muted mb-3">Stock by Category</h6>
-            <canvas id="categoryChart" style="height: 150px;"></canvas>
-          </div>
-          
-          <!-- Status Breakdown -->
-          <div>
-            <h6 class="text-muted mb-3">Deployment Status</h6>
-            <div class="d-flex justify-content-between mb-2">
-              <span><span class="badge bg-success me-2"></span> Completed</span>
-              <span class="fw-bold">{{ $dashboardData['status_breakdown']['completed'] }}</span>
-            </div>
-            <div class="progress mb-3" style="height: 8px;">
-              @php
-                $total = array_sum($dashboardData['status_breakdown']);
-                $completedPercent = $total > 0 ? round(($dashboardData['status_breakdown']['completed'] / $total) * 100) : 0;
-                $pendingPercent = $total > 0 ? round(($dashboardData['status_breakdown']['pending'] / $total) * 100) : 0;
-              @endphp
-              <div class="progress-bar bg-success" style="width: {{ $completedPercent }}%"></div>
-              <div class="progress-bar bg-warning" style="width: {{ $pendingPercent }}%"></div>
-            </div>
-            
-            <div class="d-flex justify-content-between mb-2">
-              <span><span class="badge bg-warning me-2"></span> Pending</span>
-              <span class="fw-bold">{{ $dashboardData['status_breakdown']['pending'] }}</span>
-            </div>
-            
-            <div class="d-flex justify-content-between">
-              <span><span class="badge bg-danger me-2"></span> Cancelled</span>
-              <span class="fw-bold">{{ $dashboardData['status_breakdown']['cancelled'] }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Recent Activity Section - NOW WITH REAL DATA! -->
-  <div class="row g-4 mb-4">
-    <div class="col-12">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white border-0 py-3">
-          <h5 class="mb-0 fw-bold">Recent Deployment Activity</h5>
-        </div>
-        <div class="card-body p-0">
-          @if(count($dashboardData['recent_activities']) > 0)
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                  <tr>
-                    <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Deployed To</th>
-                    <th>Time</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @foreach($dashboardData['recent_activities'] as $activity)
-                    <tr>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div class="bg-primary bg-opacity-10 rounded-2 p-2 me-3">
-                            <i class="bi bi-box text-primary"></i>
-                          </div>
-                          <div>
-                            <h6 class="mb-0 fw-semibold">{{ $activity['component'] }}</h6>
-                          </div>
+    {{-- Stats Cards --}}
+    <div class="row g-4 mb-4">
+        {{-- Most Item Deployed --}}
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #667eea;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                            <i class="bi bi-rocket-fill text-primary fs-4"></i>
                         </div>
-                      </td>
-                      <td>
-                        <span class="badge bg-info bg-opacity-20 text-info px-3 py-2">
-                          {{ $activity['quantity'] }} units
+                        <span class="badge bg-primary bg-opacity-20 text-primary rounded-pill">
+                            {{ $dashboardData['most_deployed_quantity'] }} deployed
                         </span>
-                      </td>
-                      <td>{{ $activity['deployed_to'] }}</td>
-                      <td>
-                        <span title="{{ $activity['date'] }}">
-                          {{ $activity['time_ago'] }}
-                        </span>
-                      </td>
-                      <td>
-                        <i class="bi bi-check-circle-fill text-success"></i>
-                      </td>
-                    </tr>
-                  @endforeach
-                </tbody>
-              </table>
+                    </div>
+                    <h3 class="mb-2 fw-bold">{{ Str::limit($dashboardData['most_deployed_item'], 20) }}</h3>
+                    <p class="text-muted mb-0">Most Deployed Item</p>
+                    <div class="mt-3">
+                        <small class="text-success"><i class="bi bi-arrow-up-right me-1"></i> Top performing item</small>
+                    </div>
+                </div>
             </div>
-          @else
-            <div class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted"></i>
-              <p class="text-muted mt-2">No recent activity</p>
+        </div>
+
+        {{-- Total Stock QTY --}}
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #f59e0b;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                            <i class="bi bi-box-seam text-warning fs-4"></i>
+                        </div>
+                        <span class="badge bg-warning bg-opacity-20 text-warning rounded-pill">Inventory</span>
+                    </div>
+                    <h3 class="mb-2 fw-bold">{{ $dashboardData['total_stock_qty'] }}</h3>
+                    <p class="text-muted mb-0">Total Stock Quantity</p>
+                    <div class="mt-3">
+                        <small class="text-warning"><i class="bi bi-bar-chart me-1"></i> All items in stock</small>
+                    </div>
+                </div>
             </div>
-          @endif
         </div>
-        <div class="card-footer bg-white border-0 py-3">
-          <a href="{{ route('admin.deployment.history') }}" class="btn btn-outline-primary w-100 rounded-3">
-            <i class="bi bi-clock-history me-2"></i>View All Activity
-          </a>
+
+        {{-- Items Deployed This Month --}}
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 card-hover" style="border-left: 4px solid #3b82f6;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bi bi-calendar-check text-info fs-4"></i>
+                        </div>
+                        <span class="badge bg-info bg-opacity-20 text-info rounded-pill">This Month</span>
+                    </div>
+                    <h3 class="mb-2 fw-bold">{{ $dashboardData['items_deployed_month'] }}</h3>
+                    <p class="text-muted mb-0">Items Deployed</p>
+                    <div class="mt-3">
+                        <small class="text-primary"><i class="bi bi-arrow-up-circle me-1"></i> Monthly deployment count</small>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+
+    {{-- Charts Section --}}
+    <div class="row g-4 mb-4">
+        {{-- Main Chart Area --}}
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 fw-bold">Analytics Overview</h5>
+                            <p class="text-muted mb-0 small">Last 7 days deployment trends</p>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-primary active" id="dailyView">Daily</button>
+                            <button type="button" class="btn btn-outline-primary" id="monthlyView">Monthly</button>
+                            <button type="button" class="btn btn-outline-primary" id="itemsView">Top Items</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{-- Fixed Height Container for Line/Bar Chart --}}
+                    <div class="chart-container mb-4" style="position: relative; height: 320px; width: 100%;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                    
+                    {{-- Quick Stats --}}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="bg-light p-3 rounded-3">
+                                <small class="text-muted d-block">Total Deployments (7 days)</small>
+                                <h4 class="mb-0 fw-bold">{{ array_sum($dashboardData['daily_chart']['data']) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="bg-light p-3 rounded-3">
+                                <small class="text-muted d-block">Average Daily</small>
+                                <h4 class="mb-0 fw-bold">{{ round(array_sum($dashboardData['daily_chart']['data']) / 7, 1) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="bg-light p-3 rounded-3">
+                                <small class="text-muted d-block">Peak Day</small>
+                                <h4 class="mb-0 fw-bold">{{ max($dashboardData['daily_chart']['data']) }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Right Column - Stats and Mini Charts --}}
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold">Inventory Insights</h5>
+                </div>
+                <div class="card-body">
+                    {{-- Top Items Doughnut Chart with Wrapper --}}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Top Deployed Items</h6>
+                        <div style="position: relative; height: 180px; width: 100%;">
+                            <canvas id="topItemsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    {{-- Category Distribution Bar Chart with Wrapper --}}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Stock by Category</h6>
+                        <div style="position: relative; height: 180px; width: 100%;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    {{-- Status Breakdown --}}
+                    <div>
+                        <h6 class="text-muted mb-3">Deployment Status</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><span class="badge bg-success me-2">●</span> Completed</span>
+                            <span class="fw-bold">{{ $dashboardData['status_breakdown']['completed'] }}</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 8px;">
+                            @php
+                                $total = array_sum($dashboardData['status_breakdown']);
+                                $completedPercent = $total > 0 ? round(($dashboardData['status_breakdown']['completed'] / $total) * 100) : 0;
+                                $pendingPercent = $total > 0 ? round(($dashboardData['status_breakdown']['pending'] / $total) * 100) : 0;
+                            @endphp
+                            <div class="progress-bar bg-success" style="width: {{ $completedPercent }}%"></div>
+                            <div class="progress-bar bg-warning" style="width: {{ $pendingPercent }}%"></div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><span class="badge bg-warning me-2">●</span> Pending</span>
+                            <span class="fw-bold">{{ $dashboardData['status_breakdown']['pending'] }}</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <span><span class="badge bg-danger me-2">●</span> Cancelled</span>
+                            <span class="fw-bold">{{ $dashboardData['status_breakdown']['cancelled'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Recent Activity Section --}}
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold">Recent Deployment Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    @if(count($dashboardData['recent_activities']) > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                        <th>Deployed To</th>
+                                        <th>Time</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($dashboardData['recent_activities'] as $activity)
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary bg-opacity-10 rounded-2 p-2 me-3">
+                                                        <i class="bi bi-box text-primary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0 fw-semibold">{{ $activity['component'] }}</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info bg-opacity-20 text-info px-3 py-2">
+                                                    {{ $activity['quantity'] }} units
+                                                </span>
+                                            </td>
+                                            <td>{{ $activity['deployed_to'] }}</td>
+                                            <td>
+                                                <span title="{{ $activity['date'] }}">
+                                                    {{ $activity['time_ago'] }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <p class="text-muted mt-2">No recent activity</p>
+                        </div>
+                    @endif
+                </div>
+                <div class="card-footer bg-white border-0 py-3">
+                    <a href="{{ route('admin.deployment') }}" class="btn btn-outline-primary w-100 rounded-3">
+                        <i class="bi bi-clock-history me-2"></i>View All Activity
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+{{-- Layout Styles --}}
 <style>
-  /* Your existing styles plus these additions */
-  .text-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+    .text-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
 
-  .card-hover {
-    transition: all 0.3s ease;
-    border-radius: 12px;
-  }
+    .card-hover {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+    }
 
-  .card-hover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
-  }
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    }
 
-  .rounded-3 {
-    border-radius: 12px !important;
-  }
+    .rounded-3 {
+        border-radius: 12px !important;
+    }
 </style>
-
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Data from controller
+    // Data passed from DashboardController
     const dailyData = {
         labels: {!! json_encode($dashboardData['daily_chart']['labels']) !!},
         values: {!! json_encode($dashboardData['daily_chart']['data']) !!}
@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
         values: {!! json_encode($dashboardData['category_chart']['data']) !!}
     };
     
-    // Initialize Main Chart
+    // Initialize Main Chart (Line/Bar)
     const ctx = document.getElementById('mainChart').getContext('2d');
     let mainChart = new Chart(ctx, {
         type: 'line',
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Top Items Pie Chart
+    // Top Items doughnut Chart
     const topItemsCtx = document.getElementById('topItemsChart').getContext('2d');
     new Chart(topItemsCtx, {
         type: 'doughnut',
@@ -387,11 +387,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     display: false
                 }
             },
-            cutout: '65%'
+            cutout: '70%'
         }
     });
     
-    // Category Distribution Chart
+    // Category Distribution Bar Chart
     const categoryCtx = document.getElementById('categoryChart').getContext('2d');
     new Chart(categoryCtx, {
         type: 'bar',
@@ -433,6 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Chart View Switcher
     document.getElementById('dailyView').addEventListener('click', function() {
         setActiveButton(this);
+        mainChart.config.type = 'line';
         mainChart.data.labels = dailyData.labels;
         mainChart.data.datasets[0].data = dailyData.values;
         mainChart.data.datasets[0].label = 'Items Deployed';
@@ -441,19 +442,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.getElementById('monthlyView').addEventListener('click', function() {
         setActiveButton(this);
+        mainChart.config.type = 'line';
         mainChart.data.labels = monthlyData.labels;
         mainChart.data.datasets[0].data = monthlyData.values;
         mainChart.data.datasets[0].label = 'Monthly Deployments';
-        mainChart.type = 'line';
         mainChart.update();
     });
     
     document.getElementById('itemsView').addEventListener('click', function() {
         setActiveButton(this);
+        mainChart.config.type = 'bar';
         mainChart.data.labels = topItemsData.labels.slice(0, 5);
         mainChart.data.datasets[0].data = topItemsData.values.slice(0, 5);
         mainChart.data.datasets[0].label = 'Top Items';
-        mainChart.type = 'bar';
         mainChart.update();
     });
     
