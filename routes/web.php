@@ -34,11 +34,13 @@ Route::prefix('admin')->group(function () {
             Route::get('/create', [InventoryController::class, 'create'])->name('admin.inventory.create');
             Route::post('/', [InventoryController::class, 'store'])->name('admin.inventory.store');
             Route::get('/export/pdf', [InventoryController::class, 'exportPdf'])->name('admin.inventory.export.pdf');
-            Route::get('/export/csv', [InventoryController::class, 'exportCsv'])->name('admin.inventory.export.csv'); // <-- ADD THIS
+            Route::get('/export/csv', [InventoryController::class, 'exportCsv'])->name('admin.inventory.export.csv');
+            Route::get('/logs/view', [InventoryController::class, 'getLogs'])->name('admin.inventory.logs'); // ◄ Moved above dynamic {id} routes
+            
+            // Dynamic ID Routes
             Route::get('/{id}/edit', [InventoryController::class, 'edit'])->name('admin.inventory.edit');
             Route::put('/{id}', [InventoryController::class, 'update'])->name('admin.inventory.update');
             Route::delete('/{id}', [InventoryController::class, 'destroy'])->name('admin.inventory.destroy');
-            Route::get('/logs/view', [InventoryController::class, 'getLogs'])->name('admin.inventory.logs');
         });
 
         // Category Routes
@@ -79,7 +81,7 @@ Route::prefix('admin')->group(function () {
             Route::delete('/{id}', [SuppliersController::class, 'destroy'])->name('admin.suppliers.destroy');
         });
 
-        // ✅ FIXED: Contact Person Routes - NOW INSIDE auth middleware and admin prefix
+        // Contact Person Routes
         Route::prefix('contactperson')->group(function () {
             Route::get('/', [ContactPersonController::class, 'index'])->name('admin.contactperson');
             Route::post('/', [ContactPersonController::class, 'store'])->name('admin.contactperson.store');
@@ -98,7 +100,7 @@ Route::prefix('admin')->group(function () {
     });
 });
 
-// Optional: Add a catch-all route for undefined routes
+// Catch-all route for undefined paths
 Route::fallback(function () {
     if (auth()->check()) {
         return redirect()->route('admin.dashboard');

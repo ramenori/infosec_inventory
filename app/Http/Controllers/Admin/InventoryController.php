@@ -19,7 +19,8 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Inventory::with(['category', 'supplier']);
+        // Standardized to categoryRelation for accurate name-based relationship mapping
+        $query = Inventory::with(['categoryRelation', 'supplier']);
 
         // Search functionality
         if ($request->has('search') && !empty($request->search)) {
@@ -28,7 +29,7 @@ class InventoryController extends Controller
                 $q->where('component', 'like', "%{$search}%")
                   ->orWhere('serial_num', 'like', "%{$search}%")
                   ->orWhere('brand', 'like', "%{$search}%")
-                  ->orWhereHas('category', function($q) use ($search) {
+                  ->orWhereHas('categoryRelation', function($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%");
                   });
             });
@@ -60,16 +61,17 @@ class InventoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'category' => 'required|string|max:255',
-            'component' => 'required|string|max:255',
-            'serial_num' => 'nullable|string|max:255|unique:inventories,serial_num',
-            'brand' => 'nullable|string|max:255',
-            'stock_qty' => 'required|integer|min:0',
-            'status' => 'required|in:Available,Low Stock,Out of Stock,Maintenance,Deployed',
+            'category'    => 'required|string|max:255',
+            'component'   => 'required|string|max:255',
+            'serial_num'  => 'nullable|string|max:255|unique:inventories,serial_num',
+            'brand'       => 'nullable|string|max:255',
+            'stock_qty'   => 'required|integer|min:0',
+            'status'      => 'required|in:Available,Low Stock,Out of Stock,Maintenance,Deployed',
             'supplier_id' => 'nullable|exists:suppliers,id',
+            'description' => 'nullable|string', // ◄ Added validation
         ]);
 
-        // Set status based on stock quantity
+        // Auto-set status based on stock quantity
         $status = $request->status;
         if ($request->stock_qty == 0) {
             $status = 'Out of Stock';
@@ -78,24 +80,25 @@ class InventoryController extends Controller
         }
 
         $inventory = Inventory::create([
-            'category' => $request->category,
-            'component' => $request->component,
-            'serial_num' => $request->serial_num,
-            'brand' => $request->brand,
-            'stock_qty' => $request->stock_qty,
-            'date_added' => now(), // Automatically set to current date
-            'status' => $status,
+            'category'    => $request->category,
+            'component'   => $request->component,
+            'serial_num'  => $request->serial_num,
+            'brand'       => $request->brand,
+            'stock_qty'   => $request->stock_qty,
+            'date_added'  => now(),
+            'status'      => $status,
             'supplier_id' => $request->supplier_id,
+            'description' => $request->description, // ◄ Persisted description
         ]);
 
         // Log the activity
         ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'created',
+            'user_id'     => auth()->id(),
+            'action'      => 'created',
             'entity_type' => 'inventory',
-            'entity_id' => $inventory->id,
-            'component' => $request->component,
-            'details' => "Created new inventory item: {$request->component}",
+            'entity_id'   => $inventory->id,
+            'component'   => $request->component,
+            'details'     => "Created new inventory item: {$request->component}",
         ]);
 
         return redirect()->route('admin.inventory')->with('success', 'Item added successfully!');
@@ -114,14 +117,15 @@ class InventoryController extends Controller
         $inventory = Inventory::findOrFail($id);
 
         $request->validate([
-            'category' => 'required|string|max:255',
-            'component' => 'required|string|max:255',
-            'serial_num' => 'nullable|string|max:255|unique:inventories,serial_num,' . $id,
-            'brand' => 'nullable|string|max:255',
-            'stock_qty' => 'required|integer|min:0',
-            'date_added' => 'required|date',
-            'status' => 'required|in:Available,Low Stock,Out of Stock,Maintenance',
+            'category'    => 'required|string|max:255',
+            'component'   => 'required|string|max:255',
+            'serial_num'  => 'nullable|string|max:255|unique:inventories,serial_num,' . $id,
+            'brand'       => 'nullable|string|max:255',
+            'stock_qty'   => 'required|integer|min:0',
+            'date_added'  => 'required|date',
+            'status'      => 'required|in:Available,Low Stock,Out of Stock,Maintenance',
             'supplier_id' => 'nullable|exists:suppliers,id',
+            'description' => 'nullable|string', // ◄ Added validation
         ]);
 
         // Auto-update status based on stock
@@ -130,27 +134,30 @@ class InventoryController extends Controller
             $status = 'Out of Stock';
         } elseif ($request->stock_qty < 5) {
             $status = 'Low Stock';
+        }else {
+            $status = 'Available';
         }
 
         $inventory->update([
-            'category' => $request->category,
-            'component' => $request->component,
-            'serial_num' => $request->serial_num,
-            'brand' => $request->brand,
-            'stock_qty' => $request->stock_qty,
-            'date_added' => $request->date_added,
-            'status' => $status,
+            'category'    => $request->category,
+            'component'   => $request->component,
+            'serial_num'  => $request->serial_num,
+            'brand'       => $request->brand,
+            'stock_qty'   => $request->stock_qty,
+            'date_added'  => $request->date_added,
+            'status'      => $status,
             'supplier_id' => $request->supplier_id,
+            'description' => $request->description, // ◄ Updated description
         ]);
 
         // Log the activity
         ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'updated',
+            'user_id'     => auth()->id(),
+            'action'      => 'updated',
             'entity_type' => 'inventory',
-            'entity_id' => $inventory->id,
-            'component' => $request->component,
-            'details' => "Updated inventory item: {$request->component}",
+            'entity_id'   => $inventory->id,
+            'component'   => $request->component,
+            'details'     => "Updated inventory item: {$request->component}",
         ]);
 
         return redirect()->route('admin.inventory')->with('success', 'Item updated successfully!');
@@ -166,23 +173,21 @@ class InventoryController extends Controller
         }
 
         $component = $inventory->component;
-
         $inventory->delete();
 
         // Log the activity
         ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'deleted',
+            'user_id'     => auth()->id(),
+            'action'      => 'deleted',
             'entity_type' => 'inventory',
-            'entity_id' => $id,
-            'component' => $component,
-            'details' => "Deleted inventory item: {$component}",
+            'entity_id'   => $id,
+            'component'   => $component,
+            'details'     => "Deleted inventory item: {$component}",
         ]);
 
         return redirect()->route('admin.inventory')->with('success', 'Item deleted successfully!');
     }
 
-    // Quick stock update (for AJAX requests)
     public function updateStock(Request $request, $id)
     {
         $inventory = Inventory::findOrFail($id);
@@ -193,7 +198,6 @@ class InventoryController extends Controller
 
         $inventory->stock_qty = $request->stock_qty;
         
-        // Auto-update status
         if ($inventory->stock_qty == 0) {
             $inventory->status = 'Out of Stock';
         } elseif ($inventory->stock_qty < 5) {
@@ -207,23 +211,17 @@ class InventoryController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Stock updated successfully',
-            'data' => $inventory
+            'data'    => $inventory
         ]);
     }
 
-    /**
-     * Get inventory logs for the current user - show logs page
-     */
     public function getLogs(Request $request)
     {
-        $query = ActivityLog::where('entity_type', 'inventory')
-            ->with('user');
+        $query = ActivityLog::where('entity_type', 'inventory')->with('user');
 
-        // Filter by date if provided
         if ($request->has('date') && !empty($request->date)) {
             $query->whereDate('created_at', $request->date);
         } else {
-            // Default to last 30 days
             $query->where('created_at', '>=', now()->subDays(30));
         }
 
@@ -232,98 +230,83 @@ class InventoryController extends Controller
         return view('admin.inventory_logs', compact('logs'));
     }
 
-    /**
-     * Export inventory as PDF
-     */
     public function exportPdf(Request $request)
     {
-        $query = Inventory::with(['category', 'supplier']);
+        $query = Inventory::with(['categoryRelation', 'supplier']);
 
-        // 1. Apply Search Filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('component', 'like', "%{$search}%")
-                ->orWhere('serial_num', 'like', "%{$search}%")
-                ->orWhere('brand', 'like', "%{$search}%")
-                ->orWhereHas('categoryRelation', function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
+                  ->orWhere('serial_num', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhereHas('categoryRelation', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
             });
         }
 
-        // 2. Apply Category Filter (Added to match your index query logic)
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
 
-        // 3. Apply Status Filter
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         $inventory = $query->orderBy('created_at', 'desc')->get();
+        $pdf = PDF::loadView('admin.inventory_pdf', compact('inventory'))->setPaper('a4', 'landscape');
 
-        $data = compact('inventory');
-
-        $pdf = PDF::loadView('admin.inventory_pdf', $data)->setPaper('a4', 'landscape');
-
-        $filename = 'inventory_report_' . now()->format('Ymd_His') . '.pdf';
-
-        return $pdf->download($filename);
+        return $pdf->download('inventory_report_' . now()->format('Ymd_His') . '.pdf');
     }
 
     public function exportCsv(Request $request) 
     {
         $query = Inventory::with(['categoryRelation', 'supplier']);
 
-        // Apply your active filters...
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('component', 'like', "%{$search}%")
-                ->orWhere('serial_num', 'like', "%{$search}%")
-                ->orWhere('brand', 'like', "%{$search}%");
+                  ->orWhere('serial_num', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%");
             });
         }
+
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         $inventory = $query->orderBy('created_at', 'desc')->get();
 
-        // Create a new Spreadsheet
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Inventory Report');
 
-        // Define columns
         $columns = ['A' => 'ID', 'B' => 'Item/Component', 'C' => 'Category', 'D' => 'Brand', 'E' => 'Serial Number', 'F' => 'Stock Qty', 'G' => 'Status', 'H' => 'Supplier', 'I' => 'Date Added'];
 
-        // Write Headers
         foreach ($columns as $col => $title) {
             $sheet->setCellValue($col . '1', $title);
         }
 
-        // Style the Header Row (Dark blue background, white bold text)
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '1F3B68'], // Sleek Dark Blue
+                'startColor' => ['rgb' => '1F3B68'],
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
             ],
         ];
         $sheet->getStyle('A1:I1')->applyFromArray($headerStyle);
         $sheet->getRowDimension('1')->setRowHeight(28);
 
-        // Write Data Rows
         $rowNum = 2;
         foreach ($inventory as $item) {
             $sheet->setCellValue('A' . $rowNum, $item->id);
@@ -336,29 +319,25 @@ class InventoryController extends Controller
             $sheet->setCellValue('H' . $rowNum, $item->supplier ? $item->supplier->name : 'No Supplier');
             $sheet->setCellValue('I' . $rowNum, $item->date_added ? $item->date_added->format('M d, Y') : 'N/A');
 
-            // Style the dynamic status cell colors!
             $statusCell = 'G' . $rowNum;
             if ($item->status === 'Available') {
-                $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('1F8B4C')); // Green text
+                $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('1F8B4C'));
             } elseif ($item->status === 'Low Stock') {
-                $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('A06E00')); // Orange text
+                $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('A06E00'));
             } elseif ($item->status === 'Out of Stock') {
-                $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('D12A3A')); // Red text
+                $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('D12A3A'));
             }
 
             $rowNum++;
         }
 
-        // Auto-fit all column widths perfectly to prevent text wrapping
         foreach (range('A', 'I') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // Apply thin borders to all data cells
         $styleRange = 'A1:I' . ($rowNum - 1);
         $sheet->getStyle($styleRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
-        // Export as genuine .xlsx file
         $writer = new Xlsx($spreadsheet);
         $filename = 'inventory_report_' . now()->format('Ymd_His') . '.xlsx';
 

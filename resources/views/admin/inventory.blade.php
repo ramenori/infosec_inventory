@@ -24,7 +24,7 @@
     </ol>
   </nav>
 
-  {{-- Stats Cards (improved UI) --}}
+  {{-- Stats Cards --}}
   <div class="row g-4 mb-4">
     <div class="col-md-4">
       <div class="card stat-card border-0 shadow-sm h-100">
@@ -265,14 +265,14 @@
                 </td>
                 <td class="text-center">
                   <div class="d-flex flex-column">
-                    <span class="fw-semibold">{{ $item->date_added->format('M d, Y') }}</span>
-                    <small class="text-muted">{{ $item->created_at->diffForHumans() }}</small>
+                    <span class="fw-semibold">{{ optional($item->date_added)->format('M d, Y') ?? 'N/A' }}</span>
+                    <small class="text-muted">{{ optional($item->created_at)->diffForHumans() }}</small>
                   </div>
                 </td>
                 <td class="text-center">
                   @if($item->supplier)
                     <div class="d-flex flex-column align-items-center">
-                        <i class="bi bi-truck me-1"></i> {{ $item->supplier->name }}
+                      <span><i class="bi bi-truck me-1"></i> {{ $item->supplier->name }}</span>
                       @if($item->supplier->contact)
                         <small class="text-muted mt-1">{{ $item->supplier->contact }}</small>
                       @endif
@@ -293,10 +293,10 @@
                             data-brand="{{ $item->brand ?: '' }}"
                             data-category="{{ $item->category }}"
                             data-stock="{{ $item->stock_qty }}"
-                            data-date="{{ $item->date_added->format('Y-m-d') }}"
+                            data-date="{{ optional($item->date_added)->format('Y-m-d') }}"
                             data-status="{{ $item->status }}"
                             data-supplier-id="{{ $item->supplier_id ?? '' }}"
-                            data-bs-toggle="tooltip"
+                            data-description="{{ e($item->description ?: '') }}"
                             title="Edit Item">
                       <i class="bi bi-pencil"></i>
                     </button>
@@ -310,12 +310,11 @@
                             data-category="{{ $item->category }}"
                             data-stock="{{ $item->stock_qty }}"
                             data-status="{{ $item->status }}"
-                            data-date="{{ $item->date_added->format('M d, Y') }}"
-                            data-created="{{ $item->created_at->diffForHumans() }}"
+                            data-date="{{ optional($item->date_added)->format('M d, Y') }}"
+                            data-created="{{ optional($item->created_at)->diffForHumans() }}"
                             data-supplier="{{ $item->supplier ? $item->supplier->name : 'No Supplier' }}"
                             data-supplier-contact="{{ $item->supplier && $item->supplier->contact ? $item->supplier->contact : '' }}"
                             data-description="{{ e($item->description ?: 'No description provided.') }}"
-                            data-bs-toggle="tooltip"
                             title="View Details">
                       <i class="bi bi-eye"></i>
                     </button>
@@ -324,7 +323,6 @@
                       @method('DELETE')
                       <button type="submit" 
                               class="btn btn-sm btn-outline-danger"
-                              data-bs-toggle="tooltip"
                               title="Delete Item"
                               onclick="return confirm('Are you sure you want to delete this item?')">
                         <i class="bi bi-trash"></i>
@@ -339,12 +337,6 @@
                   <div class="empty-state">
                     <i class="bi bi-inboxes display-4 text-muted mb-3"></i>
                     <h5 class="text-muted">No inventory items found</h5>
-                  <!-- .stat-card { border-radius: .6rem; }
-                  .stat-number { font-size: 1.9rem; }
-                  .stat-icon { width: 56px; height: 56px; display:flex; align-items:center; justify-content:center; }
-                  .icon-circle { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-                  .icon-circle i { font-size:1.4rem; }
-                  .bg-opacity-10 { opacity: .12; } -->
                   </div>
                 </td>
               </tr>
@@ -389,7 +381,6 @@
         @csrf
         <div class="modal-body">
           <div class="row g-3">
-            {{-- Row 1 --}}
             <div class="col-md-6">
               <label for="category" class="form-label small fw-semibold">
                 <i class="bi bi-folder me-1"></i> Category *
@@ -412,7 +403,6 @@
                      value="{{ old('component') }}" placeholder="Enter component name" required>
             </div>
             
-            {{-- Row 2 --}}
             <div class="col-md-6">
               <label for="serial_num" class="form-label small fw-semibold">
                 <i class="bi bi-upc-scan me-1"></i> Serial Number
@@ -429,7 +419,6 @@
                      value="{{ old('brand') }}" placeholder="Enter brand name">
             </div>
             
-            {{-- Row 3 --}}
             <div class="col-md-6">
               <label for="stock_qty" class="form-label small fw-semibold">
                 <i class="bi bi-box-arrow-in-down me-1"></i> Stock Quantity *
@@ -455,7 +444,6 @@
               <small class="text-muted">Status will auto-update based on stock level</small>
             </div>
             
-            {{-- Row 4 --}}
             <div class="col-md-6">
               <label for="supplier_id" class="form-label small fw-semibold">
                 <i class="bi bi-truck me-1"></i> Supplier
@@ -485,7 +473,6 @@
               </div>
             </div>
             
-            {{-- Row 5 --}}
             <div class="col-12">
               <label for="description" class="form-label small fw-semibold">
                 <i class="bi bi-card-text me-1"></i> Description (Optional)
@@ -567,45 +554,6 @@
   </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const detailButtons = document.querySelectorAll('.view-details-btn');
-
-  detailButtons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      document.getElementById('detailComponent').textContent = button.dataset.component || 'N/A';
-      document.getElementById('detailCategory').textContent = button.dataset.category || 'N/A';
-      document.getElementById('detailSerial').textContent = button.dataset.serial || 'N/A';
-      document.getElementById('detailBrand').textContent = button.dataset.brand || 'N/A';
-      document.getElementById('detailStock').textContent = button.dataset.stock || 'N/A';
-      document.getElementById('detailStatus').textContent = button.dataset.status || 'N/A';
-      document.getElementById('detailDate').textContent = button.dataset.date || 'N/A';
-      document.getElementById('detailDescription').textContent = button.dataset.description || 'No description provided.';
-
-      const supplierName = button.dataset.supplier || 'No Supplier';
-      const supplierContact = button.dataset.supplierContact;
-      document.getElementById('detailSupplier').textContent = supplierContact ? `${supplierName} • ${supplierContact}` : supplierName;
-    });
-  });
-
-  const editButtons = document.querySelectorAll('.edit-details-btn');
-
-  editButtons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      document.getElementById('editInventoryForm').action = `/admin/inventory/${button.dataset.itemId}`;
-      document.getElementById('editCategory').value = button.dataset.category || '';
-      document.getElementById('editComponent').value = button.dataset.component || '';
-      document.getElementById('editSerial').value = button.dataset.serial || '';
-      document.getElementById('editBrand').value = button.dataset.brand || '';
-      document.getElementById('editStock').value = button.dataset.stock || '';
-      document.getElementById('editDate').value = button.dataset.date || '';
-      document.getElementById('editStatus').value = button.dataset.status || 'Available';
-      document.getElementById('editSupplierId').value = button.dataset.supplierId || '';
-    });
-  });
-});
-</script>
-
 {{-- Edit Inventory Modal --}}
 <div class="modal fade" id="editInventoryModal" tabindex="-1" aria-labelledby="editInventoryModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -627,8 +575,7 @@ document.addEventListener('DOMContentLoaded', function () {
               </label>
               <select class="form-select" id="editCategory" name="category" required>
                 <option value="">Select Category</option>
-                @foreach(
-App\Models\Category::all() as $cat)
+                @foreach(\App\Models\Category::all() as $cat)
                   <option value="{{ $cat->name }}">{{ $cat->name }}</option>
                 @endforeach
               </select>
@@ -692,6 +639,13 @@ App\Models\Category::all() as $cat)
                 @endforeach
               </select>
             </div>
+
+            <div class="col-12">
+              <label for="editDescription" class="form-label small fw-semibold">
+                <i class="bi bi-card-text me-1"></i> Description (Optional)
+              </label>
+              <textarea class="form-control" id="editDescription" name="description" rows="2" placeholder="Enter item description"></textarea>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -715,18 +669,21 @@ App\Models\Category::all() as $cat)
 }
 
 .text-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .stat-card:hover {
   transform: translateY(-5px);
 }
+
 .stat-icon {
   font-size: 3rem;
   opacity: 0.3;
 }
+
 /* Modern Status Badges */
 .status-badge-modern {
   padding: 6px 14px;
@@ -747,7 +704,7 @@ App\Models\Category::all() as $cat)
   display: inline-block;
 }
 
-/* Available Status Design (Soft Green) */
+/* Available Status Design */
 .status-available {
   background-color: rgba(25, 135, 84, 0.12);
   color: #1f8b4c;
@@ -759,7 +716,7 @@ App\Models\Category::all() as $cat)
   animation: pulse-green 2s infinite;
 }
 
-/* Low Stock Status Design (Soft Amber) */
+/* Low Stock Status Design */
 .status-low-stock {
   background-color: rgba(255, 193, 7, 0.15);
   color: #a06e00;
@@ -770,7 +727,7 @@ App\Models\Category::all() as $cat)
   box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
 }
 
-/* Out of Stock Status Design (Soft Red/Rose) */
+/* Out of Stock Status Design */
 .status-out-of-stock {
   background-color: rgba(220, 53, 69, 0.1);
   color: #d12a3a;
@@ -781,7 +738,7 @@ App\Models\Category::all() as $cat)
   box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
 }
 
-/* Default / Other Status Design (Soft Slate) */
+/* Default Status Design */
 .status-default {
   background-color: rgba(108, 117, 125, 0.1);
   color: #5c636a;
@@ -791,43 +748,29 @@ App\Models\Category::all() as $cat)
   background-color: #6c757d;
 }
 
-/* Pulse animation for the "Available" status dot to show active system status */
 @keyframes pulse-green {
-  0% {
-    box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(25, 135, 84, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
-  }
+  0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(25, 135, 84, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
 }
+
 .hover-shadow:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
 }
+
 .empty-state {
   padding: 3rem 1rem;
 }
+
 .table tbody tr {
   transition: all 0.2s ease;
 }
+
 .progress {
   border-radius: 10px;
 }
-.bg-gradient {
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #0a58ca 100%);
-}
-.bg-gradient.warning {
-  background: linear-gradient(135deg, var(--bs-warning) 0%, #e0a800 100%);
-}
-.bg-gradient.info {
-  background: linear-gradient(135deg, var(--bs-info) 0%, #0aa2c0 100%);
-}
-.bg-gradient.success {
-  background: linear-gradient(135deg, var(--bs-success) 0%, #146c43 100%);
-}
+
 .item-icon {
   width: 40px;
   height: 40px;
@@ -843,13 +786,13 @@ App\Models\Category::all() as $cat)
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Select All functionality
+  // Checkbox Selection Logic
   const selectAll = document.getElementById('selectAll');
   const selectAllFooter = document.getElementById('selectAllFooter');
   const checkboxes = document.querySelectorAll('.select-item');
   
   function updateSelectAll() {
-    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
     if (selectAll) selectAll.checked = allChecked;
     if (selectAllFooter) selectAllFooter.checked = allChecked;
   }
@@ -869,26 +812,24 @@ document.addEventListener('DOMContentLoaded', function() {
   checkboxes.forEach(checkbox => {
     checkbox.addEventListener('change', updateSelectAll);
   });
-  
-  // Initialize tooltips
-  const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-  tooltips.forEach(tooltip => {
-    new bootstrap.Tooltip(tooltip);
+
+  // Tooltips Global Init
+  document.querySelectorAll('[title]').forEach(el => {
+    new bootstrap.Tooltip(el);
   });
-  
-  // Auto-focus search on page load if there's a search query
+
+  // Focus Search
   @if(request('search'))
     document.querySelector('input[name="search"]')?.focus();
   @endif
-  
-  // Auto-update status based on stock quantity
+
+  // Auto Status Update for Add Form
   const stockQtyInput = document.getElementById('stock_qty');
   const statusSelect = document.getElementById('status');
   
   if (stockQtyInput && statusSelect) {
     stockQtyInput.addEventListener('input', function() {
       const qty = parseInt(this.value) || 0;
-      
       if (qty === 0) {
         statusSelect.value = 'Out of Stock';
       } else if (qty < 5) {
@@ -898,41 +839,85 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+  
+  // Auto Status Update for Edit Form
+  const editStockInput = document.getElementById('editStock');
+  const editStatusSelect = document.getElementById('editStatus');
 
+  if (editStockInput && editStatusSelect) {
+    editStockInput.addEventListener('input', function() {
+      const qty = parseInt(this.value) || 0;
+      if (qty === 0) {
+        editStatusSelect.value = 'Out of Stock';
+      } else if (qty < 5) {
+        editStatusSelect.value = 'Low Stock';
+      } else {
+        editStatusSelect.value = 'Available';
+      }
+    });
+  }
+
+  // View Details Modal Listener
+  const detailButtons = document.querySelectorAll('.view-details-btn');
+  detailButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      document.getElementById('detailComponent').textContent = button.dataset.component || 'N/A';
+      document.getElementById('detailCategory').textContent = button.dataset.category || 'N/A';
+      document.getElementById('detailSerial').textContent = button.dataset.serial || 'N/A';
+      document.getElementById('detailBrand').textContent = button.dataset.brand || 'N/A';
+      document.getElementById('detailStock').textContent = button.dataset.stock || 'N/A';
+      document.getElementById('detailStatus').textContent = button.dataset.status || 'N/A';
+      document.getElementById('detailDate').textContent = button.dataset.date || 'N/A';
+      document.getElementById('detailDescription').textContent = button.dataset.description || 'No description provided.';
+
+      const supplierName = button.dataset.supplier || 'No Supplier';
+      const supplierContact = button.dataset.supplierContact;
+      document.getElementById('detailSupplier').textContent = supplierContact ? `${supplierName} • ${supplierContact}` : supplierName;
+    });
+  });
+
+  // Edit Modal Listener
+  const editButtons = document.querySelectorAll('.edit-details-btn');
+  editButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      document.getElementById('editInventoryForm').action = `/admin/inventory/${button.dataset.itemId}`;
+      document.getElementById('editCategory').value = button.dataset.category || '';
+      document.getElementById('editComponent').value = button.dataset.component || '';
+      document.getElementById('editSerial').value = button.dataset.serial || '';
+      document.getElementById('editBrand').value = button.dataset.brand || '';
+      document.getElementById('editStock').value = button.dataset.stock || '';
+      document.getElementById('editDate').value = button.dataset.date || '';
+      document.getElementById('editStatus').value = button.dataset.status || 'Available';
+      document.getElementById('editSupplierId').value = button.dataset.supplierId || '';
+      document.getElementById('editDescription').value = button.dataset.description || '';
+    });
+  });
+
+  // Flash Notification Event Handler
+  @if(session('success'))
+    showNotification('success', @json(session('success')));
+  @endif
+
+  function showNotification(type, message) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alert.innerHTML = `
+      <div class="d-flex align-items-center">
+        <i class="bi ${type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'} me-2"></i>
+        <div>${message}</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+      </div>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+      if (alert.parentNode) {
+        alert.remove();
+      }
+    }, 5000);
+  }
 });
 </script>
 @endpush
-
-@if(session('success'))
-  @push('scripts')
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      showNotification('success', '{{ session('success') }}');
-    });
-    
-    function showNotification(type, message) {
-      const alert = document.createElement('div');
-      alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-      alert.style.top = '20px';
-      alert.style.right = '20px';
-      alert.style.zIndex = '9999';
-      alert.style.minWidth = '300px';
-      alert.innerHTML = `
-        <div class="d-flex align-items-center">
-          <i class="bi ${type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'} me-2"></i>
-          <div>${message}</div>
-          <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-        </div>
-      `;
-      document.body.appendChild(alert);
-      
-      setTimeout(() => {
-        if (alert.parentNode) {
-          alert.remove();
-        }
-      }, 5000);
-    }
-  </script>
-  @endpush
-@endif
 @endsection
