@@ -53,9 +53,6 @@
               <small class="text-muted d-block">Total Operations Recorded</small>
               <h6 class="mb-0 fw-bold text-primary fs-5">{{ $logs->total() }} {{ $logs->total() === 1 ? 'Action' : 'Actions' }}</h6>
             </div>
-            <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
-              <i class="bi bi-shield-check text-success me-1"></i> Audit Active
-            </span>
           </div>
         </div>
       </div>
