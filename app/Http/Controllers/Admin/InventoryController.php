@@ -68,7 +68,7 @@ class InventoryController extends Controller
             'stock_qty'   => 'required|integer|min:0',
             'status'      => 'required|in:Available,Low Stock,Out of Stock,Maintenance,Deployed',
             'supplier_id' => 'nullable|exists:suppliers,id',
-            'description' => 'nullable|string', // ◄ Added validation
+            'description' => 'nullable|string',
         ]);
 
         // Auto-set status based on stock quantity
@@ -77,6 +77,8 @@ class InventoryController extends Controller
             $status = 'Out of Stock';
         } elseif ($request->stock_qty < 5) {
             $status = 'Low Stock';
+        } else {
+            $status = 'Available';
         }
 
         $inventory = Inventory::create([
@@ -88,17 +90,17 @@ class InventoryController extends Controller
             'date_added'  => now(),
             'status'      => $status,
             'supplier_id' => $request->supplier_id,
-            'description' => $request->description, // ◄ Persisted description
+            'description' => $request->description,
         ]);
 
-        // Log the activity
+        // Log the activity with explicit initial stock details
         ActivityLog::create([
             'user_id'     => auth()->id(),
             'action'      => 'created',
             'entity_type' => 'inventory',
             'entity_id'   => $inventory->id,
             'component'   => $request->component,
-            'details'     => "Created new inventory item: {$request->component}",
+            'details'     => "Created new inventory item: {$request->component} with {$request->stock_qty} unit(s)",
         ]);
 
         return redirect()->route('admin.inventory')->with('success', 'Item added successfully!');
@@ -125,39 +127,54 @@ class InventoryController extends Controller
             'date_added'  => 'required|date',
             'status'      => 'required|in:Available,Low Stock,Out of Stock,Maintenance',
             'supplier_id' => 'nullable|exists:suppliers,id',
-            'description' => 'nullable|string', // ◄ Added validation
+            'description' => 'nullable|string',
         ]);
 
-        // Auto-update status based on stock
-        $status = $request->status;
-        if ($request->stock_qty == 0) {
+        // 1. Capture old stock quantity before updating
+        $oldStock = (int) $inventory->stock_qty;
+        $newStock = (int) $request->stock_qty;
+        $stockDiff = $newStock - $oldStock;
+
+        // 2. Auto-update status based on stock
+        if ($newStock == 0) {
             $status = 'Out of Stock';
-        } elseif ($request->stock_qty < 5) {
+        } elseif ($newStock < 5) {
             $status = 'Low Stock';
-        }else {
+        } else {
             $status = 'Available';
         }
 
+        // 3. Perform inventory update
         $inventory->update([
             'category'    => $request->category,
             'component'   => $request->component,
             'serial_num'  => $request->serial_num,
             'brand'       => $request->brand,
-            'stock_qty'   => $request->stock_qty,
+            'stock_qty'   => $newStock,
             'date_added'  => $request->date_added,
             'status'      => $status,
             'supplier_id' => $request->supplier_id,
-            'description' => $request->description, // ◄ Updated description
+            'description' => $request->description,
         ]);
 
-        // Log the activity
+        // 4. Build a dynamic, human-readable activity log detail string
+        if ($stockDiff > 0) {
+            $logDetails = "Added {$stockDiff} units to {$request->component} (Stock: {$oldStock} ➔ {$newStock})";
+        } elseif ($stockDiff < 0) {
+            $absDiff = abs($stockDiff);
+            $logDetails = "Deducted {$absDiff} units from {$request->component} (Stock: {$oldStock} ➔ {$newStock})";
+        } else {
+            $logDetails = "Updated item details for {$request->component}";
+        }
+
+        // 5. Save activity log
         ActivityLog::create([
             'user_id'     => auth()->id(),
             'action'      => 'updated',
             'entity_type' => 'inventory',
             'entity_id'   => $inventory->id,
             'component'   => $request->component,
-            'details'     => "Updated inventory item: {$request->component}",
+            'details'     => $logDetails,
         ]);
 
         return redirect()->route('admin.inventory')->with('success', 'Item updated successfully!');
@@ -196,17 +213,34 @@ class InventoryController extends Controller
             'stock_qty' => 'required|integer|min:0',
         ]);
 
-        $inventory->stock_qty = $request->stock_qty;
+        $oldStock = (int) $inventory->stock_qty;
+        $newStock = (int) $request->stock_qty;
+        $stockDiff = $newStock - $oldStock;
+
+        $inventory->stock_qty = $newStock;
         
-        if ($inventory->stock_qty == 0) {
+        if ($newStock == 0) {
             $inventory->status = 'Out of Stock';
-        } elseif ($inventory->stock_qty < 5) {
+        } elseif ($newStock < 5) {
             $inventory->status = 'Low Stock';
         } else {
             $inventory->status = 'Available';
         }
 
         $inventory->save();
+
+        // Log quick stock adjustments via AJAX
+        if ($stockDiff !== 0) {
+            $actionVerb = $stockDiff > 0 ? "Added " . $stockDiff : "Deducted " . abs($stockDiff);
+            ActivityLog::create([
+                'user_id'     => auth()->id(),
+                'action'      => 'updated',
+                'entity_type' => 'inventory',
+                'entity_id'   => $inventory->id,
+                'component'   => $inventory->component,
+                'details'     => "{$actionVerb} units on {$inventory->component} (Stock: {$oldStock} ➔ {$newStock})",
+            ]);
+        }
 
         return response()->json([
             'success' => true,
