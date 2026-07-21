@@ -20,6 +20,7 @@ class Inventory extends Model
         'date_added',
         'status',
         'supplier_id',
+        'description',
     ];
 
     protected $casts = [
