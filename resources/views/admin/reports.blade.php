@@ -136,8 +136,19 @@
                                 </td>
 
                                 {{-- COLUMN 4: QUANTITY --}}
-                                <td class="text-center align-middle">
-                                    {{ $deployment->quantity }}
+                                <td class="text-center align-middle fw-semibold text-dark">
+                                    @if(!empty($deployment->components_payload))
+                                        {{-- For new grouped bundle records, sum up item quantities dynamically --}}
+                                        @php 
+                                            $payloadArray = json_decode($deployment->components_payload, true) ?? [];
+                                            $combinedTotal = collect($payloadArray)->sum('quantity');
+                                        @endphp
+                                        {{ $combinedTotal > 0 ? $combinedTotal : $deployment->quantity }}
+                                    </td>
+                                    @else
+                                        {{-- Fallback default for regular layout rows --}}
+                                        {{ $deployment->quantity }}
+                                    @endif
                                 </td>
 
                                 {{-- COLUMN 5: DEPLOYED TO --}}
