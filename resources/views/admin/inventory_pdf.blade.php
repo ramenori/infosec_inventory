@@ -26,13 +26,11 @@
       <tr>
         <th>#</th>
         <th>Component</th>
-        <th>Serial Number</th>
         <th>Brand</th>
         <th>Category</th>
         <th>Stock Qty</th>
         <th>Status</th>
         <th>Date Added</th>
-        <th>Supplier</th>
       </tr>
     </thead>
     <tbody>
@@ -40,7 +38,6 @@
         <tr>
           <td>{{ $i+1 }}</td>
           <td>{{ $item->component ?? 'N/A' }}</td>
-          <td>{{ $item->serial_num ?? 'N/A' }}</td>
           <td>{{ $item->brand ?? 'N/A' }}</td>
           <td>{{ $item->category ?? 'N/A' }}</td>
           <td>{{ $item->stock_qty ?? 0 }}</td>
@@ -56,11 +53,10 @@
             @endif
           </td>
           <td>{{ optional($item->date_added)->format('Y-m-d') ?? 'N/A' }}</td>
-          <td>{{ optional($item->supplier)->name ?? 'N/A' }}</td>
         </tr>
       @empty
         <tr>
-          <td colspan="9" style="text-align:center;">No inventory items found</td>
+          <td colspan="7" style="text-align:center;">No inventory items found</td>
         </tr>
       @endforelse
     </tbody>

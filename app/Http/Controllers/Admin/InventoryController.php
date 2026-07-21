@@ -22,12 +22,11 @@ class InventoryController extends Controller
         // Standardized to categoryRelation for accurate name-based relationship mapping
         $query = Inventory::with(['categoryRelation', 'supplier']);
 
-        // Search functionality
+        // Search functionality (Removed serial_num search)
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('component', 'like', "%{$search}%")
-                  ->orWhere('serial_num', 'like', "%{$search}%")
                   ->orWhere('brand', 'like', "%{$search}%")
                   ->orWhereHas('categoryRelation', function($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%");
@@ -63,7 +62,6 @@ class InventoryController extends Controller
         $request->validate([
             'category'    => 'required|string|max:255',
             'component'   => 'required|string|max:255',
-            'serial_num'  => 'nullable|string|max:255|unique:inventories,serial_num',
             'brand'       => 'nullable|string|max:255',
             'stock_qty'   => 'required|integer|min:0',
             'status'      => 'required|in:Available,Low Stock,Out of Stock,Maintenance,Deployed',
@@ -84,7 +82,6 @@ class InventoryController extends Controller
         $inventory = Inventory::create([
             'category'    => $request->category,
             'component'   => $request->component,
-            'serial_num'  => $request->serial_num,
             'brand'       => $request->brand,
             'stock_qty'   => $request->stock_qty,
             'date_added'  => now(),
@@ -121,7 +118,6 @@ class InventoryController extends Controller
         $request->validate([
             'category'    => 'required|string|max:255',
             'component'   => 'required|string|max:255',
-            'serial_num'  => 'nullable|string|max:255|unique:inventories,serial_num,' . $id,
             'brand'       => 'nullable|string|max:255',
             'stock_qty'   => 'required|integer|min:0',
             'date_added'  => 'required|date',
@@ -148,7 +144,6 @@ class InventoryController extends Controller
         $inventory->update([
             'category'    => $request->category,
             'component'   => $request->component,
-            'serial_num'  => $request->serial_num,
             'brand'       => $request->brand,
             'stock_qty'   => $newStock,
             'date_added'  => $request->date_added,
@@ -272,7 +267,6 @@ class InventoryController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('component', 'like', "%{$search}%")
-                  ->orWhere('serial_num', 'like', "%{$search}%")
                   ->orWhere('brand', 'like', "%{$search}%")
                   ->orWhereHas('categoryRelation', function($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%");
@@ -302,7 +296,6 @@ class InventoryController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('component', 'like', "%{$search}%")
-                  ->orWhere('serial_num', 'like', "%{$search}%")
                   ->orWhere('brand', 'like', "%{$search}%");
             });
         }
@@ -321,7 +314,8 @@ class InventoryController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Inventory Report');
 
-        $columns = ['A' => 'ID', 'B' => 'Item/Component', 'C' => 'Category', 'D' => 'Brand', 'E' => 'Serial Number', 'F' => 'Stock Qty', 'G' => 'Status', 'H' => 'Supplier', 'I' => 'Date Added'];
+        // Removed Serial Number and Supplier columns
+        $columns = ['A' => 'ID', 'B' => 'Item/Component', 'C' => 'Category', 'D' => 'Brand', 'E' => 'Stock Qty', 'F' => 'Status', 'G' => 'Date Added'];
 
         foreach ($columns as $col => $title) {
             $sheet->setCellValue($col . '1', $title);
@@ -338,7 +332,7 @@ class InventoryController extends Controller
                 'vertical'   => Alignment::VERTICAL_CENTER,
             ],
         ];
-        $sheet->getStyle('A1:I1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
         $sheet->getRowDimension('1')->setRowHeight(28);
 
         $rowNum = 2;
@@ -347,13 +341,11 @@ class InventoryController extends Controller
             $sheet->setCellValue('B' . $rowNum, $item->component);
             $sheet->setCellValue('C' . $rowNum, $item->category);
             $sheet->setCellValue('D' . $rowNum, $item->brand ?: 'N/A');
-            $sheet->setCellValue('E' . $rowNum, $item->serial_num ?: 'No Serial');
-            $sheet->setCellValue('F' . $rowNum, $item->stock_qty);
-            $sheet->setCellValue('G' . $rowNum, $item->status);
-            $sheet->setCellValue('H' . $rowNum, $item->supplier ? $item->supplier->name : 'No Supplier');
-            $sheet->setCellValue('I' . $rowNum, $item->date_added ? $item->date_added->format('M d, Y') : 'N/A');
+            $sheet->setCellValue('E' . $rowNum, $item->stock_qty);
+            $sheet->setCellValue('F' . $rowNum, $item->status);
+            $sheet->setCellValue('G' . $rowNum, $item->date_added ? $item->date_added->format('M d, Y') : 'N/A');
 
-            $statusCell = 'G' . $rowNum;
+            $statusCell = 'F' . $rowNum;
             if ($item->status === 'Available') {
                 $sheet->getStyle($statusCell)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('1F8B4C'));
             } elseif ($item->status === 'Low Stock') {
@@ -365,11 +357,11 @@ class InventoryController extends Controller
             $rowNum++;
         }
 
-        foreach (range('A', 'I') as $col) {
+        foreach (range('A', 'G') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $styleRange = 'A1:I' . ($rowNum - 1);
+        $styleRange = 'A1:G' . ($rowNum - 1);
         $sheet->getStyle($styleRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         $writer = new Xlsx($spreadsheet);

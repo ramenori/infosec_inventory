@@ -228,11 +228,10 @@
                     <div>
                       <h6 class="mb-0 fw-semibold">{{ $item->component }}</h6>
                       <div class="text-muted small">
-                        <span class="me-2">
-                          <i class="bi bi-upc-scan"></i> {{ $item->serial_num ?: 'No Serial' }}
-                        </span>
                         @if($item->brand)
                           <span><i class="bi bi-tag"></i> {{ $item->brand }}</span>
+                        @else
+                          <span class="text-muted opacity-75">No Brand</span>
                         @endif
                       </div>
                     </div>
@@ -289,7 +288,6 @@
                             data-bs-target="#editInventoryModal"
                             data-item-id="{{ $item->id }}"
                             data-component="{{ $item->component }}"
-                            data-serial="{{ $item->serial_num ?: '' }}"
                             data-brand="{{ $item->brand ?: '' }}"
                             data-category="{{ $item->category }}"
                             data-stock="{{ $item->stock_qty }}"
@@ -305,7 +303,6 @@
                             data-bs-toggle="modal"
                             data-bs-target="#inventoryDetailsModal"
                             data-component="{{ $item->component }}"
-                            data-serial="{{ $item->serial_num ?: 'No Serial' }}"
                             data-brand="{{ $item->brand ?: 'No Brand' }}"
                             data-category="{{ $item->category }}"
                             data-stock="{{ $item->stock_qty }}"
@@ -404,14 +401,6 @@
             </div>
             
             <div class="col-md-6">
-              <label for="serial_num" class="form-label small fw-semibold">
-                <i class="bi bi-upc-scan me-1"></i> Serial Number
-              </label>
-              <input type="text" class="form-control" id="serial_num" name="serial_num" 
-                     value="{{ old('serial_num') }}" placeholder="Enter serial number">
-            </div>
-            
-            <div class="col-md-6">
               <label for="brand" class="form-label small fw-semibold">
                 <i class="bi bi-tag me-1"></i> Brand
               </label>
@@ -459,20 +448,6 @@
               </select>
             </div>
             
-            <div class="col-md-6">
-              <div class="card bg-light border">
-                <div class="card-body p-3">
-                  <div class="d-flex align-items-center">
-                    <i class="bi bi-calendar-date text-primary fs-4 me-3"></i>
-                    <div>
-                      <h6 class="mb-0 fw-semibold">Date Added</h6>
-                      <p class="mb-0 text-muted small">Automatically set to today's date</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
             <div class="col-12">
               <label for="description" class="form-label small fw-semibold">
                 <i class="bi bi-card-text me-1"></i> Description (Optional)
@@ -514,10 +489,6 @@
           <div class="col-md-6">
             <h6 class="text-muted mb-1">Category</h6>
             <p class="fw-semibold mb-0" id="detailCategory">-</p>
-          </div>
-          <div class="col-md-6">
-            <h6 class="text-muted mb-1">Serial Number</h6>
-            <p class="fw-semibold mb-0" id="detailSerial">-</p>
           </div>
           <div class="col-md-6">
             <h6 class="text-muted mb-1">Brand</h6>
@@ -586,13 +557,6 @@
                 <i class="bi bi-box me-1"></i> Component Name *
               </label>
               <input type="text" class="form-control" id="editComponent" name="component" required>
-            </div>
-
-            <div class="col-md-6">
-              <label for="editSerial" class="form-label small fw-semibold">
-                <i class="bi bi-upc-scan me-1"></i> Serial Number
-              </label>
-              <input type="text" class="form-control" id="editSerial" name="serial_num">
             </div>
 
             <div class="col-md-6">
@@ -863,7 +827,6 @@ document.addEventListener('DOMContentLoaded', function() {
     button.addEventListener('click', function () {
       document.getElementById('detailComponent').textContent = button.dataset.component || 'N/A';
       document.getElementById('detailCategory').textContent = button.dataset.category || 'N/A';
-      document.getElementById('detailSerial').textContent = button.dataset.serial || 'N/A';
       document.getElementById('detailBrand').textContent = button.dataset.brand || 'N/A';
       document.getElementById('detailStock').textContent = button.dataset.stock || 'N/A';
       document.getElementById('detailStatus').textContent = button.dataset.status || 'N/A';
@@ -883,7 +846,6 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('editInventoryForm').action = `/admin/inventory/${button.dataset.itemId}`;
       document.getElementById('editCategory').value = button.dataset.category || '';
       document.getElementById('editComponent').value = button.dataset.component || '';
-      document.getElementById('editSerial').value = button.dataset.serial || '';
       document.getElementById('editBrand').value = button.dataset.brand || '';
       document.getElementById('editStock').value = button.dataset.stock || '';
       document.getElementById('editDate').value = button.dataset.date || '';
