@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Inventory;
 use App\Models\Category;
-use App\Models\Supplier;
 use App\Models\ActivityLog;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -19,10 +18,10 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
-        // Standardized to categoryRelation for accurate name-based relationship mapping
-        $query = Inventory::with(['categoryRelation', 'supplier']);
+        // Standardized to categoryRelation (removed unused supplier relation)
+        $query = Inventory::with(['categoryRelation']);
 
-        // Search functionality (Removed serial_num search)
+        // Search functionality
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -53,8 +52,7 @@ class InventoryController extends Controller
     public function create()
     {
         $categories = Category::all();
-        $suppliers = Supplier::all();
-        return view('admin.inventory_create', compact('categories', 'suppliers'));
+        return view('admin.inventory_create', compact('categories'));
     }
 
     public function store(Request $request)
@@ -65,7 +63,6 @@ class InventoryController extends Controller
             'brand'       => 'nullable|string|max:255',
             'stock_qty'   => 'required|integer|min:0',
             'status'      => 'required|in:Available,Low Stock,Out of Stock,Maintenance,Deployed',
-            'supplier_id' => 'nullable|exists:suppliers,id',
             'description' => 'nullable|string',
         ]);
 
@@ -86,7 +83,6 @@ class InventoryController extends Controller
             'stock_qty'   => $request->stock_qty,
             'date_added'  => now(),
             'status'      => $status,
-            'supplier_id' => $request->supplier_id,
             'description' => $request->description,
         ]);
 
@@ -107,8 +103,7 @@ class InventoryController extends Controller
     {
         $inventory = Inventory::findOrFail($id);
         $categories = Category::all();
-        $suppliers = Supplier::all();
-        return view('admin.inventory_edit', compact('inventory', 'categories', 'suppliers'));
+        return view('admin.inventory_edit', compact('inventory', 'categories'));
     }
 
     public function update(Request $request, $id)
@@ -122,7 +117,6 @@ class InventoryController extends Controller
             'stock_qty'   => 'required|integer|min:0',
             'date_added'  => 'required|date',
             'status'      => 'required|in:Available,Low Stock,Out of Stock,Maintenance',
-            'supplier_id' => 'nullable|exists:suppliers,id',
             'description' => 'nullable|string',
         ]);
 
@@ -148,7 +142,6 @@ class InventoryController extends Controller
             'stock_qty'   => $newStock,
             'date_added'  => $request->date_added,
             'status'      => $status,
-            'supplier_id' => $request->supplier_id,
             'description' => $request->description,
         ]);
 
@@ -261,7 +254,7 @@ class InventoryController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $query = Inventory::with(['categoryRelation', 'supplier']);
+        $query = Inventory::with(['categoryRelation']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -290,7 +283,7 @@ class InventoryController extends Controller
 
     public function exportCsv(Request $request) 
     {
-        $query = Inventory::with(['categoryRelation', 'supplier']);
+        $query = Inventory::with(['categoryRelation']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -314,7 +307,6 @@ class InventoryController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Inventory Report');
 
-        // Removed Serial Number and Supplier columns
         $columns = ['A' => 'ID', 'B' => 'Item/Component', 'C' => 'Category', 'D' => 'Brand', 'E' => 'Stock Qty', 'F' => 'Status', 'G' => 'Date Added'];
 
         foreach ($columns as $col => $title) {
