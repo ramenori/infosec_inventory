@@ -8,6 +8,7 @@ use App\Models\Inventory;
 use App\Models\Category;
 use App\Models\Deployment;
 use App\Models\ContactPerson;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -74,8 +75,7 @@ class DeploymentController extends Controller
                     $search = $request->component_search;
                     $query->where(function($q) use ($search) {
                         $q->where('component', 'like', "%{$search}%")
-                        ->orWhere('serial_num', 'like', "%{$search}%")
-                        ->orWhere('brand', 'like', "%{$search}%");
+                          ->orWhere('brand', 'like', "%{$search}%");
                     });
                 }
 
@@ -360,26 +360,26 @@ class DeploymentController extends Controller
 
             if ($contactPerson) {
                 $request->merge([
-                    'deployed_to' => $contactPerson->name,
-                    'contact_number' => $request->filled('contact_number') ? $request->contact_number : $contactPerson->contact_number,
-                    'address' => $request->filled('address') ? $request->address : $contactPerson->address,
+                    'deployed_to'      => $contactPerson->name,
+                    'contact_number'   => $request->filled('contact_number') ? $request->contact_number : $contactPerson->contact_number,
+                    'address'          => $request->filled('address') ? $request->address : $contactPerson->address,
                     'satellite_office' => $request->filled('satellite_office') ? $request->satellite_office : $contactPerson->satellite_office,
                 ]);
             }
         }
 
         $request->validate([
-            'waybill_number'   => 'nullable|string|max:255',
-            'deployed_to'      => 'required|string|max:255',
-            'contact_person_id'=> 'nullable|exists:contactperson,id',
-            'contact_number'   => 'nullable|string|max:20',
-            'address'          => 'nullable|string|max:500',
-            'satellite_office' => 'nullable|string|max:255',
-            'deployment_date'  => 'required|date',
-            'remarks'          => 'nullable|string|max:500',
-            'new_contact_name' => 'nullable|string|max:255',
-            'new_contact_number' => 'nullable|string|max:20',
-            'new_address'      => 'nullable|string|max:500',
+            'waybill_number'       => 'nullable|string|max:255',
+            'deployed_to'          => 'required|string|max:255',
+            'contact_person_id'    => 'nullable|exists:contactperson,id',
+            'contact_number'       => 'nullable|string|max:20',
+            'address'              => 'nullable|string|max:500',
+            'satellite_office'     => 'nullable|string|max:255',
+            'deployment_date'      => 'required|date',
+            'remarks'              => 'nullable|string|max:500',
+            'new_contact_name'     => 'nullable|string|max:255',
+            'new_contact_number'   => 'nullable|string|max:20',
+            'new_address'          => 'nullable|string|max:500',
             'new_satellite_office' => 'nullable|string|max:255'
         ]);
 
@@ -413,17 +413,14 @@ class DeploymentController extends Controller
                     throw new \Exception("Item ID {$cartItem['inventory_id']} is no longer available.");
                 }
 
-                // Grab the serials array for this specific inventory item
+                // Grab individual serials provided in deployment form
                 $submittedSerials = $request->input("serials.{$inventory->id}", []);
 
-                // Pad or slice array to match exact selected quantity
                 $cleanedSerials = [];
                 for ($i = 0; $i < $cartItem['quantity']; $i++) {
-                    $cleanedSerials[] = $submittedSerials[$i] ?? $inventory->serial_num ?? 'No Serial';
+                    $cleanedSerials[] = !empty($submittedSerials[$i]) ? $submittedSerials[$i] : 'No Serial';
                 }
 
-                // Convert the serials array into a clean JSON string or comma-separated string to store in remarks/meta
-                // We append the JSON safely into the component tracking field for easy parsing later
                 $serialPayload = json_encode($cleanedSerials);
 
                 Deployment::create([
@@ -438,9 +435,9 @@ class DeploymentController extends Controller
                     'address'           => $request->filled('address') ? $request->address : null,
                     'satellite_office'  => $request->filled('satellite_office') ? $request->satellite_office : null,
                     'inventory_id'      => $inventory->id,
-                    'component'         => $inventory->component, // Clean name back!
-                    'quantity'          => $cartItem['quantity'], // ◄ SAVE THE REAL QUANTITY HERE (e.g. 2 or 5)
-                    'department'        => $serialPayload, // ◄ WE BORROW THE UNUSED 'department' FIELD TO STORE SERIALS PAYLOAD!
+                    'component'         => $inventory->component,
+                    'quantity'          => $cartItem['quantity'],
+                    'department'        => $serialPayload,
                 ]);
 
                 // Subtract total stock
@@ -448,6 +445,16 @@ class DeploymentController extends Controller
                 $inventory->status = $inventory->stock_qty <= 0 ? 'Out of Stock'
                     : ($inventory->stock_qty < 5 ? 'Low Stock' : 'Available');
                 $inventory->save();
+
+                // Log the deployment activity
+                ActivityLog::create([
+                    'user_id'     => Auth::id(),
+                    'action'      => 'updated',
+                    'entity_type' => 'inventory',
+                    'entity_id'   => $inventory->id,
+                    'component'   => $inventory->component,
+                    'details'     => "Deployed {$cartItem['quantity']} unit(s) of {$inventory->component} to {$request->deployed_to}",
+                ]);
             }
 
             DB::commit();
