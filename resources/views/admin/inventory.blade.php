@@ -208,7 +208,6 @@
               <th class="border-0 text-center">STOCK</th>
               <th class="border-0 text-center">STATUS</th>
               <th class="border-0 text-center">DATE ADDED</th>
-              <th class="border-0 text-center">SUPPLIER</th>
               <th class="border-0 text-center">ACTIONS</th>
             </tr>
           </thead>
@@ -269,18 +268,6 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  @if($item->supplier)
-                    <div class="d-flex flex-column align-items-center">
-                      <span><i class="bi bi-truck me-1"></i> {{ $item->supplier->name }}</span>
-                      @if($item->supplier->contact)
-                        <small class="text-muted mt-1">{{ $item->supplier->contact }}</small>
-                      @endif
-                    </div>
-                  @else
-                    <span class="badge bg-secondary">No Supplier</span>
-                  @endif
-                </td>
-                <td class="text-center">
                   <div class="d-flex justify-content-center gap-2">
                     <button type="button"
                             class="btn btn-sm btn-outline-primary edit-details-btn"
@@ -293,7 +280,6 @@
                             data-stock="{{ $item->stock_qty }}"
                             data-date="{{ optional($item->date_added)->format('Y-m-d') }}"
                             data-status="{{ $item->status }}"
-                            data-supplier-id="{{ $item->supplier_id ?? '' }}"
                             data-description="{{ e($item->description ?: '') }}"
                             title="Edit Item">
                       <i class="bi bi-pencil"></i>
@@ -309,8 +295,6 @@
                             data-status="{{ $item->status }}"
                             data-date="{{ optional($item->date_added)->format('M d, Y') }}"
                             data-created="{{ optional($item->created_at)->diffForHumans() }}"
-                            data-supplier="{{ $item->supplier ? $item->supplier->name : 'No Supplier' }}"
-                            data-supplier-contact="{{ $item->supplier && $item->supplier->contact ? $item->supplier->contact : '' }}"
                             data-description="{{ e($item->description ?: 'No description provided.') }}"
                             title="View Details">
                       <i class="bi bi-eye"></i>
@@ -330,7 +314,7 @@
               </tr>
             @empty
               <tr>
-                <td colspan="8" class="text-center py-5">
+                <td colspan="7" class="text-center py-5">
                   <div class="empty-state">
                     <i class="bi bi-inboxes display-4 text-muted mb-3"></i>
                     <h5 class="text-muted">No inventory items found</h5>
@@ -433,21 +417,6 @@
               <small class="text-muted">Status will auto-update based on stock level</small>
             </div>
             
-            <div class="col-md-6">
-              <label for="supplier_id" class="form-label small fw-semibold">
-                <i class="bi bi-truck me-1"></i> Supplier
-              </label>
-              <select class="form-select" id="supplier_id" name="supplier_id">
-                <option value="">Select Supplier</option>
-                @foreach(\App\Models\Supplier::all() as $supplier)
-                  <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
-                    {{ $supplier->name }}
-                    @if($supplier->contact) - {{ $supplier->contact }} @endif
-                  </option>
-                @endforeach
-              </select>
-            </div>
-            
             <div class="col-12">
               <label for="description" class="form-label small fw-semibold">
                 <i class="bi bi-card-text me-1"></i> Description (Optional)
@@ -505,10 +474,6 @@
           <div class="col-md-6">
             <h6 class="text-muted mb-1">Date Added</h6>
             <p class="fw-semibold mb-0" id="detailDate">-</p>
-          </div>
-          <div class="col-md-6">
-            <h6 class="text-muted mb-1">Supplier</h6>
-            <p class="fw-semibold mb-0" id="detailSupplier">-</p>
           </div>
         </div>
         <div class="mt-4">
@@ -590,18 +555,6 @@
                 <i class="bi bi-calendar-date me-1"></i> Date Added *
               </label>
               <input type="date" class="form-control" id="editDate" name="date_added" required>
-            </div>
-
-            <div class="col-md-6">
-              <label for="editSupplierId" class="form-label small fw-semibold">
-                <i class="bi bi-truck me-1"></i> Supplier
-              </label>
-              <select class="form-select" id="editSupplierId" name="supplier_id">
-                <option value="">Select Supplier</option>
-                @foreach(\App\Models\Supplier::all() as $supplier)
-                  <option value="{{ $supplier->id }}">{{ $supplier->name }}@if($supplier->contact) - {{ $supplier->contact }} @endif</option>
-                @endforeach
-              </select>
             </div>
 
             <div class="col-12">
@@ -832,10 +785,6 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('detailStatus').textContent = button.dataset.status || 'N/A';
       document.getElementById('detailDate').textContent = button.dataset.date || 'N/A';
       document.getElementById('detailDescription').textContent = button.dataset.description || 'No description provided.';
-
-      const supplierName = button.dataset.supplier || 'No Supplier';
-      const supplierContact = button.dataset.supplierContact;
-      document.getElementById('detailSupplier').textContent = supplierContact ? `${supplierName} • ${supplierContact}` : supplierName;
     });
   });
 
@@ -850,7 +799,6 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('editStock').value = button.dataset.stock || '';
       document.getElementById('editDate').value = button.dataset.date || '';
       document.getElementById('editStatus').value = button.dataset.status || 'Available';
-      document.getElementById('editSupplierId').value = button.dataset.supplierId || '';
       document.getElementById('editDescription').value = button.dataset.description || '';
     });
   });
