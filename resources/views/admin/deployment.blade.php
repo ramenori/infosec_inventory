@@ -367,7 +367,6 @@
                   <i class="bi bi-cart-x display-6 text-muted"></i>
                 </div>
                 <h6 class="fw-bold text-dark mb-1">Cart is Empty</h6>
-                <p class="text-muted small mb-0">Choose a category on the left, then select components to build a deployment batch.</p>
               </div>
             @endif
           </div>

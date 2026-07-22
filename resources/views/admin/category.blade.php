@@ -24,19 +24,20 @@
         </ol>
     </nav>
 
-    <div class="row">
+    {{-- Main Workspace Row --}}
+    <div class="row g-4">
         {{-- Add Category Panel (Left) --}}
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-light py-3">
-                    <h6 class="mb-0 fw-semibold">
-                        <i class="bi bi-plus-circle me-2"></i> Add New Category
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light py-3 border-bottom">
+                    <h6 class="mb-0 fw-semibold text-dark">
+                        <i class="bi bi-plus-circle me-2 text-primary"></i> Add New Category
                     </h6>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                            <i class="bi bi-check-circle me-2"></i>
+                        <div class="alert alert-success alert-dismissible fade show mb-4 rounded-3 border-0 shadow-sm" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
                             {{ session('success') }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
@@ -44,21 +45,27 @@
 
                     <form action="{{ route('admin.category.store') }}" method="POST">
                         @csrf
-                        <div class="mb-3">
-                            <label for="categoryName" class="form-label small fw-semibold">
-                                Category Name
+                        <div class="mb-4">
+                            <label for="categoryName" class="form-label small fw-semibold text-secondary">
+                                Category Name <span class="text-danger">*</span>
                             </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="categoryName" 
-                                   name="name" 
-                                   value="{{ old('name') }}" 
-                                   placeholder="Enter category name" 
-                                   required>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-folder-plus text-muted"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control border-start-0 ps-0" 
+                                       id="categoryName" 
+                                       name="name" 
+                                       value="{{ old('name') }}" 
+                                       placeholder="e.g. CCTV, Access Control..." 
+                                       required>
+                            </div>
+                            <small class="text-muted mt-1 d-block" style="font-size: 11px;">Categorizing helps organize inventory and deployment reporting.</small>
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-1"></i> Add Category
+                            <button type="submit" class="btn btn-primary py-2 fw-semibold">
+                                <i class="bi bi-plus-lg me-1"></i> Save Category
                             </button>
                         </div>
                     </form>
@@ -67,28 +74,28 @@
         </div>
 
         {{-- Categories List Panel (Right) --}}
-        <div class="col-md-8">
+        <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light py-3">
+                <div class="card-header bg-light py-3 border-bottom">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-semibold">
-                            <i class="bi bi-table me-2"></i> Category List
+                        <h6 class="mb-0 fw-semibold text-dark">
+                            <i class="bi bi-grid-3x3-gap me-2 text-primary"></i> Category List
                         </h6>
-                        <div class="d-flex align-items-center gap-2">
+                        <div>
                             <form method="GET" action="{{ route('admin.category') }}" class="d-flex">
-                                <div class="input-group input-group-sm" style="width: 200px;">
-                                    <span class="input-group-text bg-light border-end-0">
-                                        <i class="bi bi-search"></i>
+                                <div class="input-group input-group-sm" style="width: 220px;">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="bi bi-search text-muted"></i>
                                     </span>
                                     <input type="search" 
-                                           class="form-control border-start-0" 
+                                           class="form-control border-start-0 ps-0" 
                                            name="search" 
-                                           placeholder="Search..." 
+                                           placeholder="Search category..." 
                                            value="{{ request('search') }}">
                                 </div>
                                 @if(request('search'))
                                     <a href="{{ route('admin.category') }}" class="btn btn-sm btn-outline-secondary ms-2">
-                                        <i class="bi bi-x"></i>
+                                        <i class="bi bi-x-lg"></i>
                                     </a>
                                 @endif
                             </form>
@@ -101,31 +108,49 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="border-0 ps-4">CATEGORY</th>
-                                    <th class="border-0 text-end pe-4">ACTIONS</th>
+                                    <th class="border-0 ps-4 text-secondary fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">CATEGORY</th>
+                                    <th class="border-0 text-center text-secondary fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">ITEMS ASSIGNED</th>
+                                    <th class="border-0 text-end pe-4 text-secondary fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">ACTIONS</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($categories as $category)
-                                    <tr class="hover-shadow">
-                                        <td class="ps-4 align-middle">
+                                    @php
+                                        $iconMap = [
+                                            'Access Control' => ['icon' => 'bi-shield-lock-fill', 'bg' => 'rgba(13, 110, 253, 0.1)', 'color' => '#0d6efd'],
+                                            'CCTV'           => ['icon' => 'bi-camera-video-fill', 'bg' => 'rgba(13, 202, 240, 0.1)', 'color' => '#0dcaf0'],
+                                            'GPS'            => ['icon' => 'bi-geo-alt-fill', 'bg' => 'rgba(220, 53, 69, 0.1)', 'color' => '#dc3545'],
+                                            'Wireless Alarm' => ['icon' => 'bi-bell-fill', 'bg' => 'rgba(255, 193, 7, 0.15)', 'color' => '#b58100'],
+                                            'Network'        => ['icon' => 'bi-wifi', 'bg' => 'rgba(25, 135, 84, 0.1)', 'color' => '#198754'],
+                                            'Consumables'    => ['icon' => 'bi-box-seam-fill', 'bg' => 'rgba(108, 117, 125, 0.1)', 'color' => '#6c757d'],
+                                        ];
+                                        $style = $iconMap[$category->name] ?? ['icon' => 'bi-folder-fill', 'bg' => 'rgba(13, 110, 253, 0.1)', 'color' => '#0d6efd'];
+                                        $itemCount = \App\Models\Inventory::where('category', $category->name)->count();
+                                    @endphp
+                                    <tr>
+                                        <td class="ps-4 py-3">
                                             <div class="d-flex align-items-center">
-                                                <div class="category-icon me-3">
-                                                    <i class="bi bi-folder text-primary"></i>
+                                                <div class="category-icon me-3" style="background-color: {{ $style['bg'] }}; color: {{ $style['color'] }};">
+                                                    <i class="bi {{ $style['icon'] }} fs-5"></i>
                                                 </div>
                                                 <div>
-                                                    <h6 class="mb-0 fw-semibold">{{ $category->name }}</h6>
-                                                    <small class="text-muted">
-                                                        Created {{ $category->created_at->diffForHumans() }}
+                                                    <h6 class="mb-0 fw-semibold text-dark">{{ $category->name }}</h6>
+                                                    <small class="text-muted" style="font-size: 0.75rem;">
+                                                        Created {{ optional($category->created_at)->diffForHumans() ?? 'N/A' }}
                                                     </small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="text-end pe-4 align-middle">
+                                        <td class="text-center">
+                                            <span class="badge bg-light text-dark border px-3 py-1.5 rounded-pill fw-semibold">
+                                                <i class="bi bi-box me-1 text-primary"></i> {{ $itemCount }} {{ $itemCount === 1 ? 'item' : 'items' }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <a href="{{ route('admin.category.edit', $category->id) }}" 
-                                                   class="btn btn-sm btn-outline-primary border" 
-                                                   title="Edit">
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   title="Edit Category">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <form action="{{ route('admin.category.destroy', $category->id) }}" 
@@ -134,8 +159,8 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" 
-                                                            class="btn btn-sm btn-outline-danger border"
-                                                            title="Delete"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            title="Delete Category"
                                                             onclick="return confirm('Are you sure you want to delete this category?')">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
@@ -145,17 +170,17 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="2" class="text-center py-5">
+                                        <td colspan="3" class="text-center py-5">
                                             <div class="empty-state">
-                                                <i class="bi bi-tags display-4 text-muted mb-3"></i>
-                                                <h5 class="text-muted">No categories found</h5>
+                                                <i class="bi bi-tags display-5 text-muted mb-3 d-block"></i>
+                                                <h6 class="text-muted fw-bold">No Categories Found</h6>
                                                 @if(request('search'))
-                                                    <p class="text-muted mb-4">No results for "{{ request('search') }}"</p>
-                                                    <a href="{{ route('admin.category.index') }}" class="btn btn-outline-secondary">
+                                                    <p class="text-muted small mb-3">No category matching "{{ request('search') }}"</p>
+                                                    <a href="{{ route('admin.category') }}" class="btn btn-sm btn-outline-secondary">
                                                         Clear Search
                                                     </a>
                                                 @else
-                                                    <p class="text-muted mb-4">Start by adding a category on the left</p>
+                                                    <p class="text-muted small mb-0">Add your first category using the panel on the left.</p>
                                                 @endif
                                             </div>
                                         </td>
@@ -175,64 +200,25 @@
 .text-gradient {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .category-icon {
-    width: 36px;
-    height: 36px;
-    background: rgba(13, 110, 253, 0.1);
-    border-radius: 6px;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.hover-shadow:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-    transition: all 0.2s ease;
+.table tbody tr {
+    transition: background-color 0.15s ease;
 }
 
-.empty-state {
-    padding: 2rem 1rem;
-}
-
-.breadcrumb {
-    background-color: #f8f9fa !important;
-    border-radius: 8px;
-}
-
-.card {
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.table th {
-    font-weight: 600;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    color: #6c757d;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.table td {
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.btn-sm {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-}
-
-.input-group-sm .form-control,
-.input-group-sm .input-group-text {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-}
-
-.card-header {
-    border-bottom: 1px solid rgba(0,0,0,.125);
+.table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.015);
 }
 </style>
 @endsection
