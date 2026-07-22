@@ -198,12 +198,7 @@
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
-              <th class="border-0" width="50">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="selectAll">
-                </div>
-              </th>
-              <th class="border-0">ITEM</th>
+              <th class="border-0 ps-4">ITEM</th>
               <th class="border-0 text-center">CATEGORY</th>
               <th class="border-0 text-center">STOCK</th>
               <th class="border-0 text-center">STATUS</th>
@@ -214,12 +209,7 @@
           <tbody>
             @forelse($inventory as $item)
               <tr class="hover-shadow">
-                <td>
-                  <div class="form-check">
-                    <input class="form-check-input select-item" type="checkbox" value="{{ $item->id }}">
-                  </div>
-                </td>
-                <td>
+                <td class="ps-4">
                   <div class="d-flex align-items-center">
                     <div class="item-icon me-3">
                       <i class="bi bi-box text-primary fs-4"></i>
@@ -237,7 +227,7 @@
                   </div>
                 </td>
                 <td class="text-center">
-                    <i class="bi bi-folder me-1"></i> {{ $item->category }}
+                  <i class="bi bi-folder me-1"></i> {{ $item->category }}
                 </td>
                 <td class="text-center">
                   <div class="stock-indicator">
@@ -314,7 +304,7 @@
               </tr>
             @empty
               <tr>
-                <td colspan="7" class="text-center py-5">
+                <td colspan="6" class="text-center py-5">
                   <div class="empty-state">
                     <i class="bi bi-inboxes display-4 text-muted mb-3"></i>
                     <h5 class="text-muted">No inventory items found</h5>
@@ -330,13 +320,7 @@
     {{-- Footer with Pagination --}}
     @if($inventory->hasPages())
       <div class="card-footer bg-light py-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="selectAllFooter">
-            <label class="form-check-label small text-muted" for="selectAllFooter">
-              Select All ({{ $inventory->count() }} items)
-            </label>
-          </div>
+        <div class="d-flex justify-content-center">
           <nav aria-label="Page navigation">
             <ul class="pagination pagination-sm mb-0">
               {{ $inventory->links() }}
@@ -703,33 +687,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Checkbox Selection Logic
-  const selectAll = document.getElementById('selectAll');
-  const selectAllFooter = document.getElementById('selectAllFooter');
-  const checkboxes = document.querySelectorAll('.select-item');
-  
-  function updateSelectAll() {
-    const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
-    if (selectAll) selectAll.checked = allChecked;
-    if (selectAllFooter) selectAllFooter.checked = allChecked;
-  }
-  
-  if (selectAll) {
-    selectAll.addEventListener('change', function() {
-      checkboxes.forEach(cb => cb.checked = this.checked);
-    });
-  }
-  
-  if (selectAllFooter) {
-    selectAllFooter.addEventListener('change', function() {
-      checkboxes.forEach(cb => cb.checked = this.checked);
-    });
-  }
-  
-  checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', updateSelectAll);
-  });
-
   // Tooltips Global Init
   document.querySelectorAll('[title]').forEach(el => {
     new bootstrap.Tooltip(el);
