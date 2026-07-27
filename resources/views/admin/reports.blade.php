@@ -289,80 +289,117 @@
 }
 </style>
 
-{{-- Deployment Report Details Modal --}}
+{{-- Modernized Deployment Report Details Modal --}}
 <div class="modal fade" id="reportDetailsModal" tabindex="-1" aria-labelledby="reportDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="reportDetailsModalLabel">
-                    <i class="bi bi-file-earmark-text me-2"></i> Deployment Report Details
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            
+            {{-- Modal Header --}}
+            <div class="modal-header border-0 bg-primary bg-gradient text-white p-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-white bg-opacity-20 p-2.5 rounded-3 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-file-earmark-text fs-3 text-white"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" id="reportDetailsModalLabel">Deployment Details</h5>
+                        <small class="text-white-50">Comprehensive report summary & serial tracking</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row g-4">
-                    {{-- Left Section: Deployment Info --}}
-                    <div class="col-md-6 border-end">
-                        <h5 class="text-primary mb-3 fw-bold"><i class="bi bi-truck me-2"></i>Deployment Info</h5>
-                        <div class="mb-3">
-                            <label class="text-muted small d-block mb-1">Waybill Number</label>
-                            <span class="waybill-pill py-1 px-2" id="modalWaybill">-</span>
-                        </div>
-                        <div class="mb-3">
-                            <label class="text-muted small d-block">Date Deployed</label>
-                            <p class="fw-semibold mb-0" id="modalDate">-</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="text-muted small d-block">Prepared By</label>
-                            <p class="fw-semibold mb-0" id="modalPreparedBy">-</p>
-                        </div>
-                    </div>
 
-                    {{-- Right Section: Client Info --}}
+            <div class="modal-body p-4 bg-light-subtle">
+                
+                {{-- Quick Overview Cards --}}
+                <div class="row g-3 mb-4">
+                    {{-- Deployment Info Card --}}
                     <div class="col-md-6">
-                        <h5 class="text-primary mb-3 fw-bold"><i class="bi bi-person-circle me-2"></i>Recipient Info</h5>
-                        <div class="mb-3">
-                            <label class="text-muted small d-block">Deployed To / Contact Person</label>
-                            <p class="fw-semibold mb-0" id="modalDeployedTo">-</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="text-muted small d-block">Contact Number</label>
-                            <p class="fw-semibold mb-0" id="modalContact">-</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="text-muted small d-block">Satellite Office</label>
-                            <p class="fw-semibold mb-0" id="modalOffice">-</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="text-muted small d-block">Address</label>
-                            <p class="fw-semibold mb-0" id="modalAddress">-</p>
+                        <div class="card border-0 shadow-sm rounded-3 h-100 p-3 bg-white">
+                            <div class="d-flex align-items-center gap-2 mb-3 text-primary border-bottom pb-2">
+                                <i class="bi bi-truck fs-5"></i>
+                                <h6 class="fw-bold mb-0 text-dark">Deployment Info</h6>
+                            </div>
+                            <div class="d-flex flex-column gap-2.5">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small">Waybill No.:</span>
+                                    <span class="waybill-pill py-1 px-2.5 m-0" id="modalWaybill">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small">Date Deployed:</span>
+                                    <span class="fw-semibold text-dark small" id="modalDate">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small">Prepared By:</span>
+                                    <span class="fw-semibold text-dark small" id="modalPreparedBy">-</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12">
-                        <hr class="my-1">
-                    </div>
-
-                    {{-- Bottom Section: Component Details --}}
-                    <div class="col-12">
-                        <h5 class="text-primary mb-3 fw-bold"><i class="bi bi-box-seam me-2"></i>Component Details</h5>
-                        <div id="modalComponentContainer"></div>
-                    </div>
-
-                    {{-- Remarks Section --}}
-                    <div class="col-12">
-                        <div class="bg-light p-3 rounded">
-                            <label class="text-muted small d-block fw-bold mb-1"><i class="bi bi-card-text me-1"></i>Remarks</label>
-                            <p class="mb-0 text-dark" id="modalRemarks">-</p>
+                    {{-- Recipient Info Card --}}
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-3 h-100 p-3 bg-white">
+                            <div class="d-flex align-items-center gap-2 mb-3 text-primary border-bottom pb-2">
+                                <i class="bi bi-person-badge fs-5"></i>
+                                <h6 class="fw-bold mb-0 text-dark">Recipient Details</h6>
+                            </div>
+                            <div class="d-flex flex-column gap-2">
+                                <div>
+                                    <span class="text-muted d-block small" style="font-size: 11px;">CONTACT PERSON</span>
+                                    <span class="fw-bold text-dark" id="modalDeployedTo">-</span>
+                                </div>
+                                <div class="row g-2 mt-1">
+                                    <div class="col-6">
+                                        <span class="text-muted d-block small" style="font-size: 11px;">PHONE</span>
+                                        <span class="fw-semibold text-dark small" id="modalContact">-</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="text-muted d-block small" style="font-size: 11px;">OFFICE</span>
+                                        <span class="fw-semibold text-dark small" id="modalOffice">-</span>
+                                    </div>
+                                </div>
+                                <div class="mt-1">
+                                    <span class="text-muted d-block small" style="font-size: 11px;">LOCATION ADDRESS</span>
+                                    <span class="fw-medium text-secondary small" id="modalAddress">-</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                {{-- Component List Section --}}
+                <div class="card border-0 shadow-sm rounded-3 p-3 bg-white mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                        <div class="d-flex align-items-center gap-2 text-primary">
+                            <i class="bi bi-boxes fs-5"></i>
+                            <h6 class="fw-bold mb-0 text-dark">Deployed Component Items</h6>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1" id="modalTotalItemsBadge">1 item(s)</span>
+                    </div>
+
+                    <div id="modalComponentContainer" class="d-flex flex-column gap-2" style="max-height: 280px; overflow-y: auto;">
+                        {{-- Items loaded dynamically via JavaScript --}}
+                    </div>
+                </div>
+
+                {{-- Remarks Section --}}
+                <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+                    <div class="d-flex align-items-center gap-2 mb-1 text-muted">
+                        <i class="bi bi-chat-left-text"></i>
+                        <span class="fw-bold small text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">Remarks & Notes</span>
+                    </div>
+                    <p class="mb-0 text-dark small fst-italic ps-4" id="modalRemarks">-</p>
+                </div>
+
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Close
+
+            {{-- Modal Footer --}}
+            <div class="modal-footer border-0 p-3 bg-light">
+                <button type="button" class="btn btn-secondary px-4 rounded-3 fw-medium" data-bs-dismiss="modal">
+                    Close Details
                 </button>
             </div>
+
         </div>
     </div>
 </div>
@@ -370,8 +407,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
-
     const reportDetailsModal = document.getElementById('reportDetailsModal');
     
     if (reportDetailsModal) {
@@ -446,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Consumables': 'bi-box-seam-fill text-secondary'
             };
 
-            let structuralIndex = 1;
+            let totalUnitsCount = 0;
 
             itemsList.forEach((item) => {
                 const category = item.category || 'Other';
@@ -457,53 +492,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 const iconClass = categoryIconMap[category] || 'bi-folder-fill text-primary';
 
                 for (let j = 0; j < itemQuantity; j++) {
+                    totalUnitsCount++;
                     const currentUnitSerial = serialsArray[j] || 'No Serial';
 
                     const componentRow = `
-                        <div class="row g-3 mb-3 align-items-center border-bottom pb-3">
-                            <div class="col-md-3">
-                                <label class="text-muted small d-block">Category #${structuralIndex}</label>
-                                <div class="d-inline-flex align-items-center gap-2 mt-1 px-2 py-1 rounded bg-light border">
-                                    <i class="bi ${iconClass}"></i>
-                                    <span class="fw-semibold small text-dark">${category}</span>
+                        <div class="d-flex align-items-center justify-content-between p-2.5 px-3 bg-light rounded-3 border">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-white text-secondary border fw-bold px-2 py-1">#${totalUnitsCount}</span>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi ${iconClass} small"></i>
+                                        <span class="fw-bold text-dark small">${componentName}</span>
+                                        ${itemQuantity > 1 ? '<span class="text-muted small" style="font-size:11px;">(Unit ' + (j + 1) + ')</span>' : ''}
+                                    </div>
+                                    <small class="text-muted d-block mt-0.5" style="font-size: 11px;">
+                                        Category: <strong class="text-dark">${category}</strong> | Brand: <strong>${brand}</strong>
+                                    </small>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="text-muted small d-block">Component Name</label>
-                                <p class="fw-semibold mb-0 text-dark">${componentName} ${itemQuantity > 1 ? '(#' + (j + 1) + ')' : ''}</p>
-                            </div>
-                            <div class="col-md-2 text-md-center">
-                                <label class="text-muted small d-block">Brand</label>
-                                <p class="fw-semibold mb-0 text-muted">${brand}</p>
-                            </div>
-                            <div class="col-md-2 text-md-center">
-                                <label class="text-muted small d-block">Serial Number</label>
-                                <code class="text-primary fw-bold d-block mt-1" style="font-size: 0.9rem;">${currentUnitSerial}</code>
-                            </div>
-                            <div class="col-md-2 text-md-center">
-                                <label class="text-muted small d-block">Item Unit</label>
-                                <span class="badge bg-primary fs-6 px-3 mt-1">1 pc</span>
+                            <div class="text-end">
+                                <span class="text-muted d-block small" style="font-size: 10px;">SERIAL NO.</span>
+                                <code class="bg-white border rounded px-2 py-0.5 text-primary fw-bold small">${currentUnitSerial}</code>
                             </div>
                         </div>
                     `;
                     container.insertAdjacentHTML('beforeend', componentRow);
-                    structuralIndex++;
                 }
             });
 
-            if (container.lastElementChild) {
-                container.lastElementChild.classList.remove('border-bottom', 'pb-3');
-            }
+            document.getElementById('modalTotalItemsBadge').textContent = `${totalUnitsCount} unit(s)`;
         });
     }
-
-    document.querySelectorAll('.dropdown-toggle').forEach(dropdown => {
-        dropdown.addEventListener('click', function() {
-            const menu = this.nextElementSibling;
-            if (menu) menu.style.zIndex = '9999';
-        });
-    });
 });
+</script>
 </script>
 @endpush
 @endsection
