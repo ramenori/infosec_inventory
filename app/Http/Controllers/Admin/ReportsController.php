@@ -38,6 +38,15 @@ class ReportsController extends Controller
             });
         }
 
+        // Date Filters
+        if ($request->filled('date_from')) {
+            $reportsQuery->whereDate('deployment_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $reportsQuery->whereDate('deployment_date', '<=', $request->date_to);
+        }
+
         // Fetch flat entries and group them by Waybill + Created Timestamp combination
         $allReports = $reportsQuery->get();
         
@@ -109,6 +118,15 @@ class ReportsController extends Controller
             });
         }
 
+        // Date Filters
+        if ($request->filled('date_from')) {
+            $reportsQuery->whereDate('deployment_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $reportsQuery->whereDate('deployment_date', '<=', $request->date_to);
+        }
+
         $reports = $reportsQuery->get();
         $totalItemsDeployed = $reports->sum('quantity');
         $data = compact('reports', 'totalItemsDeployed');
@@ -148,6 +166,15 @@ class ReportsController extends Controller
             });
         }
 
+        // Date Filters
+        if ($request->filled('date_from')) {
+            $reportsQuery->whereDate('deployment_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $reportsQuery->whereDate('deployment_date', '<=', $request->date_to);
+        }
+
         $reports = $reportsQuery->get();
 
         // Initialize Spreadsheet
@@ -173,7 +200,7 @@ class ReportsController extends Controller
             $sheet->setCellValue($col . '1', $title);
         }
 
-        // Header Row Styling (Dark Blue fill, white bold text, center-aligned)
+        // Header Row Styling
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
             'fill' => [
@@ -212,18 +239,17 @@ class ReportsController extends Controller
             $rowNum++;
         }
 
-        // Auto-fit all column widths
+        // Auto-fit column widths
         foreach (range('A', 'I') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // Apply thin borders to all data rows
+        // Apply borders
         $lastRow = $rowNum - 1;
         if ($lastRow >= 1) {
             $sheet->getStyle("A1:I{$lastRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
         }
 
-        // Export Excel headers
         $filename = 'deployment_reports_' . now()->format('Ymd_His') . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

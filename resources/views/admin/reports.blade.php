@@ -27,67 +27,99 @@
     {{-- Controls Section --}}
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-6 mb-3 mb-md-0"></div>
-                <div class="col-md-6">
-                    <div class="d-flex justify-content-end align-items-center gap-2">
-                        
-                        {{-- Category Filter Dropdown --}}
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static">
-                                <i class="bi bi-funnel me-1"></i> {{ request('category') ? request('category') : 'Filter by Category' }}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                @foreach(\App\Models\Category::all() as $cat)
-                                    @php
-                                        $categoryIcons = [
-                                            'Access Control' => 'bi-shield-lock-fill text-primary',
-                                            'CCTV'           => 'bi-camera-video-fill text-info',
-                                            'GPS'            => 'bi-geo-alt-fill text-danger',
-                                            'Wireless Alarm' => 'bi-bell-fill text-warning',
-                                            'Network'        => 'bi-wifi text-success',
-                                            'Consumables'    => 'bi-box-seam-fill text-secondary',
-                                        ];
-                                        $icon = $categoryIcons[$cat->name] ?? 'bi-folder-fill text-primary';
-                                    @endphp
-                                    <li>
-                                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" 
-                                        href="{{ route('admin.reports', array_merge(\Illuminate\Support\Arr::except(request()->query(), ['page']), ['category' => $cat->name])) }}">
-                                            <i class="bi {{ $icon }}"></i> {{ $cat->name }}
-                                        </a>
-                                    </li>
-                                @endforeach
-                                <li><hr class="dropdown-divider"></li>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div></div> {{-- Spacer --}}
+
+                <form method="GET" action="{{ route('admin.reports') }}" class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                    {{-- Preserve existing Category parameter if selected --}}
+                    @if(request('category'))
+                        <input type="hidden" name="category" value="{{ request('category') }}">
+                    @endif
+
+                    {{-- Date Filter Group --}}
+                    <div class="input-group" style="width: auto;">
+                        <span class="input-group-text bg-light text-secondary border-end-0">
+                            <i class="bi bi-calendar3"></i>
+                        </span>
+                        <input type="date" 
+                            name="date_from" 
+                            class="form-control border-start-0 border-end-0" 
+                            value="{{ request('date_from') }}" 
+                            placeholder="From Date" 
+                            title="Start Date"
+                            onchange="this.form.submit()">
+                        <span class="input-group-text bg-light text-muted border-start-0 border-end-0 px-1">to</span>
+                        <input type="date" 
+                            name="date_to" 
+                            class="form-control border-start-0" 
+                            value="{{ request('date_to') }}" 
+                            placeholder="To Date" 
+                            title="End Date"
+                            onchange="this.form.submit()">
+                    </div>
+
+                    {{-- Category Filter Dropdown --}}
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static">
+                            <i class="bi bi-funnel me-1"></i> {{ request('category') ? request('category') : 'Filter by Category' }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            @foreach(\App\Models\Category::all() as $cat)
+                                @php
+                                    $categoryIcons = [
+                                        'Access Control' => 'bi-shield-lock-fill text-primary',
+                                        'CCTV'           => 'bi-camera-video-fill text-info',
+                                        'GPS'            => 'bi-geo-alt-fill text-danger',
+                                        'Wireless Alarm' => 'bi-bell-fill text-warning',
+                                        'Network'        => 'bi-wifi text-success',
+                                        'Consumables'    => 'bi-box-seam-fill text-secondary',
+                                    ];
+                                    $icon = $categoryIcons[$cat->name] ?? 'bi-folder-fill text-primary';
+                                @endphp
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2" 
-                                    href="{{ route('admin.reports', \Illuminate\Support\Arr::except(request()->query(), ['category', 'page'])) }}">
-                                        <i class="bi bi-eye text-primary"></i> View All
+                                    href="{{ route('admin.reports', array_merge(\Illuminate\Support\Arr::except(request()->query(), ['page']), ['category' => $cat->name])) }}">
+                                        <i class="bi {{ $icon }}"></i> {{ $cat->name }}
                                     </a>
                                 </li>
-                            </ul>
-                        </div>
-
-                        {{-- Export Dropdown --}}
-                        <div class="dropdown">
-                            <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static">
-                                <i class="bi bi-download me-1"></i> Export
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('admin.reports.export.excel', request()->query()) }}">
-                                        <i class="bi bi-file-earmark-excel me-2"></i> Excel
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('admin.reports.export', request()->query()) }}">
-                                        <i class="bi bi-file-earmark-pdf me-2"></i> PDF
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
+                            @endforeach
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2" 
+                                href="{{ route('admin.reports', \Illuminate\Support\Arr::except(request()->query(), ['category', 'page'])) }}">
+                                    <i class="bi bi-eye text-primary"></i> View All Categories
+                                </a>
+                            </li>
+                        </ul>
                     </div>
-                </div>
+
+                    {{-- Clear All Filters Button (Shows only when filters are active) --}}
+                    @if(request('category') || request('date_from') || request('date_to'))
+                        <a href="{{ route('admin.reports') }}" class="btn btn-outline-danger" title="Clear All Filters">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    @endif
+
+                    {{-- Export Dropdown --}}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static">
+                            <i class="bi bi-download me-1"></i> Export
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('admin.reports.export.excel', request()->query()) }}">
+                                    <i class="bi bi-file-earmark-excel me-2"></i> Excel
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('admin.reports.export', request()->query()) }}">
+                                    <i class="bi bi-file-earmark-pdf me-2"></i> PDF
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                </form>
             </div>
         </div>
     </div>
