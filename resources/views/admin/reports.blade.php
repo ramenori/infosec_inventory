@@ -31,23 +31,46 @@
                 <div class="col-md-6 mb-3 mb-md-0"></div>
                 <div class="col-md-6">
                     <div class="d-flex justify-content-end align-items-center gap-2">
+                        
+                        {{-- Category Filter Dropdown --}}
                         <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static">
-                                <i class="bi bi-funnel me-1"></i> Filter by Status
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static">
+                                <i class="bi bi-funnel me-1"></i> {{ request('category') ? request('category') : 'Filter by Category' }}
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#"><span class="badge bg-success me-2">●</span> Completed</a></li>
-                                <li><a class="dropdown-item" href="#"><span class="badge bg-primary me-2">●</span> In Progress</a></li>
-                                <li><a class="dropdown-item" href="#"><span class="badge bg-warning me-2">●</span> Pending</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                @foreach(\App\Models\Category::all() as $cat)
+                                    @php
+                                        $categoryIcons = [
+                                            'Access Control' => 'bi-shield-lock-fill text-primary',
+                                            'CCTV'           => 'bi-camera-video-fill text-info',
+                                            'GPS'            => 'bi-geo-alt-fill text-danger',
+                                            'Wireless Alarm' => 'bi-bell-fill text-warning',
+                                            'Network'        => 'bi-wifi text-success',
+                                            'Consumables'    => 'bi-box-seam-fill text-secondary',
+                                        ];
+                                        $icon = $categoryIcons[$cat->name] ?? 'bi-folder-fill text-primary';
+                                    @endphp
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('admin.reports', array_merge(request()->query(), ['category' => $cat->name])) }}">
+                                            <i class="bi {{ $icon }}"></i> {{ $cat->name }}
+                                        </a>
+                                    </li>
+                                @endforeach
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-eye me-2"></i> View All</a></li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('admin.reports', \Illuminate\Support\Arr::except(request()->query(), ['category'])) }}">
+                                        <i class="bi bi-eye text-primary"></i> View All
+                                    </a>
+                                </li>
                             </ul>
                         </div>
+
+                        {{-- Export Dropdown --}}
                         <div class="dropdown">
                             <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static">
                                 <i class="bi bi-download me-1"></i> Export
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                 <li>
                                     <a class="dropdown-item" href="{{ route('admin.reports.export.excel', request()->query()) }}">
                                         <i class="bi bi-file-earmark-excel me-2"></i> Excel
@@ -60,6 +83,7 @@
                                 </li>
                             </ul>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -125,11 +149,11 @@
 
                                 {{-- COLUMN 3: CATEGORY --}}
                                 <td class="text-center align-middle">
-    <span class="d-inline-flex align-items-center gap-2 fw-semibold text-dark">
-        <i class="bi {{ $categoryIcon }} fs-6"></i>
-        <span>{{ $category }}</span>
-    </span>
-</td>
+                                    <span class="d-inline-flex align-items-center gap-2 fw-semibold text-dark">
+                                        <i class="bi {{ $categoryIcon }} fs-6"></i>
+                                        <span>{{ $category }}</span>
+                                    </span>
+                                </td>
 
                                 {{-- COLUMN 4: QUANTITY --}}
                                 <td class="text-center align-middle fw-semibold text-dark">
@@ -251,8 +275,6 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.stat-card { border-radius: 10px; transition: transform 0.3s ease; }
-.stat-card:hover { transform: translateY(-5px); }
 .hover-shadow:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
@@ -289,7 +311,7 @@
 }
 </style>
 
-{{-- Modernized Deployment Report Details Modal --}}
+{{-- Deployment Report Details Modal --}}
 <div class="modal fade" id="reportDetailsModal" tabindex="-1" aria-labelledby="reportDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -309,7 +331,6 @@
             </div>
 
             <div class="modal-body p-4 bg-light-subtle">
-                
                 {{-- Quick Overview Cards --}}
                 <div class="row g-3 mb-4">
                     {{-- Deployment Info Card --}}
@@ -390,7 +411,6 @@
                     </div>
                     <p class="mb-0 text-dark small fst-italic ps-4" id="modalRemarks">-</p>
                 </div>
-
             </div>
 
             {{-- Modal Footer --}}
@@ -399,7 +419,6 @@
                     Close Details
                 </button>
             </div>
-
         </div>
     </div>
 </div>
@@ -524,7 +543,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-</script>
 </script>
 @endpush
 @endsection

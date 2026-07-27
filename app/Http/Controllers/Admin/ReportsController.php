@@ -7,8 +7,6 @@ use App\Models\Deployment;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\DeploymentReportsExport;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -22,6 +20,7 @@ class ReportsController extends Controller
         $reportsQuery = Deployment::with(['user', 'inventory'])
             ->orderBy('created_at', 'desc');
 
+        // Search Filter
         if ($request->filled('search')) {
             $search = $request->search;
             $reportsQuery->where(function($query) use ($search) {
@@ -31,29 +30,32 @@ class ReportsController extends Controller
             });
         }
 
+        // Category Filter
+        if ($request->filled('category')) {
+            $category = $request->category;
+            $reportsQuery->whereHas('inventory', function($q) use ($category) {
+                $q->where('category', $category);
+            });
+        }
+
         // Fetch flat entries and group them by Waybill + Created Timestamp combination
         $allReports = $reportsQuery->get();
         
         $groupedReports = $allReports->groupBy(function($item) {
-            // Group by waybill number if available, otherwise fall back to timestamp matching window
             return ($item->waybill_number ?? 'NO-WAYBILL') . '_' . $item->created_at->format('YmdHi');
         })->map(function($group) {
-            // The master row represents the overarching shipment metadata envelope
             $masterRow = $group->first();
             
-            // Map down all nested breakout lines into a structured JSON string collection
             $componentsPayload = $group->map(function($item) {
                 return [
                     'category' => optional($item->inventory)->category ?? 'Other',
                     'component' => $item->component,
                     'brand' => optional($item->inventory)->brand ?? 'N/A',
                     'quantity' => $item->quantity,
-                    // Department field holds our unique individual unit serial payload string array
                     'serials' => json_decode($item->department, true) ?? ['No Serial'] 
                 ];
             })->values()->toJson();
 
-            // Attach the composite payload back onto our custom model array object instance
             $masterRow->components_payload = $componentsPayload;
             $masterRow->total_combined_qty = $group->sum('quantity');
             
@@ -99,6 +101,14 @@ class ReportsController extends Controller
             });
         }
 
+        // Category Filter
+        if ($request->filled('category')) {
+            $category = $request->category;
+            $reportsQuery->whereHas('inventory', function($q) use ($category) {
+                $q->where('category', $category);
+            });
+        }
+
         $reports = $reportsQuery->get();
         $totalItemsDeployed = $reports->sum('quantity');
         $data = compact('reports', 'totalItemsDeployed');
@@ -130,6 +140,14 @@ class ReportsController extends Controller
             });
         }
 
+        // Category Filter
+        if ($request->filled('category')) {
+            $category = $request->category;
+            $reportsQuery->whereHas('inventory', function($q) use ($category) {
+                $q->where('category', $category);
+            });
+        }
+
         $reports = $reportsQuery->get();
 
         // Initialize Spreadsheet
@@ -141,7 +159,7 @@ class ReportsController extends Controller
         $columns = [
             'A' => 'Waybill No.',
             'B' => 'Date Deployed',
-            'C' => 'Component / Serial Number', // Clean header title tracking change
+            'C' => 'Component / Serial Number',
             'D' => 'Contact Person',
             'E' => 'Contact Number',
             'F' => 'Address',
@@ -180,7 +198,7 @@ class ReportsController extends Controller
 
             $sheet->setCellValue('A' . $rowNum, $r->waybill_number ?? 'N/A');
             $sheet->setCellValue('B' . $rowNum, $r->deployment_date ? $r->deployment_date->format('Y-m-d') : 'N/A');
-            $sheet->setCellValue('C' . $rowNum, $r->component); // Outputs component text strings built with [SN: XXX] automatically!
+            $sheet->setCellValue('C' . $rowNum, $r->component);
             $sheet->setCellValue('D' . $rowNum, $displayName);
             $sheet->setCellValue('E' . $rowNum, $displayContact);
             $sheet->setCellValue('F' . $rowNum, $displayAddress);
@@ -194,7 +212,7 @@ class ReportsController extends Controller
             $rowNum++;
         }
 
-        // Auto-fit all column widths perfectly
+        // Auto-fit all column widths
         foreach (range('A', 'I') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
