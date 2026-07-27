@@ -237,11 +237,11 @@
                     </div>
                   </div>
                 </td>
-                <td class="text-center">
-                  <div class="d-inline-flex align-items-center justify-content-center gap-2 px-2 py-1 rounded bg-light border">
-                    <i class="bi {{ $categoryIcon }}"></i>
-                    <span class="fw-semibold small text-dark">{{ $item->category }}</span>
-                  </div>
+                <td class="text-center align-middle">
+                    <span class="d-inline-flex align-items-center gap-2 fw-semibold text-dark">
+                        <i class="bi {{ $categoryIcon }} fs-6"></i>
+                        <span>{{ $item->category }}</span>
+                    </span>
                 </td>
                 <td class="text-center">
                   <div class="stock-indicator">

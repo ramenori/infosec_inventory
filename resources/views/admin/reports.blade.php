@@ -84,22 +84,34 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="border-0">WAYBILL NO.</th>
+                            <th class="border-0 ps-4">WAYBILL NO.</th>
                             <th class="border-0">DATE DEPLOYED</th>
-                            <th class="border-0">CATEGORY</th>
+                            <th class="border-0 text-center">CATEGORY</th>
                             <th class="border-0 text-center">QUANTITY</th>
                             <th class="border-0 text-center">DEPLOYED TO</th>
                             <th class="border-0 text-center">CONTACT NO.</th>
                             <th class="border-0 text-center">ADDRESS</th>
                             <th class="border-0 text-center">SATELLITE OFFICE</th>
-                            <th class="border-0 text-center">ACTIONS</th>
+                            <th class="border-0 text-center pe-4">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($reports as $deployment)
+                            @php
+                                $category = optional($deployment->inventory)->category ?? 'Other';
+                                $categoryIcons = [
+                                    'Access Control' => 'bi-shield-lock-fill text-primary',
+                                    'CCTV'           => 'bi-camera-video-fill text-info',
+                                    'GPS'            => 'bi-geo-alt-fill text-danger',
+                                    'Wireless Alarm' => 'bi-bell-fill text-warning',
+                                    'Network'        => 'bi-wifi text-success',
+                                    'Consumables'    => 'bi-box-seam-fill text-secondary',
+                                ];
+                                $categoryIcon = $categoryIcons[$category] ?? 'bi-folder-fill text-primary';
+                            @endphp
                             <tr class="hover-shadow">
                                 {{-- COLUMN 1: WAYBILL NO. --}}
-                                <td class="align-middle">
+                                <td class="align-middle ps-4">
                                     <span class="waybill-pill">
                                         <i class="bi bi-upc-scan pill-icon"></i>
                                         <span class="waybill-text">{{ $deployment->waybill_number ?? 'N/A' }}</span>
@@ -112,41 +124,22 @@
                                 </td>
 
                                 {{-- COLUMN 3: CATEGORY --}}
-                                <td class="align-middle">
-                                    <div class="d-flex align-items-center">
-                                        <div class="item-icon me-2">
-                                            @php
-                                                $categoryIcons = [
-                                                    'Access Control' => 'bi-shield-lock',
-                                                    'CCTV'           => 'bi-camera-video',
-                                                    'GPS'            => 'bi-geo-alt',
-                                                    'Wireless Alarm' => 'bi-bell',
-                                                    'Network'        => 'bi-wifi',
-                                                    'Consumables'    => 'bi-briefcase',
-                                                ];
-                                                $category = optional($deployment->inventory)->category ?? 'Other';
-                                                $icon = $categoryIcons[$category] ?? 'bi-box-seam';
-                                            @endphp
-                                            <i class="bi {{ $icon }} text-primary"></i>
-                                        </div>
-                                        <div>
-                                            <strong class="d-block">{{ $category }}</strong>
-                                        </div>
-                                    </div>
-                                </td>
+                                <td class="text-center align-middle">
+    <span class="d-inline-flex align-items-center gap-2 fw-semibold text-dark">
+        <i class="bi {{ $categoryIcon }} fs-6"></i>
+        <span>{{ $category }}</span>
+    </span>
+</td>
 
                                 {{-- COLUMN 4: QUANTITY --}}
                                 <td class="text-center align-middle fw-semibold text-dark">
                                     @if(!empty($deployment->components_payload))
-                                        {{-- For new grouped bundle records, sum up item quantities dynamically --}}
                                         @php 
                                             $payloadArray = json_decode($deployment->components_payload, true) ?? [];
                                             $combinedTotal = collect($payloadArray)->sum('quantity');
                                         @endphp
                                         {{ $combinedTotal > 0 ? $combinedTotal : $deployment->quantity }}
-                                    </td>
                                     @else
-                                        {{-- Fallback default for regular layout rows --}}
                                         {{ $deployment->quantity }}
                                     @endif
                                 </td>
@@ -190,7 +183,7 @@
                                 </td>
 
                                 {{-- COLUMN 9: ACTIONS --}}
-                                <td class="text-center align-middle">
+                                <td class="text-center align-middle pe-4">
                                     <button type="button" 
                                             class="btn btn-sm btn-outline-primary view-report-btn"
                                             data-bs-toggle="modal" 
@@ -260,29 +253,12 @@
 }
 .stat-card { border-radius: 10px; transition: transform 0.3s ease; }
 .stat-card:hover { transform: translateY(-5px); }
-.stat-icon { font-size: 3rem; opacity: 0.3; }
-.status-badge {
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    display: inline-block;
-}
 .hover-shadow:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
 }
 .empty-state { padding: 3rem 1rem; }
 .table tbody tr { transition: all 0.2s ease; }
-.item-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(13, 110, 253, 0.1);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 .waybill-pill {
     display: inline-flex;
     align-items: center;
@@ -394,18 +370,14 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize standard tooltips
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
 
-    // Get the modal element
     const reportDetailsModal = document.getElementById('reportDetailsModal');
     
     if (reportDetailsModal) {
-        // Listen to Bootstrap's native show event
         reportDetailsModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             
-            // Extract base transaction layout attributes
             const waybill = button.getAttribute('data-waybill') || 'N/A';
             const date = button.getAttribute('data-date') || 'N/A';
             const preparedBy = button.getAttribute('data-prepared-by') || 'N/A';
@@ -415,16 +387,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const address = button.getAttribute('data-address') || 'N/A';
             const remarks = button.getAttribute('data-remarks') || 'No remarks provided.';
             
-            // Fallback parameters for older records that haven't been bundled via JSON strings
             const fallbackCategory = button.getAttribute('data-category') || 'Other';
             const fallbackComponent = button.getAttribute('data-component') || 'N/A';
             const fallbackBrand = button.getAttribute('data-brand') || 'N/A';
             const fallbackQuantity = parseInt(button.getAttribute('data-quantity')) || 1;
 
-            // This bundle contains the JSON array of all unique items inside the deployment
             const componentsBundle = button.getAttribute('data-components-bundle') || '';
 
-            // Inject base transaction context values
             document.getElementById('modalWaybill').textContent = waybill;
             document.getElementById('modalDate').textContent = date;
             document.getElementById('modalPreparedBy').textContent = preparedBy;
@@ -439,7 +408,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let itemsList = [];
             
-            // Handle parsing if a multi-component bundle payload is active
             if (componentsBundle && componentsBundle !== 'null') {
                 try {
                     itemsList = JSON.parse(componentsBundle);
@@ -449,9 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Fallback render strategy if parsing legacy entries
             if (itemsList.length === 0) {
-                // Parse legacy single serial formatting if present
                 let cleanComponent = fallbackComponent;
                 let cleanSerial = 'No Serial';
                 if (fallbackComponent.includes('[SN:')) {
@@ -471,28 +437,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 }];
             }
 
+            const categoryIconMap = {
+                'Access Control': 'bi-shield-lock-fill text-primary',
+                'CCTV': 'bi-camera-video-fill text-info',
+                'GPS': 'bi-geo-alt-fill text-danger',
+                'Wireless Alarm': 'bi-bell-fill text-warning',
+                'Network': 'bi-wifi text-success',
+                'Consumables': 'bi-box-seam-fill text-secondary'
+            };
+
             let structuralIndex = 1;
 
-            // Loop 1: Iterate through each uniquely deployed distinct item type in the bundle array
             itemsList.forEach((item) => {
                 const category = item.category || 'Other';
                 const componentName = item.component || 'N/A';
                 const brand = item.brand || 'N/A';
                 const itemQuantity = parseInt(item.quantity) || 1;
                 const serialsArray = item.serials || [];
+                const iconClass = categoryIconMap[category] || 'bi-folder-fill text-primary';
 
-                // Loop 2: Explode individual row units out per item quantity amount
                 for (let j = 0; j < itemQuantity; j++) {
-                    // Pick the specific custom serial number from the array signature layout map index
                     const currentUnitSerial = serialsArray[j] || 'No Serial';
 
                     const componentRow = `
                         <div class="row g-3 mb-3 align-items-center border-bottom pb-3">
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label class="text-muted small d-block">Category #${structuralIndex}</label>
-                                <p class="fw-semibold mb-0">${category}</p>
+                                <div class="d-inline-flex align-items-center gap-2 mt-1 px-2 py-1 rounded bg-light border">
+                                    <i class="bi ${iconClass}"></i>
+                                    <span class="fw-semibold small text-dark">${category}</span>
+                                </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="text-muted small d-block">Component Name</label>
                                 <p class="fw-semibold mb-0 text-dark">${componentName} ${itemQuantity > 1 ? '(#' + (j + 1) + ')' : ''}</p>
                             </div>
@@ -515,14 +491,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Cleanly remove the trailing bottom border helper from the last generated row
             if (container.lastElementChild) {
                 container.lastElementChild.classList.remove('border-bottom', 'pb-3');
             }
         });
     }
 
-    // Fix dropdown z-index overlap issues
     document.querySelectorAll('.dropdown-toggle').forEach(dropdown => {
         dropdown.addEventListener('click', function() {
             const menu = this.nextElementSibling;
