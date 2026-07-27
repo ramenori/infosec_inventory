@@ -208,6 +208,17 @@
           </thead>
           <tbody>
             @forelse($inventory as $item)
+              @php
+                $categoryIcons = [
+                  'Access Control' => 'bi-shield-lock-fill text-primary',
+                  'CCTV'           => 'bi-camera-video-fill text-info',
+                  'GPS'            => 'bi-geo-alt-fill text-danger',
+                  'Wireless Alarm' => 'bi-bell-fill text-warning',
+                  'Network'        => 'bi-wifi text-success',
+                  'Consumables'    => 'bi-box-seam-fill text-secondary',
+                ];
+                $categoryIcon = $categoryIcons[$item->category] ?? 'bi-folder-fill text-primary';
+              @endphp
               <tr class="hover-shadow">
                 <td class="ps-4">
                   <div class="d-flex align-items-center">
@@ -227,7 +238,10 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <i class="bi bi-folder me-1"></i> {{ $item->category }}
+                  <div class="d-inline-flex align-items-center justify-content-center gap-2 px-2 py-1 rounded bg-light border">
+                    <i class="bi {{ $categoryIcon }}"></i>
+                    <span class="fw-semibold small text-dark">{{ $item->category }}</span>
+                  </div>
                 </td>
                 <td class="text-center">
                   <div class="stock-indicator">
