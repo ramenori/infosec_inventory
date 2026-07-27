@@ -51,14 +51,16 @@
                                         $icon = $categoryIcons[$cat->name] ?? 'bi-folder-fill text-primary';
                                     @endphp
                                     <li>
-                                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('admin.reports', array_merge(request()->query(), ['category' => $cat->name])) }}">
+                                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" 
+                                        href="{{ route('admin.reports', array_merge(\Illuminate\Support\Arr::except(request()->query(), ['page']), ['category' => $cat->name])) }}">
                                             <i class="bi {{ $icon }}"></i> {{ $cat->name }}
                                         </a>
                                     </li>
                                 @endforeach
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('admin.reports', \Illuminate\Support\Arr::except(request()->query(), ['category'])) }}">
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" 
+                                    href="{{ route('admin.reports', \Illuminate\Support\Arr::except(request()->query(), ['category', 'page'])) }}">
                                         <i class="bi bi-eye text-primary"></i> View All
                                     </a>
                                 </li>
