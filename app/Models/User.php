@@ -17,6 +17,11 @@ class User extends Authenticatable
         'password',
     ];
 
+    public function isAdmin(): bool
+    {
+        return strtolower($this->username ?? '') === 'admin';
+    }
+
     protected $hidden = [
         'password',
         'remember_token',

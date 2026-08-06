@@ -97,17 +97,18 @@
           </a>
         </li>
 
-        <!-- Settings Menu Header -->
+        @if(auth()->check() && auth()->user()->isAdmin())
         <li class="nav-header text-uppercase text-secondary mt-3 mb-2 px-3" style="font-size: 0.7rem; letter-spacing: 1px;">
           Administration
         </li>
-
+        
         <li class="nav-item">
           <a href="{{ route('admin.accounts') }}" class="nav-link rounded-3 px-3 py-2 mb-1">
             <i class="nav-icon bi bi-people-fill me-3"></i>
             <p class="mb-0">Accounts</p>
           </a>
         </li>
+        @endif
       </ul>
       <!--end::Sidebar Menu-->
     </nav>

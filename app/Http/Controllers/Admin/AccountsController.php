@@ -9,6 +9,17 @@ use Illuminate\Support\Facades\Hash;
 
 class AccountsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!auth()->check() || !auth()->user()->isAdmin()) {
+                abort(403, 'Only the admin can access this page.');
+            }
+
+            return $next($request);
+        });
+    }
+
     public function index()
     {
         $users = User::all();
