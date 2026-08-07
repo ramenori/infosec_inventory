@@ -144,33 +144,6 @@
                         </div>
                     </div>
                     
-                    {{-- Status Breakdown --}}
-                    <div>
-                        <h6 class="text-muted mb-3">Deployment Status</h6>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span><span class="badge bg-success me-2">●</span> Completed</span>
-                            <span class="fw-bold">{{ $dashboardData['status_breakdown']['completed'] }}</span>
-                        </div>
-                        <div class="progress mb-3" style="height: 8px;">
-                            @php
-                                $total = array_sum($dashboardData['status_breakdown']);
-                                $completedPercent = $total > 0 ? round(($dashboardData['status_breakdown']['completed'] / $total) * 100) : 0;
-                                $pendingPercent = $total > 0 ? round(($dashboardData['status_breakdown']['pending'] / $total) * 100) : 0;
-                            @endphp
-                            <div class="progress-bar bg-success" style="width: {{ $completedPercent }}%"></div>
-                            <div class="progress-bar bg-warning" style="width: {{ $pendingPercent }}%"></div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between mb-2">
-                            <span><span class="badge bg-warning me-2">●</span> Pending</span>
-                            <span class="fw-bold">{{ $dashboardData['status_breakdown']['pending'] }}</span>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <span><span class="badge bg-danger me-2">●</span> Cancelled</span>
-                            <span class="fw-bold">{{ $dashboardData['status_breakdown']['cancelled'] }}</span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
